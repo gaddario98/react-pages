@@ -3,6 +3,8 @@ import { ContentItem, PageProps, ViewSettings } from "../types";
 import { FormManagerConfig, Submit } from "@gaddario98/react-form";
 import { FieldValues } from "react-hook-form";
 import { QueriesArray } from "@gaddario98/react-queries";
+import { setMetadata, getMetadata, resetMetadata } from "./metadata";
+import { MetadataConfig } from "./types";
 
 export interface DefaultContainerProps<
   F extends FieldValues = FieldValues,
@@ -54,6 +56,11 @@ export interface PageConfigProps {
     title?: string;
     description?: string;
   };
+  // NEW: Metadata configuration
+  defaultMetadata: MetadataConfig;
+  setMetadata: (config: MetadataConfig) => void;
+  getMetadata: () => MetadataConfig;
+  resetMetadata: () => void;
 }
 
 const DefaultContainer = <
@@ -78,8 +85,17 @@ export let pageConfig: PageConfigProps = {
     title: "",
     description: "",
   },
+  // Metadata configuration
+  defaultMetadata: {},
+  setMetadata,
+  getMetadata,
+  resetMetadata,
 };
 
 export const setPageConfig = (config: Partial<PageConfigProps>) => {
   pageConfig = { ...pageConfig, ...config };
 };
+
+// Re-export metadata functions and types for convenience
+export { setMetadata, getMetadata, resetMetadata } from "./metadata";
+export type { MetadataConfig, MetaTag, MetadataProvider } from "./types";
