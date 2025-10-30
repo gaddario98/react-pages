@@ -59,14 +59,14 @@ export interface MetadataManagerProps<
  *         meta={{
  *           title: 'My Page',
  *           description: 'Page description',
- *           openGraph: { ... }
+ *           openGraph: {}
  *         }}
  *         formValues={formValues}
  *         allQuery={allQuery}
  *         allMutation={allMutation}
  *         setValue={setValue}
  *       />
- *       {/* Rest of page content */}
+ *       <PageContent />
  *     </>
  *   );
  * }

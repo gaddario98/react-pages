@@ -1,17 +1,26 @@
-# React Pages Plugin
+# React Pages v2 - Universal Page System
 
-A powerful, performance-optimized React plugin for creating dynamic web pages with integrated form management, query handling, and content rendering.
+A powerful, performance-optimized React component library for creating dynamic pages that work seamlessly across web (React DOM) and React Native with integrated form management, query handling, SEO metadata, lazy loading, and content rendering.
+
+**Latest Release**: v2.0.0 | **Upgrade from v1.x?** See [MIGRATION.md](./MIGRATION.md)
 
 ## 🚀 Features
 
-- **Dynamic Page Generation**: Create complex pages with configurable content layouts
-- **Form Integration**: Built-in form management with validation and submission handling
-- **Query Management**: Seamless integration with React Query for data fetching and mutations
-- **Performance Optimized**: Advanced memoization and caching strategies to minimize re-renders
-- **TypeScript Support**: Full TypeScript support with comprehensive type definitions
-- **Flexible Content System**: Support for both static and dynamic content rendering
-- **Internationalization**: Built-in i18n support with react-i18next integration
-- **SEO Friendly**: Meta tag management with react-helmet-async
+### Core Capabilities
+- **🌐 Universal Cross-Platform**: Single `PageProps` configuration works on web and React Native
+- **⚡ Performance Optimized**: Dependency graph for selective re-rendering, debounced form inputs, React Compiler integration
+- **🔍 SEO & AI Metadata**: Dynamic metadata with Open Graph, JSON-LD, and AI hints for search engines and crawlers
+- **📦 Lazy Loading & Code Splitting**: Viewport-triggered lazy loading and conditional content loading
+- **🔧 Fully Extensible**: Custom components, lifecycle callbacks, and platform adapters
+- **📱 React Native Support**: Official cross-platform support alongside web (React DOM)
+
+### Developer Experience
+- **TypeScript First**: Full generic type support with strict mode enabled
+- **Form Integration**: Built-in form management with validation and React Hook Form integration
+- **Query Management**: Seamless integration with TanStack React Query
+- **Internationalization**: Built-in i18n support with react-i18next
+- **Tree-Shakeable**: 5 optimized entry points for minimal bundle footprint
+- **React Compiler**: Automatic memoization and optimization via babel-plugin-react-compiler
 
 ## 📦 Installation
 
@@ -21,11 +30,50 @@ npm install @gaddario98/react-pages
 
 ### Peer Dependencies
 
-Make sure you have the required peer dependencies installed:
+Ensure you have the required peer dependencies installed:
 
 ```bash
-npm install react react-dom react-hook-form @tanstack/react-query react-i18next i18next react-helmet-async
+npm install react@^19.2.0 react-dom@^19.2.0 react-hook-form@^7.64.0 @tanstack/react-query@^5.90.2 react-i18next@^16.0.1 i18next
 ```
+
+> **Note**: `react-helmet-async` is optional in v2.x. Metadata injection is handled automatically by the library on web platforms.
+
+## ⚡ Quick Start
+
+Get started in 5 minutes:
+
+```bash
+npm install @gaddario98/react-pages
+```
+
+Then create your first page:
+
+```tsx
+import { PageGenerator } from '@gaddario98/react-pages';
+
+export function MyPage() {
+  return (
+    <PageGenerator
+      id="my-page"
+      meta={{
+        title: "My Page",
+        description: "My awesome page"
+      }}
+      contents={[
+        {
+          type: "custom",
+          component: <h1>Welcome!</h1>
+        }
+      ]}
+    />
+  );
+}
+```
+
+**Next Steps**:
+- Read the [Quickstart Guide](./specs/002-page-system-redesign/quickstart.md) for comprehensive setup instructions
+- View [examples](./specs/002-page-system-redesign/contracts/examples/) for more patterns
+- Check [MIGRATION.md](./MIGRATION.md) if upgrading from v1.x
 
 ## 🏗️ Basic Usage
 

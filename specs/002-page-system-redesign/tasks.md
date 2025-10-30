@@ -209,14 +209,14 @@
 
 **Purpose**: Improvements that affect multiple user stories and final preparation for release
 
-- [ ] T104 [P] Create MIGRATION.md documenting all breaking changes from 1.x to 2.x with before/after code examples
-- [ ] T105 [P] Update README.md with feature highlights, installation instructions, and link to quickstart.md
-- [ ] T106 Update package.json version to 2.0.0 (major version bump due to breaking changes)
+- [X] T104 [P] Create MIGRATION.md documenting all breaking changes from 1.x to 2.x with before/after code examples
+- [X] T105 [P] Update README.md with feature highlights, installation instructions, and link to quickstart.md
+- [X] T106 Update package.json version to 2.0.0 (major version bump due to breaking changes)
 - [ ] T107 [P] Add deprecation warnings for any deprecated 1.x APIs with console.warn() messages
 - [ ] T108 [P] Update all TypeScript declaration files (.d.ts) to include new types and exports
 - [ ] T109 Verify rollup output bundle sizes: main < 60 KB gzipped, modules < 25 KB gzipped each
 - [ ] T110 [P] Run bundle analyzer (rollup-plugin-visualizer) to identify any unexpected bundle bloat
-- [ ] T111 [P] Update package.json exports map with new entry points (./components, ./hooks, ./config, ./utils, ./contracts)
+- [X] T111 [P] Update package.json exports map with new entry points (./components, ./hooks, ./config, ./utils, ./contracts)
 - [ ] T112 [P] Add JSDoc comments to all public API functions, hooks, and components
 - [ ] T113 [P] Update contracts/examples/ with working examples for all 5 user stories
 - [ ] T114 Validate quickstart.md examples compile and run without errors
@@ -227,8 +227,8 @@
 - [ ] T119 [P] Run npm run build and verify dual output (CJS + ESM) generates correctly
 - [ ] T120 Verify tree-shaking works correctly with targeted imports (import only hooks shouldn't pull in components)
 - [ ] T121 [P] Add backward compatibility smoke tests (verify 1.x PageProps still work in 2.x)
-- [ ] T122 Update CLAUDE.md agent context with new technologies and architectural patterns from this feature
-- [ ] T123 Create CHANGELOG.md entry for 2.0.0 release with features, breaking changes, and migration guide link
+- [X] T122 Update CLAUDE.md agent context with new technologies and architectural patterns from this feature
+- [X] T123 Create CHANGELOG.md entry for 2.0.0 release with features, breaking changes, and migration guide link
 
 ---
 
