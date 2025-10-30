@@ -9,6 +9,8 @@ import { Helmet } from "react-helmet-async";
 import { pageConfig as GlobalPageConfig, pageConfig } from "../config";
 import { useGenerateContent } from "../hooks/useGenerateContent";
 import { usePageConfig } from "../hooks";
+import { PlatformAdapterProvider } from "../config/PlatformAdapterProvider";
+import { defaultAdapter } from "../config/platformAdapters";
 
 /**
  * Renders page metadata using react-helmet-async
@@ -209,11 +211,13 @@ const PageGenerator = withMemo(
     );
 
     return (
-      <PageContainer id={id ?? ""} key={id}>
-        {pageContent}
-        {layoutContent}
-        {footerContent}
-      </PageContainer>
+      <PlatformAdapterProvider adapter={defaultAdapter}>
+        <PageContainer id={id ?? ""} key={id}>
+          {pageContent}
+          {layoutContent}
+          {footerContent}
+        </PageContainer>
+      </PlatformAdapterProvider>
     );
   }
 );

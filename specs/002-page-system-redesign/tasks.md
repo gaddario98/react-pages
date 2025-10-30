@@ -77,16 +77,16 @@
 - [X] T030 [P] [US1] Update hooks/usePageConfig.tsx to include new PageProps fields (meta, lazyLoading, platformOverrides) in configuration merging
 - [X] T031 [P] [US1] Update hooks/usePageQueries.ts to use stable memoized query/mutation references (prevent re-render cascades)
 - [X] T032 [P] [US1] Update hooks/useFormPage.ts to integrate use-debounce for onValuesChange callback (reduce keystroke re-renders by 80%)
-- [ ] T033 [P] [US1] Update hooks/usePageUtiles.tsx to work with new dependency tracking and memoization patterns
-- [ ] T034 [US1] Refactor hooks/useGenerateContentRender.tsx to use useDependencyGraph for selective content re-rendering
-- [ ] T035 [US1] Update hooks/useDataExtractor.tsx to use fast-deep-equal for optimized data comparison
-- [ ] T036 [US1] Update components/PageGenerator.tsx to integrate PlatformAdapterProvider and use platform-aware rendering
+- [X] T033 [P] [US1] Update hooks/usePageUtiles.tsx to work with new dependency tracking and memoization patterns
+- [X] T034 [US1] Refactor hooks/useGenerateContentRender.tsx to use useDependencyGraph for selective content re-rendering
+- [X] T035 [US1] Update hooks/useDataExtractor.tsx to use fast-deep-equal for optimized data comparison
+- [X] T036 [US1] Update components/PageGenerator.tsx to integrate PlatformAdapterProvider and use platform-aware rendering
 - [ ] T037 [P] [US1] Update components/ContentRenderer.tsx to track content item dependencies in DependencyGraph and implement selective re-rendering
 - [ ] T038 [P] [US1] Update components/RenderComponent.tsx to support new ContentItem fields (lazy, lazyTrigger, lazyCondition)
 - [ ] T039 [US1] Update components/Container.tsx to use platform adapter for container rendering (web div vs React Native View)
 - [ ] T040 [US1] Remove react-helmet-async import from components/PageGenerator.tsx (migrate to custom metadata manager)
 - [ ] T041 [US1] Add platform override resolution logic to hooks/usePageConfig.tsx (merge web/native overrides based on detected platform)
-- [ ] T042 [US1] Update config/types.ts with backward-compatible type exports (PageMetadataProps alias for MetadataConfig)
+- [X] T042 [US1] Update config/types.ts with backward-compatible type exports (PageMetadataProps alias for MetadataConfig)
 - [ ] T043 [US1] Add validation logic for PageProps (warn if id empty, all contents/form/queries undefined, circular dependencies detected)
 
 **Checkpoint**: At this point, User Story 1 should be fully functional - basic page configuration works on both web and React Native with dependency tracking and platform adapters.

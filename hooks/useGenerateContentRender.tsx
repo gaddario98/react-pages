@@ -12,6 +12,7 @@ import {
 } from "@gaddario98/react-form";
 import { ContentItem, ContentItemsType } from "../types";
 import { useDataExtractor } from "./useDataExtractor";
+import { useAutoRegisterDependencies } from "./useDependencyGraph";
 
 export interface GenerateContentRenderProps<
   F extends FieldValues,
@@ -85,6 +86,12 @@ export const useGenerateContentRender = <
       return contents.filter((el) => !el?.hidden);
     }
   }, [contents, contentsWithQueriesDeps]);
+
+  // Register content items with dependency graph for selective re-rendering
+  const { getAffectedComponents } = useAutoRegisterDependencies(
+    filteredContents,
+    `${pageId}-content`
+  );
 
   const { extractFormValues, extractMutations, extractQuery } =
     useDataExtractor<F, Q>({
@@ -160,5 +167,7 @@ export const useGenerateContentRender = <
       ...filteredContents,
       ...(!formData ? [] : (formData?.formContents ?? [])),
     ],
+    // Expose dependency graph utilities for selective re-rendering
+    getAffectedComponents,
   };
 };
