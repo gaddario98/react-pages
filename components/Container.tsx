@@ -1,14 +1,13 @@
 import { QueriesArray } from "@gaddario98/react-queries";
-import { useMemo } from "react";
+import { useMemo, memo } from "react";
 import { FieldValues } from "react-hook-form";
-import { withMemo } from "@gaddario98/utiles";
 import { useGenerateContentRender } from "../hooks/useGenerateContentRender";
 import { pageConfig } from "../config";
 import { ItemContainerProps } from "./types";
 import { RenderComponent } from "./RenderComponent";
+import { deepEqual } from "../utils/optimization";
 
-export const Container = withMemo(
-  <F extends FieldValues, Q extends QueriesArray>({
+const ContainerImpl = <F extends FieldValues, Q extends QueriesArray>({
     content,
     ns,
     pageId,
@@ -62,5 +61,13 @@ export const Container = withMemo(
       [content?.component]
     );
     return <Layout>{components?.map((el) => el.element)}</Layout>;
+};
+
+// Export with React.memo and fast-deep-equal comparator for optimal performance
+export const Container = memo(
+  ContainerImpl,
+  (prevProps, nextProps) => {
+    // Return true if props are equal (component should NOT re-render)
+    return deepEqual(prevProps, nextProps);
   }
-);
+) as typeof ContainerImpl;
