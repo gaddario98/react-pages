@@ -174,6 +174,45 @@ interface PageMetadataProps {
   otherMetaTags?: JSX.Element[];
   disableIndexing?: boolean;
 }
+/* ======================================================
+   PERFORMANCE OPTIMIZATION TYPES
+====================================================== */
+
+/**
+ * Dependency Graph Node
+ * Tracks which queries, form values, and mutations a component depends on
+ */
+export interface DependencyNode {
+  componentId: string;
+  usedQueries: string[];
+  usedFormValues: string[];
+  usedMutations: string[];
+  parentComponent: string | null;
+  childComponents: string[];
+}
+
+/**
+ * Dependency Graph
+ * Maps component IDs to their dependency nodes for selective re-rendering
+ */
+export interface DependencyGraph {
+  nodes: Map<string, DependencyNode>;
+  addNode: (node: DependencyNode) => void;
+  getNode: (componentId: string) => DependencyNode | undefined;
+  getAffectedComponents: (changedKeys: string[]) => string[];
+}
+
+/**
+ * Memoization Cache Types
+ * For tracking memoized computations and their cache hits
+ */
+export interface MemoizationCacheStats {
+  hits: number;
+  misses: number;
+  size: number;
+  maxSize: number;
+}
+
 export type {
   MappedItemsFunction,
   Items,
@@ -189,3 +228,6 @@ export type {
   PageMetadataProps,
   QueryPageConfigArray,
 };
+
+// Re-export new configuration types from config
+export type { MetadataConfig, MetaTag, LazyLoadingConfig } from "./config/types";

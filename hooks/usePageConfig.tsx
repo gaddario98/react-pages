@@ -30,8 +30,9 @@ export const usePageConfig = <F extends FieldValues, Q extends QueriesArray>({
   onValuesChange?: MappedItemsFunction<F, Q, void>;
   viewSettings?: MappedItemsFunction<F, Q, ViewSettings> | ViewSettings;
 }) => {
+  // All hooks must be called first in consistent order
   const { formControl, formValues, setValue } = useFormPage<F, Q>({ form });
-  
+
   const {
     allMutation,
     allQuery,
@@ -61,9 +62,11 @@ export const usePageConfig = <F extends FieldValues, Q extends QueriesArray>({
     setValue,
   });
 
+  // Prepare stable references for query extraction
+  // Optimized: Only depend on form?.usedQueries, not the entire form object
   const extractQueryHandle = useMemo(() => {
     if (!form?.usedQueries?.length) return allQuery;
-    return extractQuery(form?.usedQueries as string[]);
+    return extractQuery(form.usedQueries as string[]);
   }, [allQuery, extractQuery, form?.usedQueries]);
 
   const extractMutationsHandle = useMemo(() => {
@@ -78,6 +81,15 @@ export const usePageConfig = <F extends FieldValues, Q extends QueriesArray>({
     extractMutationsHandle,
     extractQueryHandle,
     setValue,
+  });
+
+  // Call useFormManager hook at top level (maintains hook order)
+  const formData = useFormManager({
+    ...form,
+    data: mappedFormData as any[],
+    ns,
+    formControl,
+    submit: formSubmit as any[],
   });
 
   const handleRefresh = useCallback(async () => {
@@ -102,14 +114,6 @@ export const usePageConfig = <F extends FieldValues, Q extends QueriesArray>({
     formValues,
     setValue,
   ]);
-
-  const formData = useFormManager({
-    ...form,
-    data: mappedFormData as any[],
-    ns,
-    formControl,
-    submit: formSubmit as any[],
-  });
 
   return {
     formData,
