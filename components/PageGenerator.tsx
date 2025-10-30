@@ -11,6 +11,7 @@ import { useGenerateContent } from "../hooks/useGenerateContent";
 import { usePageConfig } from "../hooks";
 import { PlatformAdapterProvider } from "../config/PlatformAdapterProvider";
 import { defaultAdapter } from "../config/platformAdapters";
+import { validateAndLogPageProps } from "../utils/validation";
 
 /**
  * Renders page metadata using react-helmet-async
@@ -69,6 +70,13 @@ const PageGenerator = withMemo(
     const [usedProps, setUsedProps] = useState<"auth" | "page">(
       enableAuthControl && authControl ? "auth" : "page"
     );
+
+    // Validate PageProps configuration (development mode only)
+    useEffect(() => {
+      if (process.env.NODE_ENV === 'development') {
+        validateAndLogPageProps({ ...props, meta, enableAuthControl });
+      }
+    }, [props, meta, enableAuthControl]);
 
     useEffect(() => {
       const newUsedProps = authControl ? "auth" : "page";

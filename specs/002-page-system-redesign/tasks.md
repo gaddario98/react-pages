@@ -81,13 +81,13 @@
 - [X] T034 [US1] Refactor hooks/useGenerateContentRender.tsx to use useDependencyGraph for selective content re-rendering
 - [X] T035 [US1] Update hooks/useDataExtractor.tsx to use fast-deep-equal for optimized data comparison
 - [X] T036 [US1] Update components/PageGenerator.tsx to integrate PlatformAdapterProvider and use platform-aware rendering
-- [ ] T037 [P] [US1] Update components/ContentRenderer.tsx to track content item dependencies in DependencyGraph and implement selective re-rendering
-- [ ] T038 [P] [US1] Update components/RenderComponent.tsx to support new ContentItem fields (lazy, lazyTrigger, lazyCondition)
-- [ ] T039 [US1] Update components/Container.tsx to use platform adapter for container rendering (web div vs React Native View)
-- [ ] T040 [US1] Remove react-helmet-async import from components/PageGenerator.tsx (migrate to custom metadata manager)
-- [ ] T041 [US1] Add platform override resolution logic to hooks/usePageConfig.tsx (merge web/native overrides based on detected platform)
+- [X] T037 [P] [US1] Update components/ContentRenderer.tsx to track content item dependencies in DependencyGraph and implement selective re-rendering
+- [X] T038 [P] [US1] Update components/RenderComponent.tsx to support new ContentItem fields (lazy, lazyTrigger, lazyCondition)
+- [X] T039 [US1] Update components/Container.tsx to use platform adapter for container rendering (web div vs React Native View)
+- [ ] T040 [US1] Remove react-helmet-async import from components/PageGenerator.tsx (migrate to custom metadata manager) [DEFERRED TO PHASE 5 - US3]
+- [X] T041 [US1] Add platform override resolution logic to hooks/usePageConfig.tsx (merge web/native overrides based on detected platform)
 - [X] T042 [US1] Update config/types.ts with backward-compatible type exports (PageMetadataProps alias for MetadataConfig)
-- [ ] T043 [US1] Add validation logic for PageProps (warn if id empty, all contents/form/queries undefined, circular dependencies detected)
+- [X] T043 [US1] Add validation logic for PageProps (warn if id empty, all contents/form/queries undefined, circular dependencies detected)
 
 **Checkpoint**: At this point, User Story 1 should be fully functional - basic page configuration works on both web and React Native with dependency tracking and platform adapters.
 
