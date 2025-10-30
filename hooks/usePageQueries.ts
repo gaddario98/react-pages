@@ -6,14 +6,16 @@ import {
   useApi,
 } from '@gaddario98/react-queries';
 import { QueryPageConfigArray } from '../types';
+import { useMemoizedProps } from './useMemoizedProps';
 
 /**
  * Specialized hook for managing queries and mutations
  * Handles query processing, loading states, and key mapping
+ * Enhanced in 2.0: Uses useMemoizedProps for stable query/mutation references
  * @param queries - Array of query configurations
  * @param formValues - Current form values
  * @param setValue - Form setValue function
- * @returns Query management state and utilities
+ * @returns Query management state and utilities with stable references
  */
 export function usePageQueries<F extends FieldValues, Q extends QueriesArray>({
   queries = [] as QueryPageConfigArray<F, Q>,
@@ -54,9 +56,22 @@ export function usePageQueries<F extends FieldValues, Q extends QueriesArray>({
     processedQueries as OriginalQueryConfigArray<Q>
   );
 
+  // NEW IN 2.0: Use useMemoizedProps to ensure stable query/mutation references
+  // This prevents unnecessary re-renders in components that depend on these values
+  const stableMappedProps = useMemoizedProps({
+    allQuery,
+    allMutation,
+    formValues,
+    setValue,
+  });
+
+  // Use stable references from useMemoizedProps
+  const stableAllQuery = stableMappedProps.allQuery;
+  const stableAllMutation = stableMappedProps.allMutation;
+
   const queriesKeys = useMemo(
-    () => Object.keys(allQuery ?? {}).concat(Object.keys(allMutation ?? {})),
-    [allMutation, allQuery]
+    () => Object.keys(stableAllQuery ?? {}).concat(Object.keys(stableAllMutation ?? {})),
+    [stableAllMutation, stableAllQuery]
   );
 
   const isAllQueryMapped = useMemo(() => {
@@ -66,11 +81,11 @@ export function usePageQueries<F extends FieldValues, Q extends QueriesArray>({
 
   const isLoading = useMemo(
     () =>
-      Object.values(allQuery ?? {}).some(
+      Object.values(stableAllQuery ?? {}).some(
         (el: any) =>
           typeof el !== 'boolean' && el?.isLoadingMapped === true && !el.data
       ),
-    [allQuery]
+    [stableAllQuery]
   );
 
   const queryKeys = useMemo(
@@ -90,9 +105,10 @@ export function usePageQueries<F extends FieldValues, Q extends QueriesArray>({
     return queries.some((q) => q.type === 'query');
   }, [queries]);
 
+  // Return stable references to prevent re-render cascades
   return {
-    allMutation,
-    allQuery,
+    allMutation: stableAllMutation,
+    allQuery: stableAllQuery,
     isAllQueryMapped,
     isLoading,
     queryKeys,

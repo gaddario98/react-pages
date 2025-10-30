@@ -5,6 +5,9 @@ import type {
   MappedItemsFunction,
   QueryPageConfigArray,
   ViewSettings,
+  MetadataConfig,
+  LazyLoadingConfig,
+  PlatformOverrides,
 } from "../types";
 import { useFormManager } from "@gaddario98/react-form";
 import { FieldValues } from "react-hook-form";
@@ -14,6 +17,7 @@ import { useInvalidateQueries } from "@gaddario98/react-providers";
 import { usePageQueries } from "./usePageQueries";
 import { useViewSettings } from "./useViewSettings";
 import { useFormData } from "./useFormData";
+import { usePlatformAdapter } from "./usePlatformAdapter";
 
 const EMPTY_ARRAY: [] = [];
 
@@ -23,12 +27,19 @@ export const usePageConfig = <F extends FieldValues, Q extends QueriesArray>({
   ns,
   onValuesChange,
   viewSettings = {},
+  meta,
+  lazyLoading,
+  platformOverrides,
 }: {
   queries: QueryPageConfigArray<F,Q>;
   form?: FormPageProps<F, Q>;
   ns: string;
   onValuesChange?: MappedItemsFunction<F, Q, void>;
   viewSettings?: MappedItemsFunction<F, Q, ViewSettings> | ViewSettings;
+  // NEW IN 2.0: Metadata, lazy loading, and platform overrides
+  meta?: MetadataConfig<F, Q>;
+  lazyLoading?: LazyLoadingConfig;
+  platformOverrides?: PlatformOverrides<F, Q>;
 }) => {
   // All hooks must be called first in consistent order
   const { formControl, formValues, setValue } = useFormPage<F, Q>({ form });
@@ -61,6 +72,48 @@ export const usePageConfig = <F extends FieldValues, Q extends QueriesArray>({
     formValues,
     setValue,
   });
+
+  // NEW IN 2.0: Get platform adapter for platform-specific configuration
+  const platformAdapter = usePlatformAdapter();
+
+  // NEW IN 2.0: Apply platform overrides based on current platform
+  const resolvedMeta = useMemo(() => {
+    if (!meta) return undefined;
+
+    // Apply platform-specific overrides
+    const platformSpecificMeta = platformAdapter.name === 'web'
+      ? platformOverrides?.web?.meta
+      : platformOverrides?.native?.meta;
+
+    return platformSpecificMeta || meta;
+  }, [meta, platformOverrides, platformAdapter.name]);
+
+  const resolvedLazyLoading = useMemo(() => {
+    if (!lazyLoading) return undefined;
+
+    // Apply platform-specific overrides
+    const platformSpecificLazyLoading = platformAdapter.name === 'web'
+      ? platformOverrides?.web?.lazyLoading
+      : platformOverrides?.native?.lazyLoading;
+
+    return platformSpecificLazyLoading || lazyLoading;
+  }, [lazyLoading, platformOverrides, platformAdapter.name]);
+
+  const resolvedViewSettings = useMemo(() => {
+    // Apply platform-specific view settings overrides
+    const platformSpecificViewSettings = platformAdapter.name === 'web'
+      ? platformOverrides?.web?.viewSettings
+      : platformOverrides?.native?.viewSettings;
+
+    if (platformSpecificViewSettings) {
+      // Merge with base view settings
+      return typeof platformSpecificViewSettings === 'function'
+        ? platformSpecificViewSettings({ allQuery, allMutation, formValues, setValue })
+        : { ...mappedViewSettings, ...platformSpecificViewSettings };
+    }
+
+    return mappedViewSettings;
+  }, [mappedViewSettings, platformOverrides, platformAdapter.name, allQuery, allMutation, formValues, setValue]);
 
   // Prepare stable references for query extraction
   // Optimized: Only depend on form?.usedQueries, not the entire form object
@@ -126,7 +179,11 @@ export const usePageConfig = <F extends FieldValues, Q extends QueriesArray>({
     allQuery,
     setValue,
     form,
-    mappedViewSettings,
+    mappedViewSettings: resolvedViewSettings, // Use resolved view settings with platform overrides
     isLoading,
+    // NEW IN 2.0: Return resolved metadata and lazy loading configuration
+    meta: resolvedMeta,
+    lazyLoading: resolvedLazyLoading,
+    platformAdapter, // Expose platform adapter for components to use
   };
 };

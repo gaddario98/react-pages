@@ -39,32 +39,58 @@ type Items<F extends FieldValues, Q extends QueriesArray> = {
   component:
     | React.JSX.Element
     | ((props: MappedProps<F, Q>) => React.JSX.Element);
+
+  // Layout & positioning
   index?: number;
   usedBoxes?: number;
-  usedQueries?: Array<Q[number]["key"]>;
   renderInFooter?: boolean;
+  renderInHeader?: boolean;
+  hidden?: boolean;
+
+  // Dependency tracking (for selective re-rendering)
+  usedQueries?: Array<Q[number]["key"]>;
   usedFormValues?: Array<keyof F>;
+
+  // Interaction & behavior
   isDraggable?: boolean;
   isInDraggableView?: boolean;
-  renderInHeader?: boolean;
+
+  // React optimization
   key?: string;
-  hidden?: boolean;
+
+  // NEW IN 2.0: Lazy loading support
+  lazy?: boolean;
+  lazyTrigger?: "viewport" | "interaction" | "conditional";
+  lazyCondition?: MappedItemsFunction<F, Q, boolean>;
 };
 
 type ContainerItem<F extends FieldValues, Q extends QueriesArray> = {
   type: "container";
   component?: typeof pageConfig.ItemsContainer;
   items: ContentItemsType<F, Q>;
+
+  // Layout & positioning
   index?: number;
   usedBoxes?: number;
-  usedQueries?: Array<Q[number]["key"]>;
   renderInFooter?: boolean;
+  renderInHeader?: boolean;
+  hidden?: boolean;
+
+  // Dependency tracking (for selective re-rendering)
+  usedQueries?: Array<Q[number]["key"]>;
   usedFormValues?: Array<keyof F>;
+
+  // Interaction & behavior
   isDraggable?: boolean;
   isInDraggableView?: boolean;
-  renderInHeader?: boolean;
+
+  // React optimization
   key?: string;
-  hidden?: boolean;
+
+  // NEW IN 2.0: Lazy loading support
+  lazy?: boolean;
+  lazyTrigger?: "viewport" | "interaction" | "conditional";
+  lazyCondition?: MappedItemsFunction<F, Q, boolean>;
 };
 
 type ContentItem<F extends FieldValues, Q extends QueriesArray> =
@@ -98,6 +124,8 @@ type FormPageProps<F extends FieldValues, Q extends QueriesArray> = Omit<
   data?: Array<
     FormManagerConfig<F> | MappedItemsFunction<F, Q, FormManagerConfig<F>>
   >;
+  // NEW IN 2.0: Debounce delay for form value changes (ms, default: 300)
+  debounceDelay?: number;
 };
 
 /* ======================================================
@@ -139,16 +167,47 @@ interface PageProps<
   F extends FieldValues = FieldValues,
   Q extends QueriesArray = QueriesArray,
 > {
+  // Core identification
   id: string;
   ns?: string;
+
+  // Data management
   contents?: ContentItemsType<F, Q>;
   queries?: QueryPageConfigArray<F, Q>;
   form?: FormPageProps<F, Q>;
+
+  // Layout and view configuration
   viewSettings?: MappedItemsFunction<F, Q, ViewSettings> | ViewSettings;
+
+  // NEW IN 2.0: Metadata & SEO (generic over F and Q for dynamic metadata)
+  meta?: MetadataConfig<F, Q>;
+
+  // NEW IN 2.0: Lazy loading configuration
+  lazyLoading?: LazyLoadingConfig;
+
+  // NEW IN 2.0: Platform-specific overrides
+  platformOverrides?: PlatformOverrides<F, Q>;
+
+  // Lifecycle hooks
   onValuesChange?: MappedItemsFunction<F, Q, void>;
+
+  // Feature flags
   enableAuthControl?: boolean;
-  meta?: PageMetadataProps;
 }
+
+/**
+ * Platform-specific configuration overrides (proper type with PageProps reference)
+ * Allows different behavior on web vs React Native
+ */
+export type PlatformOverrides<
+  F extends FieldValues = FieldValues,
+  Q extends QueriesArray = QueriesArray
+> = {
+  /** Web-specific overrides (React DOM) */
+  web?: Partial<PageProps<F, Q>>;
+  /** React Native-specific overrides */
+  native?: Partial<PageProps<F, Q>>;
+};
 
 type ViewSettings = {
   withoutPadding?: boolean;
@@ -167,13 +226,8 @@ type UsePageConfigReturn = {
   formValues: any;
 };
 
-interface PageMetadataProps {
-  title?: string;
-  description?: string;
-  documentLang?: string;
-  otherMetaTags?: JSX.Element[];
-  disableIndexing?: boolean;
-}
+// Note: PageMetadataProps is now deprecated in favor of MetadataConfig
+// The old interface is kept for reference but not exported (use MetadataConfig instead)
 /* ======================================================
    PERFORMANCE OPTIMIZATION TYPES
 ====================================================== */
@@ -213,6 +267,9 @@ export interface MemoizationCacheStats {
   maxSize: number;
 }
 
+// Backward compatibility: PageMetadataProps is now MetadataConfig
+export type { MetadataConfig as PageMetadataProps } from "./config/types";
+
 export type {
   MappedItemsFunction,
   Items,
@@ -225,9 +282,17 @@ export type {
   ViewSettings,
   UsePageConfigReturn,
   MappedProps,
-  PageMetadataProps,
   QueryPageConfigArray,
+  PlatformOverrides,
 };
 
-// Re-export new configuration types from config
-export type { MetadataConfig, MetaTag, LazyLoadingConfig } from "./config/types";
+// Re-export all new configuration types from config
+export type {
+  MetadataConfig,
+  MetaTag,
+  LazyLoadingConfig,
+  OpenGraphConfig,
+  StructuredDataConfig,
+  AIHintsConfig,
+  RobotsConfig,
+} from "./config/types";

@@ -4,6 +4,9 @@
  * Platform-agnostic: works on web, React Native, and SSR
  */
 
+import { FieldValues } from "react-hook-form";
+import { QueriesArray } from "@gaddario98/react-queries";
+
 export interface MetaTag {
   /** For <meta name="..." content="..." /> */
   name?: string;
@@ -17,24 +20,109 @@ export interface MetaTag {
   id?: string;
 }
 
-export interface MetadataConfig {
+/**
+ * Open Graph Configuration (Facebook, LinkedIn, Twitter/X)
+ */
+export interface OpenGraphConfig<
+  F extends FieldValues = FieldValues,
+  Q extends QueriesArray = QueriesArray
+> {
+  type?: "website" | "article" | "product" | "profile";
+  title?: string | ((props: any) => string);
+  description?: string | ((props: any) => string);
+  /** URL to preview image (must be absolute) */
+  image?: string | ((props: any) => string);
+  /** Canonical URL */
+  url?: string | ((props: any) => string);
+  siteName?: string;
+  /** Locale (e.g., "en_US", "it_IT") */
+  locale?: string;
+}
+
+/**
+ * Structured Data Configuration (schema.org JSON-LD)
+ */
+export interface StructuredDataConfig<
+  F extends FieldValues = FieldValues,
+  Q extends QueriesArray = QueriesArray
+> {
+  type: "Article" | "Product" | "WebPage" | "FAQPage" | "Organization" | "Person";
+  schema: Record<string, any> | ((props: any) => Record<string, any>);
+}
+
+/**
+ * AI Crawler Hints (for AI search engines and LLMs)
+ */
+export interface AIHintsConfig<
+  F extends FieldValues = FieldValues,
+  Q extends QueriesArray = QueriesArray
+> {
+  /** Content classification (e.g., "documentation", "tutorial", "reference") */
+  contentClassification?: string | ((props: any) => string);
+  /** Hints for AI models (e.g., ["code-heavy", "technical"]) */
+  modelHints?: string[] | ((props: any) => string[]);
+  /** Additional context for AI understanding */
+  contextualInfo?: string | ((props: any) => string);
+}
+
+/**
+ * Robots Configuration (indexing directives)
+ */
+export interface RobotsConfig {
+  /** Prevent indexing */
+  noindex?: boolean;
+  /** Don't follow links */
+  nofollow?: boolean;
+  /** Don't cache page */
+  noarchive?: boolean;
+  /** Don't show snippets in search results */
+  nosnippet?: boolean;
+  /** Image preview size in search results */
+  maxImagePreview?: "none" | "standard" | "large";
+  /** Max snippet length in search results */
+  maxSnippet?: number;
+}
+
+/**
+ * Complete Metadata Configuration (Generic over F and Q for dynamic metadata)
+ */
+export interface MetadataConfig<
+  F extends FieldValues = FieldValues,
+  Q extends QueriesArray = QueriesArray
+> {
+  // Basic Metadata
   /** Page title - sets document.title on web */
-  title?: string;
+  title?: string | ((props: any) => string);
   /** Page description meta tag */
-  description?: string;
-  /** Keywords for SEO (converted to comma-separated string) */
-  keywords?: string[];
-  /** Open Graph image URL (must be absolute) */
+  description?: string | ((props: any) => string);
+  /** HTML lang attribute (e.g., "en", "it") */
+  documentLang?: string;
+  /** Keywords for SEO */
+  keywords?: string[] | ((props: any) => string[]);
+
+  // Open Graph (Social Media)
+  openGraph?: OpenGraphConfig<F, Q>;
+
+  // Structured Data (Search Engines)
+  structuredData?: StructuredDataConfig<F, Q>;
+
+  // AI Crawler Hints (NEW)
+  aiHints?: AIHintsConfig<F, Q>;
+
+  // Robots Meta Tags
+  robots?: RobotsConfig;
+
+  // Additional custom meta tags
+  customMeta?: MetaTag[] | ((props: any) => MetaTag[]);
+
+  // Legacy fields (backward compatibility)
+  /** @deprecated Use openGraph.image instead */
   ogImage?: string;
-  /** Open Graph title (defaults to title if not specified) */
+  /** @deprecated Use openGraph.title instead */
   ogTitle?: string;
-  /** Open Graph description (defaults to description if not specified) */
-  ogDescription?: string;
-  /** Canonical URL for the page (must be absolute) */
+  /** @deprecated Use openGraph.url instead */
   canonical?: string;
-  /** Robots directive (e.g., "index, follow", "noindex, nofollow") */
-  robots?: string;
-  /** Language code (ISO 639-1, e.g., "en", "it", "en-US") */
+  /** @deprecated Use documentLang instead */
   lang?: string;
   /** Author meta tag */
   author?: string;
@@ -42,8 +130,6 @@ export interface MetadataConfig {
   viewport?: string;
   /** Theme color for browser UI */
   themeColor?: string;
-  /** Additional custom meta tags */
-  customMeta?: MetaTag[];
 }
 
 export interface MetadataProvider {
@@ -76,4 +162,32 @@ export interface LazyLoadingConfig {
   timeout?: number;
   /** Log performance metrics for lazy loading (development only) */
   logMetrics?: boolean;
+  /** IntersectionObserver threshold (0-1, default: 0.1) */
+  intersectionThreshold?: number | number[];
+  /** IntersectionObserver root margin (default: "0px") */
+  intersectionRootMargin?: string;
 }
+
+/**
+ * Platform-specific configuration overrides
+ * Allows different behavior on web vs React Native
+ * Note: This is a partial type - it will be completed in types.ts with full PageProps type
+ */
+export interface PlatformOverrides<F extends FieldValues = FieldValues, Q extends QueriesArray = QueriesArray> {
+  /** Web-specific overrides (React DOM) */
+  web?: any; // Will be Partial<PageProps<F, Q>> when imported in types.ts
+  /** React Native-specific overrides */
+  native?: any; // Will be Partial<PageProps<F, Q>> when imported in types.ts
+}
+
+// Re-export all new configuration types
+export type {
+  MetadataConfig,
+  MetaTag,
+  OpenGraphConfig,
+  StructuredDataConfig,
+  AIHintsConfig,
+  RobotsConfig,
+  LazyLoadingConfig,
+  PlatformOverrides,
+};
