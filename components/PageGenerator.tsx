@@ -100,6 +100,9 @@ const PageGenerator = withMemo(
       id,
       onValuesChange,
       viewSettings,
+      // T074-T078: Lifecycle callbacks and custom configuration
+      lifecycleCallbacks,
+      customConfig,
     } = selectedProps;
 
     const { t, i18n } = useTranslation(ns);
@@ -121,6 +124,9 @@ const PageGenerator = withMemo(
       onValuesChange,
       ns: ns ?? "",
       viewSettings,
+      // T075, T083: Pass lifecycle callbacks and custom config
+      lifecycleCallbacks,
+      customConfig,
     });
 
     const { handleRefresh, hasQueries, isLoading, mappedViewSettings } = config;

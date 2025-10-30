@@ -18,6 +18,8 @@ import { usePageQueries } from "./usePageQueries";
 import { useViewSettings } from "./useViewSettings";
 import { useFormData } from "./useFormData";
 import { usePlatformAdapter } from "./usePlatformAdapter";
+import { useLifecycleCallbacks, type LifecycleCallbacks } from "./useLifecycleCallbacks";
+import { deepMerge } from "../utils/merge";
 
 const EMPTY_ARRAY: [] = [];
 
@@ -30,6 +32,9 @@ export const usePageConfig = <F extends FieldValues, Q extends QueriesArray>({
   meta,
   lazyLoading,
   platformOverrides,
+  // T074-T078: Lifecycle callbacks and enhanced configuration
+  lifecycleCallbacks,
+  customConfig,
 }: {
   queries: QueryPageConfigArray<F,Q>;
   form?: FormPageProps<F, Q>;
@@ -40,6 +45,9 @@ export const usePageConfig = <F extends FieldValues, Q extends QueriesArray>({
   meta?: MetadataConfig<F, Q>;
   lazyLoading?: LazyLoadingConfig;
   platformOverrides?: PlatformOverrides<F, Q>;
+  // NEW IN 2.1: Lifecycle callbacks and custom configuration merging (T074-T083)
+  lifecycleCallbacks?: LifecycleCallbacks<F, Q>;
+  customConfig?: Record<string, any>;
 }) => {
   // All hooks must be called first in consistent order
   const { formControl, formValues, setValue } = useFormPage<F, Q>({ form });
@@ -168,7 +176,69 @@ export const usePageConfig = <F extends FieldValues, Q extends QueriesArray>({
     setValue,
   ]);
 
-  return {
+  // T075: Fire onMountComplete callback when all required queries resolve
+  const lifecycleCallbacksConfig = useLifecycleCallbacks(lifecycleCallbacks);
+
+  useEffect(() => {
+    if (isAllQueryMapped && lifecycleCallbacksConfig.onMountComplete) {
+      lifecycleCallbacksConfig.onMountComplete({
+        formValues,
+        setValue,
+        allQuery: allQuery ?? {},
+        allMutation,
+        ns,
+      }).catch((error) => {
+        if (process.env.NODE_ENV === 'development') {
+          console.error('[usePageConfig] onMountComplete error:', error);
+        }
+      });
+    }
+  }, [isAllQueryMapped, lifecycleCallbacksConfig, formValues, setValue, allQuery, allMutation, ns]);
+
+  // T083: Merge custom configuration with defaults (deep merge)
+  const mergedConfig = useMemo(() => {
+    if (!customConfig) {
+      return {
+        formData,
+        isAllQueryMapped,
+        formValues,
+        formControl,
+        hasQueries,
+        handleRefresh,
+        allMutation,
+        allQuery,
+        setValue,
+        form,
+        mappedViewSettings: resolvedViewSettings,
+        isLoading,
+        meta: resolvedMeta,
+        lazyLoading: resolvedLazyLoading,
+        platformAdapter,
+      };
+    }
+
+    return deepMerge(
+      {
+        formData,
+        isAllQueryMapped,
+        formValues,
+        formControl,
+        hasQueries,
+        handleRefresh,
+        allMutation,
+        allQuery,
+        setValue,
+        form,
+        mappedViewSettings: resolvedViewSettings,
+        isLoading,
+        meta: resolvedMeta,
+        lazyLoading: resolvedLazyLoading,
+        platformAdapter,
+      },
+      customConfig
+    );
+  }, [
+    customConfig,
     formData,
     isAllQueryMapped,
     formValues,
@@ -179,11 +249,12 @@ export const usePageConfig = <F extends FieldValues, Q extends QueriesArray>({
     allQuery,
     setValue,
     form,
-    mappedViewSettings: resolvedViewSettings, // Use resolved view settings with platform overrides
+    resolvedViewSettings,
     isLoading,
-    // NEW IN 2.0: Return resolved metadata and lazy loading configuration
-    meta: resolvedMeta,
-    lazyLoading: resolvedLazyLoading,
-    platformAdapter, // Expose platform adapter for components to use
-  };
+    resolvedMeta,
+    resolvedLazyLoading,
+    platformAdapter,
+  ]);
+
+  return mergedConfig;
 };
