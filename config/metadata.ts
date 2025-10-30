@@ -80,7 +80,54 @@ export const setMetadata = (config: MetadataConfig): void => {
     });
   }
 
-  // Set Open Graph meta tags
+  // Set Open Graph meta tags (T059)
+  if (config.openGraph) {
+    const og = config.openGraph;
+
+    if (og.title) {
+      updateOrCreateMeta('meta[property="og:title"]', og.title, {
+        property: "og:title",
+      });
+    }
+
+    if (og.description) {
+      updateOrCreateMeta('meta[property="og:description"]', og.description, {
+        property: "og:description",
+      });
+    }
+
+    if (og.image) {
+      updateOrCreateMeta('meta[property="og:image"]', og.image, {
+        property: "og:image",
+      });
+    }
+
+    if (og.url) {
+      updateOrCreateMeta('meta[property="og:url"]', og.url, {
+        property: "og:url",
+      });
+    }
+
+    if (og.type) {
+      updateOrCreateMeta('meta[property="og:type"]', og.type, {
+        property: "og:type",
+      });
+    }
+
+    if (og.siteName) {
+      updateOrCreateMeta('meta[property="og:site_name"]', og.siteName, {
+        property: "og:site_name",
+      });
+    }
+
+    if (og.locale) {
+      updateOrCreateMeta('meta[property="og:locale"]', og.locale, {
+        property: "og:locale",
+      });
+    }
+  }
+
+  // Backward compatibility: legacy ogImage, ogTitle, ogDescription
   if (config.ogImage) {
     updateOrCreateMeta('meta[property="og:image"]', config.ogImage, {
       property: "og:image",
@@ -101,11 +148,74 @@ export const setMetadata = (config: MetadataConfig): void => {
     );
   }
 
-  // Set robots directive
+  // Set robots directive (T062)
   if (config.robots) {
-    updateOrCreateMeta('meta[name="robots"]', config.robots, {
+    const robotsValue = typeof config.robots === 'string'
+      ? config.robots
+      : [
+          config.robots.noindex ? 'noindex' : 'index',
+          config.robots.nofollow ? 'nofollow' : 'follow',
+          config.robots.noarchive && 'noarchive',
+          config.robots.nosnippet && 'nosnippet',
+          config.robots.maxImagePreview && `max-image-preview:${config.robots.maxImagePreview}`,
+          config.robots.maxSnippet && `max-snippet:${config.robots.maxSnippet}`,
+        ].filter(Boolean).join(', ');
+
+    updateOrCreateMeta('meta[name="robots"]', robotsValue, {
       name: "robots",
     });
+  }
+
+  // Set structured data JSON-LD (T060)
+  if (config.structuredData) {
+    const schemaScriptId = 'react-pages-schema-org';
+    let scriptElement = document.querySelector(`script[id="${schemaScriptId}"]`) as HTMLScriptElement;
+
+    if (!scriptElement) {
+      scriptElement = document.createElement('script');
+      scriptElement.type = 'application/ld+json';
+      scriptElement.id = schemaScriptId;
+      document.head.appendChild(scriptElement);
+    }
+
+    scriptElement.textContent = JSON.stringify(config.structuredData);
+  }
+
+  // Set AI crawler hints (T061)
+  if (config.aiHints) {
+    const hints = config.aiHints;
+
+    if (hints.contentClassification) {
+      updateOrCreateMeta(
+        'meta[name="ai-content-classification"]',
+        hints.contentClassification,
+        { name: 'ai-content-classification' }
+      );
+    }
+
+    if (hints.modelHints) {
+      updateOrCreateMeta(
+        'meta[name="ai-model-hints"]',
+        hints.modelHints,
+        { name: 'ai-model-hints' }
+      );
+    }
+
+    if (hints.contextualInfo) {
+      updateOrCreateMeta(
+        'meta[name="ai-context"]',
+        hints.contextualInfo,
+        { name: 'ai-context' }
+      );
+    }
+
+    if (hints.excludeFromIndexing) {
+      updateOrCreateMeta(
+        'meta[name="ai-exclude-from-indexing"]',
+        'true',
+        { name: 'ai-exclude-from-indexing' }
+      );
+    }
   }
 
   // Set canonical link
@@ -124,7 +234,7 @@ export const setMetadata = (config: MetadataConfig): void => {
     document.documentElement.lang = config.lang;
   }
 
-  // Set custom meta tags
+  // Set custom meta tags (T063)
   config.customMeta?.forEach((tag) => {
     const selector = tag.id
       ? `meta[id="${tag.id}"]`
@@ -149,8 +259,45 @@ export const setMetadata = (config: MetadataConfig): void => {
 };
 
 /**
- * Get current metadata configuration
- * Useful for SSR, testing, and debugging
+ * Get current metadata configuration (T073)
+ * Useful for SSR framework integration, testing, and debugging
+ *
+ * @example SSR with Next.js App Router
+ * ```typescript
+ * import { getMetadata } from '@gaddario98/react-pages';
+ *
+ * export async function generateMetadata() {
+ *   const metadata = getMetadata();
+ *   return {
+ *     title: metadata.title,
+ *     description: metadata.description,
+ *     openGraph: {
+ *       title: metadata.openGraph?.title,
+ *       description: metadata.openGraph?.description,
+ *       images: metadata.openGraph?.image ? [metadata.openGraph.image] : undefined,
+ *       url: metadata.openGraph?.url,
+ *       type: metadata.openGraph?.type as any,
+ *       locale: metadata.openGraph?.locale,
+ *       siteName: metadata.openGraph?.siteName,
+ *     },
+ *   };
+ * }
+ * ```
+ *
+ * @example SSR with Remix
+ * ```typescript
+ * import { getMetadata } from '@gaddario98/react-pages';
+ *
+ * export const meta: MetaFunction = () => {
+ *   const metadata = getMetadata();
+ *   return [
+ *     { title: metadata.title },
+ *     { name: 'description', content: metadata.description },
+ *     { property: 'og:title', content: metadata.openGraph?.title },
+ *     { property: 'og:description', content: metadata.openGraph?.description },
+ *   ];
+ * };
+ * ```
  */
 export const getMetadata = (): MetadataConfig => {
   return { ...currentMetadata };

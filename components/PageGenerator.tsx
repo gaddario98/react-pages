@@ -12,6 +12,7 @@ import { usePageConfig } from "../hooks";
 import { PlatformAdapterProvider } from "../config/PlatformAdapterProvider";
 import { defaultAdapter } from "../config/platformAdapters";
 import { validateAndLogPageProps } from "../utils/validation";
+import { MetadataManager } from "./MetadataManager";
 
 /**
  * Renders page metadata using react-helmet-async
@@ -153,6 +154,16 @@ const PageGenerator = withMemo(
       () => (
         <>
           <PageMetadata {...pageMetadata} />
+          {/* T066: Integrate MetadataManager for dynamic metadata updates */}
+          <MetadataManager<F, Q>
+            meta={meta}
+            formValues={config.formValues}
+            allQuery={config.allQuery}
+            allMutation={config.allMutation}
+            setValue={config.setValue}
+            ns={ns}
+            pageId={id}
+          />
           <GlobalPageConfig.HeaderContainer<F, Q>
             allContents={allContents}
             handleRefresh={handleRefresh}
@@ -169,6 +180,11 @@ const PageGenerator = withMemo(
       ),
       [
         pageMetadata,
+        meta,
+        config.formValues,
+        config.allQuery,
+        config.allMutation,
+        config.setValue,
         allContents,
         handleRefresh,
         hasQueries,
@@ -176,6 +192,7 @@ const PageGenerator = withMemo(
         id,
         header,
         isLoading,
+        ns,
       ]
     );
 
