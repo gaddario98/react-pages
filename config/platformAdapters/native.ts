@@ -82,9 +82,39 @@ export const nativeAdapter: PlatformAdapter = {
         // Not available in React Native
         return false;
 
+      // T102: React Native lazy loading features
+      case 'conditionalLazyLoading':
+        // Can evaluate conditions based on app state
+        return true;
+
+      case 'viewportLazyLoading':
+      case 'interactionLazyLoading':
+      case 'componentPreloading':
+        // Limited support on React Native (would need ViewabilityConfig for FlatList)
+        return false;
+
       default:
         return false;
     }
+  },
+
+  // T102: React Native lazy loading configuration
+  getLazyLoadingConfig() {
+    return {
+      // Metro bundler handles code splitting via async requires
+      useInteractionObserver: false, // Not available on React Native
+      // Conditional triggers work on React Native via app state
+      supportConditionalTriggers: true,
+      // ViewabilityConfig for FlatList/VirtualizedList integration
+      useViewabilityConfig: true,
+      viewabilityConfig: {
+        itemVisiblePercentThreshold: 50,
+      },
+      // No requestIdleCallback on React Native
+      useRequestIdleCallback: false,
+      // Use timeout-based preloading instead
+      preloadDelay: 0,
+    };
   },
 };
 

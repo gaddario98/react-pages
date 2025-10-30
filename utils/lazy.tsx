@@ -12,6 +12,10 @@ export interface LazyLoadConfig {
   suspenseFallback?: ReactNode;
   /** Custom error boundary component */
   errorBoundary?: ComponentType<{ error: Error; retry: () => void }>;
+  /** T095: Custom Suspense fallback factory function for dynamic fallbacks */
+  fallbackFactory?: (componentName: string) => ReactNode;
+  /** T095: Timeout in ms to show fallback (useful for fast components) */
+  fallbackDelay?: number;
 }
 
 /**
@@ -230,4 +234,97 @@ class ErrorBoundary extends React.Component<
     }
     return this.props.children;
   }
+}
+
+/**
+ * T095: Hook to preload a lazy component on demand
+ * Useful for imperative preloading scenarios
+ *
+ * @example
+ * ```tsx
+ * function MyComponent() {
+ *   const preload = usePreloadLazy(HeavyComponent);
+ *
+ *   return (
+ *     <button onMouseEnter={preload}>
+ *       Hover to preload
+ *     </button>
+ *   );
+ * }
+ * ```
+ */
+export function usePreloadLazy<P extends Record<string, any>>(
+  component: ComponentType<P> & { preload?: () => Promise<any> }
+) {
+  return React.useCallback(() => {
+    if (component.preload) {
+      component.preload();
+    }
+  }, [component]);
+}
+
+/**
+ * T095: Hook to preload multiple lazy components
+ * Useful for preloading a set of components before user navigation
+ *
+ * @example
+ * ```tsx
+ * function Navigation() {
+ *   usePreloadLazyBatch([UserList, UserDetail, UserForm]);
+ *
+ *   return <nav>...</nav>;
+ * }
+ * ```
+ */
+export function usePreloadLazyBatch(
+  components: Array<ComponentType<any> & { preload?: () => Promise<any> }>
+) {
+  return React.useCallback(() => {
+    components.forEach(component => {
+      if (component.preload) {
+        component.preload();
+      }
+    });
+  }, [components]);
+}
+
+/**
+ * T095: Hook to preload lazy components on viewport intersection
+ * Useful for preloading components that are likely to be scrolled into view
+ *
+ * @example
+ * ```tsx
+ * function LazySection() {
+ *   const ref = usePreloadOnViewport(ExpensiveComponent);
+ *
+ *   return <div ref={ref}>Content goes here</div>;
+ * }
+ * ```
+ */
+export function usePreloadOnViewport<P extends Record<string, any>>(
+  component: ComponentType<P> & { preload?: () => Promise<any> }
+) {
+  const ref = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    if (!ref.current || !component.preload) return;
+
+    const observer = new IntersectionObserver(
+      entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            component.preload?.();
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+
+    observer.observe(ref.current);
+
+    return () => observer.disconnect();
+  }, [component]);
+
+  return ref;
 }

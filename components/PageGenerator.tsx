@@ -12,6 +12,7 @@ import { usePageConfig } from "../hooks";
 import { PlatformAdapterProvider } from "../config/PlatformAdapterProvider";
 import { defaultAdapter } from "../config/platformAdapters";
 import { validateAndLogPageProps } from "../utils/validation";
+import { validatePagePropsLazy, logLazyValidationErrors } from "../utils/lazyValidation";
 import { MetadataManager } from "./MetadataManager";
 
 /**
@@ -76,6 +77,10 @@ const PageGenerator = withMemo(
     useEffect(() => {
       if (process.env.NODE_ENV === 'development') {
         validateAndLogPageProps({ ...props, meta, enableAuthControl });
+
+        // T098: Validate lazy loading configuration
+        const lazyValidation = validatePagePropsLazy({ ...props, meta, enableAuthControl });
+        logLazyValidationErrors(lazyValidation, `Page: ${props.id}`);
       }
     }, [props, meta, enableAuthControl]);
 
