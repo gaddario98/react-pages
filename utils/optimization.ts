@@ -1,3 +1,5 @@
+import equal from 'fast-deep-equal';
+
 /**
  * Optimized shallow equality check for objects and functions
  * @param objA - First object to compare
@@ -79,32 +81,13 @@ export function memoPropsComparator<P extends Record<string, any>>(
 /**
  * Deep equality check for complex objects
  * Use sparingly - prefer shallow equality for performance
+ * Uses fast-deep-equal library for optimized deep comparison with circular reference protection
  * @param objA - First object
  * @param objB - Second object
  * @returns True if objects are deeply equal
  */
 export function deepEqual(objA: any, objB: any): boolean {
-  if (objA === objB) return true;
-
-  if (!objA || !objB) return false;
-
-  if (typeof objA !== 'object' || typeof objB !== 'object') {
-    return objA === objB;
-  }
-
-  if (Array.isArray(objA) !== Array.isArray(objB)) return false;
-
-  const keysA = Object.keys(objA);
-  const keysB = Object.keys(objB);
-
-  if (keysA.length !== keysB.length) return false;
-
-  for (const key of keysA) {
-    if (!keysB.includes(key)) return false;
-    if (!deepEqual(objA[key], objB[key])) return false;
-  }
-
-  return true;
+  return equal(objA, objB);
 }
 
 /**
