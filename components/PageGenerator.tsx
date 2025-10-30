@@ -30,21 +30,31 @@ const PageMetadata = ({
   otherMetaTags,
   disableIndexing,
 }: PageMetadataProps) => {
+  // Evaluate dynamic metadata functions (pass empty context for now)
+  const emptyContext = { formValues: {}, allQuery: {}, allMutation: {}, setValue: () => {} };
+  const resolvedTitle = typeof title === 'function' ? title(emptyContext) : title || pageConfig.meta?.title || "";
+  const resolvedDescription = typeof description === 'function' ? description(emptyContext) : description || pageConfig.meta?.description || "";
+
+  // Handle otherMetaTags if it's a function
+  const resolvedTags = typeof otherMetaTags === 'function' ? otherMetaTags(emptyContext) : otherMetaTags;
+
   return (
     <Helmet>
       <html lang={documentLang} />
-      <title>{title || pageConfig.meta?.title || ""}</title>
+      <title>{resolvedTitle}</title>
       {
         <meta
           name="description"
-          content={description || pageConfig.meta?.description || ""}
+          content={resolvedDescription}
         />
       }
       <meta
         name="robots"
         content={disableIndexing ? "noindex, nofollow" : "index, follow"}
       />
-      {otherMetaTags}
+      {Array.isArray(resolvedTags) && resolvedTags.map((tag, idx) => (
+        <meta key={tag.id || idx} {...tag} />
+      ))}
     </Helmet>
   );
 };

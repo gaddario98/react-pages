@@ -252,3 +252,74 @@ export function deepEqual(obj1: any, obj2: any): boolean {
 
   return true;
 }
+
+/**
+ * Stable Cache for memoizing objects across renders
+ * Prevents unnecessary object creation in hooks
+ *
+ * @example
+ * ```typescript
+ * const cache = useRef(new StableCache<FormConfig>());
+ * const formConfig = cache.current.getOrSet('key', () => createConfig());
+ * ```
+ */
+export class StableCache<T> {
+  private cache: Map<string, T> = new Map();
+
+  /**
+   * Get value from cache, or set it if not present
+   * @param key - Cache key
+   * @param factory - Function to create value if not cached
+   * @returns Cached or newly created value
+   */
+  getOrSet(key: string, factory: () => T): T {
+    if (this.cache.has(key)) {
+      return this.cache.get(key)!;
+    }
+    const value = factory();
+    this.cache.set(key, value);
+    return value;
+  }
+
+  /**
+   * Get value from cache
+   * @param key - Cache key
+   * @returns Cached value or undefined
+   */
+  get(key: string): T | undefined {
+    return this.cache.get(key);
+  }
+
+  /**
+   * Set value in cache
+   * @param key - Cache key
+   * @param value - Value to cache
+   */
+  set(key: string, value: T): void {
+    this.cache.set(key, value);
+  }
+
+  /**
+   * Check if key exists in cache
+   * @param key - Cache key
+   * @returns True if key exists
+   */
+  has(key: string): boolean {
+    return this.cache.has(key);
+  }
+
+  /**
+   * Clear all cached values
+   */
+  clear(): void {
+    this.cache.clear();
+  }
+
+  /**
+   * Get cache size
+   * @returns Number of cached items
+   */
+  size(): number {
+    return this.cache.size;
+  }
+}

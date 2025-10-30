@@ -63,6 +63,8 @@ export interface AIHintsConfig<
   modelHints?: string[] | ((props: any) => string[]);
   /** Additional context for AI understanding */
   contextualInfo?: string | ((props: any) => string);
+  /** Exclude this page from AI crawler indexing */
+  excludeFromIndexing?: boolean;
 }
 
 /**

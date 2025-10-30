@@ -295,7 +295,6 @@ export type {
   UsePageConfigReturn,
   MappedProps,
   QueryPageConfigArray,
-  PlatformOverrides,
 };
 
 // Re-export all new configuration types from config
