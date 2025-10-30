@@ -191,6 +191,18 @@ interface PageProps<
   // Lifecycle hooks
   onValuesChange?: MappedItemsFunction<F, Q, void>;
 
+  // NEW IN 2.0: Complete lifecycle callbacks (T074-T078)
+  lifecycleCallbacks?: {
+    onMountComplete?: (context: any) => void | Promise<void>;
+    onQuerySuccess?: (context: any, queryKey: string, data: any) => void | Promise<void>;
+    onQueryError?: (context: any, queryKey: string, error: Error) => void | Promise<void>;
+    onFormSubmit?: (context: any, result: any) => void | Promise<void>;
+    onValuesChange?: MappedItemsFunction<F, Q, void>;
+  };
+
+  // NEW IN 2.0: Custom configuration for extensibility (T083)
+  customConfig?: Record<string, any>;
+
   // Feature flags
   enableAuthControl?: boolean;
 }

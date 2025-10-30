@@ -115,6 +115,12 @@ export interface MetadataConfig<
   // Additional custom meta tags
   customMeta?: MetaTag[] | ((props: any) => MetaTag[]);
 
+  // Additional meta tags (alias for customMeta for backward compatibility)
+  otherMetaTags?: MetaTag[] | ((props: any) => MetaTag[]);
+
+  // Disable search engine indexing
+  disableIndexing?: boolean;
+
   // Legacy fields (backward compatibility)
   /** @deprecated Use openGraph.image instead */
   ogImage?: string;
@@ -162,10 +168,20 @@ export interface LazyLoadingConfig {
   timeout?: number;
   /** Log performance metrics for lazy loading (development only) */
   logMetrics?: boolean;
+  /** IntersectionObserver threshold (0-1, default: 0.1) - alias for intersectionThreshold */
+  threshold?: number | number[];
   /** IntersectionObserver threshold (0-1, default: 0.1) */
   intersectionThreshold?: number | number[];
-  /** IntersectionObserver root margin (default: "0px") */
+  /** IntersectionObserver root margin (default: "100px") - alias for intersectionRootMargin */
+  rootMargin?: string;
+  /** IntersectionObserver root margin (default: "100px") */
   intersectionRootMargin?: string;
+  /** Trigger type for lazy loading: viewport (IntersectionObserver), interaction (manual), or conditional (based on function) */
+  trigger?: "viewport" | "interaction" | "conditional";
+  /** Conditional function to determine if content should load (for trigger: "conditional") */
+  condition?: (props: any) => boolean;
+  /** Placeholder component to show before lazy content loads */
+  placeholder?: React.ReactNode;
 }
 
 /**
@@ -179,15 +195,3 @@ export interface PlatformOverrides<F extends FieldValues = FieldValues, Q extend
   /** React Native-specific overrides */
   native?: any; // Will be Partial<PageProps<F, Q>> when imported in types.ts
 }
-
-// Re-export all new configuration types
-export type {
-  MetadataConfig,
-  MetaTag,
-  OpenGraphConfig,
-  StructuredDataConfig,
-  AIHintsConfig,
-  RobotsConfig,
-  LazyLoadingConfig,
-  PlatformOverrides,
-};
