@@ -228,3 +228,6 @@ export type {
   PageMetadataProps,
   QueryPageConfigArray,
 };
+
+// Re-export new configuration types from config
+export type { MetadataConfig, MetaTag, LazyLoadingConfig } from "./config/types";

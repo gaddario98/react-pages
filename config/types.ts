@@ -54,3 +54,26 @@ export interface MetadataProvider {
   /** Reset all metadata to defaults */
   resetMetadata: () => void;
 }
+
+/**
+ * Configuration for lazy loading and code splitting behavior
+ * Enables deferred component loading to reduce initial bundle size
+ */
+export interface LazyLoadingConfig {
+  /** Enable lazy loading (default: true) */
+  enabled?: boolean;
+  /** Preload on hover for interactive elements (default: false) */
+  preloadOnHover?: boolean;
+  /** Preload on focus for keyboard navigation (default: false) */
+  preloadOnFocus?: boolean;
+  /** Preload after render with delay (in ms, default: undefined - no delay) */
+  preloadAfterRender?: number;
+  /** Fallback component to show while loading (default: null) */
+  suspenseFallback?: React.ReactNode;
+  /** Custom error boundary component for lazy-loaded modules */
+  errorBoundary?: React.ComponentType<{ error: Error; retry: () => void }>;
+  /** Maximum time to wait before showing error state (in ms, default: 30000) */
+  timeout?: number;
+  /** Log performance metrics for lazy loading (development only) */
+  logMetrics?: boolean;
+}

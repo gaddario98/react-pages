@@ -40,4 +40,15 @@ const configs = createMultiEntryConfig(pkg, entries, {
 //   })
 // );
 
+// Code splitting is handled by multiple entry points defined above:
+// - index: Main entry (includes everything)
+// - components: Component exports only
+// - hooks: Hook exports only
+// - config: Configuration singleton
+// - utils: Utility functions
+//
+// Each entry point is built separately, enabling tree-shaking in consumer bundles.
+// Consumers can import from specific entry points to reduce bundle size:
+//   import { lazyWithPreload } from '@gaddario98/react-pages/utils';
+
 export default configs;

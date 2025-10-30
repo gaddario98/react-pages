@@ -127,14 +127,14 @@
 
 ### Implementation for User Story 2
 
-- [ ] T026 [P] [US2] Audit hooks/usePageConfig.tsx dependency arrays - remove over-inclusive dependencies
-- [ ] T027 [P] [US2] Audit hooks/useFormData.ts dependency arrays - ensure no object/array literals
-- [ ] T028 [P] [US2] Audit hooks/useViewSettings.ts dependency arrays - track only used form fields
-- [ ] T029 [P] [US2] Audit hooks/useDataExtractor.tsx dependency arrays - prevent dependency thrash
-- [ ] T030 [P] [US2] Audit hooks/useGenerateContent.tsx dependency arrays - optimize content generation
-- [ ] T031 [P] [US2] Audit hooks/useGenerateContentRender.tsx dependency arrays - stabilize render props
-- [ ] T032 [US2] Update utils/optimization.ts with hook dependency validation helpers (if needed)
-- [ ] T033 [US2] Document hook optimization patterns in code comments for maintainability
+- [x] T026 [P] [US2] Audit hooks/usePageConfig.tsx dependency arrays - remove over-inclusive dependencies
+- [x] T027 [P] [US2] Audit hooks/useFormData.ts dependency arrays - ensure no object/array literals
+- [x] T028 [P] [US2] Audit hooks/useViewSettings.ts dependency arrays - track only used form fields
+- [x] T029 [P] [US2] Audit hooks/useDataExtractor.tsx dependency arrays - prevent dependency thrash
+- [x] T030 [P] [US2] Audit hooks/useGenerateContent.tsx dependency arrays - optimize content generation
+- [x] T031 [P] [US2] Audit hooks/useGenerateContentRender.tsx dependency arrays - stabilize render props
+- [x] T032 [US2] Update utils/optimization.ts with hook dependency validation helpers (if needed)
+- [x] T033 [US2] Document hook optimization patterns in code comments for maintainability
 
 **Checkpoint**: At this point, User Stories 1 AND 2 should both work independently - hooks are optimized for stability
 
@@ -148,18 +148,18 @@
 
 ### Implementation for User Story 3
 
-- [ ] T034 [P] [US3] Audit all imports in hooks/ for targeted imports (avoid `import *` patterns)
-- [ ] T035 [P] [US3] Audit all imports in components/ for targeted imports
-- [ ] T036 [P] [US3] Audit all imports in utils/ for targeted imports
-- [ ] T037 [P] [US3] Audit all imports in config/ for targeted imports
-- [ ] T038 [P] [US3] Verify hooks/index.ts exports are tree-shakeable (pure re-exports)
-- [ ] T039 [P] [US3] Verify components/index.ts exports are tree-shakeable
-- [ ] T040 [P] [US3] Verify utils/index.ts exports are tree-shakeable
-- [ ] T041 [P] [US3] Verify config/index.ts has no side effects at module load time
-- [ ] T042 [US3] Update config/index.ts if pageConfig singleton initialization causes side effects (make lazy)
-- [ ] T043 [US3] Run build and analyze bundle with rollup-plugin-visualizer - verify tree-shaking works
-- [ ] T044 [US3] Measure gzipped bundle sizes - ensure < 50 KB main, < 20 KB per-module (SC-006)
-- [ ] T045 [US3] Document bundle size targets in README or CONTRIBUTING guide
+- [x] T034 [P] [US3] Audit all imports in hooks/ for targeted imports (avoid `import *` patterns)
+- [x] T035 [P] [US3] Audit all imports in components/ for targeted imports
+- [x] T036 [P] [US3] Audit all imports in utils/ for targeted imports
+- [x] T037 [P] [US3] Audit all imports in config/ for targeted imports
+- [x] T038 [P] [US3] Verify hooks/index.ts exports are tree-shakeable (pure re-exports)
+- [x] T039 [P] [US3] Verify components/index.ts exports are tree-shakeable
+- [x] T040 [P] [US3] Verify utils/index.ts exports are tree-shakeable
+- [x] T041 [P] [US3] Verify config/index.ts has side effects at module load time (singleton + metadata)
+- [x] T042 [US3] Update config/index.ts to make pageConfig singleton initialization lazy (defer initialization)
+- [x] T043 [US3] Run build and analyze bundle with rollup-plugin-visualizer - verify tree-shaking works
+- [x] T044 [US3] Measure gzipped bundle sizes - ensure < 50 KB main, < 20 KB per-module (SC-006)
+- [x] T045 [US3] Document bundle size targets in README or CONTRIBUTING guide
 
 **Checkpoint**: All user stories should now be independently functional - bundle size optimized for production
 
@@ -173,12 +173,12 @@
 
 ### Implementation for User Story 4
 
-- [ ] T046 [P] [US4] Create utils/lazy.ts with lazyWithPreload utility function
-- [ ] T047 [US4] Update utils/index.ts to export lazy loading utilities
-- [ ] T048 [P] [US4] Add lazy loading configuration types to config/types.ts
-- [ ] T049 [US4] Update config/index.ts pageConfig with lazyLoading settings (enabled, preloadOnHover, suspenseFallback)
-- [ ] T050 [P] [US4] Document lazy loading usage patterns in code comments or README
-- [ ] T051 [US4] Update rollup.config.js for code splitting support (manualChunks if needed)
+- [x] T046 [P] [US4] Create utils/lazy.tsx with lazyWithPreload utility function
+- [x] T047 [US4] Update utils/index.ts to export lazy loading utilities
+- [x] T048 [P] [US4] Add lazy loading configuration types to config/types.ts
+- [x] T049 [US4] Update config/index.ts pageConfig with lazyLoading settings (enabled, preloadOnHover, suspenseFallback)
+- [x] T050 [P] [US4] Document lazy loading usage patterns in code comments or README
+- [x] T051 [US4] Update rollup.config.js for code splitting support (manualChunks if needed)
 
 **Checkpoint**: All user stories should now be independently functional - advanced lazy loading available
 
@@ -188,15 +188,15 @@
 
 **Purpose**: Improvements that affect multiple user stories and final cleanup
 
-- [ ] T052 [P] Update README.md to document custom metadata API (replaces react-helmet-async)
-- [ ] T053 [P] Update README.md to document performance optimization features
-- [ ] T054 [P] Create migration guide for react-helmet-async removal in CHANGELOG or docs
-- [ ] T055 [P] Document React Compiler integration and babel configuration requirements
-- [ ] T056 [P] Update package.json version to 1.1.0 (MINOR bump per constitution - new exports, backward compatible)
-- [ ] T057 Run build with npm run build - verify zero Rollup warnings (SC-007)
-- [ ] T058 Verify React Native compatibility - ensure no web-only APIs used (FR-016)
-- [ ] T059 [P] Update types.ts exports to include all new types (MetadataConfig, DependencyGraph, etc.)
-- [ ] T060 Final bundle size verification - create test apps for full/hooks-only/components-only imports
+- [x] T052 [P] Update README.md to document custom metadata API (replaces react-helmet-async)
+- [x] T053 [P] Update README.md to document performance optimization features
+- [x] T054 [P] Create migration guide for react-helmet-async removal in CHANGELOG or docs
+- [x] T055 [P] Document React Compiler integration and babel configuration requirements
+- [x] T056 [P] Update package.json version to 1.1.0 (MINOR bump per constitution - new exports, backward compatible)
+- [x] T057 Run build with npm run build - verify zero Rollup warnings (SC-007)
+- [x] T058 Verify React Native compatibility - ensure no web-only APIs used (FR-016)
+- [x] T059 [P] Update types.ts exports to include all new types (MetadataConfig, DependencyGraph, etc.)
+- [x] T060 Final bundle size verification - create test apps for full/hooks-only/components-only imports
 
 ---
 
