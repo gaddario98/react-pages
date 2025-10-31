@@ -52,8 +52,8 @@ export function useFormData<F extends FieldValues, Q extends QueriesArray>({
       ?.map((el, i) => ({ ...el, key: el.key ?? i })) ?? [];
 
     return processedData.map(item => {
-      const keyStr = String(item.key);
-      return formDataCache.current.getOrSet(keyStr, { ...item, key: keyStr });
+      const keyStr = String((item as any).key);
+      return formDataCache.current.getOrSet(keyStr, { ...item as any, key: keyStr });
     });
   }, [
     form?.data,
@@ -79,8 +79,8 @@ export function useFormData<F extends FieldValues, Q extends QueriesArray>({
     )?.map((el, i) => ({ ...el, key: el.key ?? i })) ?? [];
 
     return processedSubmit.map(item => {
-      const keyStr = String(item.key);
-      return formSubmitCache.current.getOrSet(keyStr, { ...item, key: keyStr });
+      const keyStr = String((item as any).key);
+      return formSubmitCache.current.getOrSet(keyStr, { ...item as any, key: keyStr });
     });
   }, [
     isAllQueryMapped,

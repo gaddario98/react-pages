@@ -122,9 +122,8 @@ export const LazyContent = React.memo(
         try {
           const conditionResult = lazyConfig.condition({
             formValues: formValues ?? ({} as F),
-            allQuery: allQuery ?? {},
+            allQuery: allQuery ?? ({} as any),
             allMutation: allMutation ?? ({} as any),
-            setValue: setValue ?? ((() => {}) as any),
           });
           return conditionResult;
         } catch (e) {
@@ -154,13 +153,10 @@ export const LazyContent = React.memo(
         return null;
       }
 
-      return lazy(
-        () => Promise.resolve({ default: Component }),
-        {
-          suspenseFallback: fallback,
-        }
-      );
-    }, [shouldLoad, Component, fallback]);
+      return React.lazy(
+        () => Promise.resolve({ default: Component })
+      ) as React.ComponentType<any>;
+    }, [shouldLoad, Component]);
 
     const handleInteraction = () => {
       if (lazyConfig?.trigger === 'interaction' && !isVisible) {
@@ -177,15 +173,15 @@ export const LazyContent = React.memo(
     // Placeholder to maintain layout (T097)
     if (!shouldLoad && showPlaceholder) {
       const placeholder = lazyConfig?.placeholder;
-      if (placeholder) {
+      if (placeholder && typeof placeholder === 'object' && 'style' in placeholder) {
         return (
           <div
             ref={lazyConfig?.trigger === 'viewport' ? viewportRef : undefined}
             onMouseEnter={handleInteraction}
             onClick={handleInteraction}
-            style={placeholder.style}
+            style={(placeholder as any).style}
           >
-            {placeholder.content}
+            {(placeholder as any).content}
           </div>
         );
       }
@@ -246,19 +242,6 @@ export const LazyContent = React.memo(
 
 LazyContent.displayName = 'LazyContent';
 
-/**
- * Helper function to create lazy components
- * Simplified lazy loading with sensible defaults
- * @param importFn - Function that returns import promise
- * @param options - Lazy loading options
- * @returns Lazy component
- */
-function lazy<P extends object>(
-  importFn: () => Promise<{ default: React.ComponentType<P> }>,
-  options?: { suspenseFallback?: ReactNode }
-): React.ComponentType<P> {
-  return React.lazy(() => importFn());
-}
 
 /**
  * Helper to create a lazy version of a component
@@ -270,5 +253,5 @@ function lazy<P extends object>(
 export function createLazyComponent<P extends object>(
   importFn: () => Promise<{ default: React.ComponentType<P> }>
 ): React.ComponentType<P> {
-  return React.lazy(() => importFn());
+  return React.lazy(() => importFn()) as unknown as React.ComponentType<P>;
 }

@@ -30,7 +30,6 @@ export const ContentRenderer = withMemo(
     // Check if this item should be lazy-loaded
     const shouldBeLazy = content.lazy === true;
     const lazyTrigger = content.lazyTrigger ?? "viewport";
-    const lazyCondition = content.lazyCondition;
 
     // Render component that will be lazily loaded
     const renderContent = (
@@ -80,33 +79,22 @@ export const ContentRenderer = withMemo(
           </div>
         )}
       >
-        <LazyContent<F, Q>
+        <LazyContent
           component={() => renderContent}
           componentProps={{}}
           lazyConfig={{
             trigger: lazyTrigger,
-            condition: lazyCondition,
             threshold: 0.1,
             rootMargin: "100px",
-            placeholder: {
-              content: (
-                <div style={{ padding: "16px", textAlign: "center" }}>
-                  Loading {content.key || "content"}...
-                </div>
-              ),
-              style: {
-                minHeight: "100px",
-                backgroundColor: "#f5f5f5",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              },
-            },
+            placeholder: (
+              <div style={{ padding: "16px", textAlign: "center", minHeight: "100px", backgroundColor: "#f5f5f5", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                Loading {content.key || "content"}...
+              </div>
+            ),
           }}
           formValues={formValues}
           allQuery={allQuery}
           allMutation={allMutation}
-          setValue={setValue}
           contentId={content.key || pageId}
           fallback={
             <div style={{ padding: "16px", textAlign: "center" }}>

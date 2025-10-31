@@ -105,12 +105,12 @@ const PageGenerator = withMemo(
       () => (
         <>
           {/* T066: Integrate MetadataManager for dynamic metadata updates */}
-          <MetadataManager<F, Q>
-            meta={meta}
-            formValues={config.formValues}
-            allQuery={config.allQuery}
-            allMutation={config.allMutation}
-            setValue={config.setValue}
+          <MetadataManager
+            meta={meta as any}
+            formValues={config.formValues as any}
+            allQuery={config.allQuery as any}
+            allMutation={config.allMutation as any}
+            setValue={config.setValue as any}
             ns={ns}
             pageId={id}
           />

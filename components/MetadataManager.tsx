@@ -118,11 +118,10 @@ const MetadataManagerImpl = <
   return null;
 };
 
+MetadataManagerImpl.displayName = 'MetadataManager';
+
 /**
  * Export memoized component to prevent unnecessary re-renders
  * Re-renders only when metadata-related props actually change
  */
-const MemoizedMetadataManager = memo(MetadataManagerImpl) as typeof MetadataManagerImpl;
-MemoizedMetadataManager.displayName = 'MetadataManager';
-
-export const MetadataManager = MemoizedMetadataManager;
+export const MetadataManager = memo(MetadataManagerImpl);

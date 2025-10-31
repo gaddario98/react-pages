@@ -46,7 +46,7 @@ export const nativeAdapter: PlatformAdapter = {
   renderContainer(children: ReactNode, settings: ViewSettings): ReactNode {
     // Try to use custom container if provided
     if (settings.customPageContainer) {
-      const CustomContainer = settings.customPageContainer;
+      const CustomContainer = settings.customPageContainer as React.ComponentType<any>;
       return React.createElement(CustomContainer, { withoutPadding: settings.withoutPadding }, children);
     }
 
@@ -62,7 +62,7 @@ export const nativeAdapter: PlatformAdapter = {
     // Consumer apps should provide customScrollView via settings
     const nativeSettings = settings as unknown as NativeViewSettings;
     if (nativeSettings.customScrollView) {
-      const CustomScrollView = nativeSettings.customScrollView;
+      const CustomScrollView = nativeSettings.customScrollView as React.ComponentType<any>;
       return React.createElement(
         CustomScrollView,
         {
@@ -70,13 +70,13 @@ export const nativeAdapter: PlatformAdapter = {
             padding: settings.withoutPadding ? 0 : 16,
           },
           refreshControl: settings.disableRefreshing ? undefined : nativeSettings.refreshControl,
-        },
+        } as any,
         children
       );
     }
 
     // Fallback: just return children
-    return React.createElement(React.Fragment, {}, children);
+    return React.createElement(React.Fragment, {} as any, children);
   },
 
   supportsFeature(feature: PlatformFeature): boolean {
@@ -92,39 +92,9 @@ export const nativeAdapter: PlatformAdapter = {
         // Not available in React Native
         return false;
 
-      // T102: React Native lazy loading features
-      case 'conditionalLazyLoading':
-        // Can evaluate conditions based on app state
-        return true;
-
-      case 'viewportLazyLoading':
-      case 'interactionLazyLoading':
-      case 'componentPreloading':
-        // Limited support on React Native (would need ViewabilityConfig for FlatList)
-        return false;
-
       default:
         return false;
     }
-  },
-
-  // T102: React Native lazy loading configuration
-  getLazyLoadingConfig() {
-    return {
-      // Metro bundler handles code splitting via async requires
-      useInteractionObserver: false, // Not available on React Native
-      // Conditional triggers work on React Native via app state
-      supportConditionalTriggers: true,
-      // ViewabilityConfig for FlatList/VirtualizedList integration
-      useViewabilityConfig: true,
-      viewabilityConfig: {
-        itemVisiblePercentThreshold: 50,
-      },
-      // No requestIdleCallback on React Native
-      useRequestIdleCallback: false,
-      // Use timeout-based preloading instead
-      preloadDelay: 0,
-    };
   },
 };
 
@@ -173,7 +143,7 @@ export function createNativeAdapter(components: {
             flex: 1,
             padding: settings.withoutPadding ? 0 : 16,
           },
-        },
+        } as any,
         children
       );
     },
@@ -190,7 +160,7 @@ export function createNativeAdapter(components: {
         ? React.createElement(components.RefreshControl, {
             refreshing: false,
             onRefresh: () => {},
-          })
+          } as any)
         : undefined;
 
       return React.createElement(
@@ -200,7 +170,7 @@ export function createNativeAdapter(components: {
             padding: settings.withoutPadding ? 0 : 16,
           },
           refreshControl,
-        },
+        } as any,
         children
       );
     },

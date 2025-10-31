@@ -28,7 +28,7 @@ export const setMetadata = (config: MetadataConfig): void => {
   }
 
   // Set document title
-  if (config.title) {
+  if (config.title && typeof config.title === 'string') {
     document.title = config.title;
   }
 
@@ -50,19 +50,19 @@ export const setMetadata = (config: MetadataConfig): void => {
   };
 
   // Set standard meta tags
-  if (config.description) {
+  if (config.description && typeof config.description === 'string') {
     updateOrCreateMeta('meta[name="description"]', config.description, {
       name: "description",
     });
   }
 
-  if (config.keywords) {
+  if (config.keywords && Array.isArray(config.keywords)) {
     updateOrCreateMeta('meta[name="keywords"]', config.keywords.join(", "), {
       name: "keywords",
     });
   }
 
-  if (config.author) {
+  if (config.author && typeof config.author === 'string') {
     updateOrCreateMeta('meta[name="author"]', config.author, {
       name: "author",
     });
@@ -84,66 +84,68 @@ export const setMetadata = (config: MetadataConfig): void => {
   if (config.openGraph) {
     const og = config.openGraph;
 
-    if (og.title) {
+    if (og.title && typeof og.title === 'string') {
       updateOrCreateMeta('meta[property="og:title"]', og.title, {
         property: "og:title",
       });
     }
 
-    if (og.description) {
+    if (og.description && typeof og.description === 'string') {
       updateOrCreateMeta('meta[property="og:description"]', og.description, {
         property: "og:description",
       });
     }
 
-    if (og.image) {
+    if (og.image && typeof og.image === 'string') {
       updateOrCreateMeta('meta[property="og:image"]', og.image, {
         property: "og:image",
       });
     }
 
-    if (og.url) {
+    if (og.url && typeof og.url === 'string') {
       updateOrCreateMeta('meta[property="og:url"]', og.url, {
         property: "og:url",
       });
     }
 
-    if (og.type) {
+    if (og.type && typeof og.type === 'string') {
       updateOrCreateMeta('meta[property="og:type"]', og.type, {
         property: "og:type",
       });
     }
 
-    if (og.siteName) {
+    if (og.siteName && typeof og.siteName === 'string') {
       updateOrCreateMeta('meta[property="og:site_name"]', og.siteName, {
         property: "og:site_name",
       });
     }
 
-    if (og.locale) {
+    if (og.locale && typeof og.locale === 'string') {
       updateOrCreateMeta('meta[property="og:locale"]', og.locale, {
         property: "og:locale",
       });
     }
   }
 
-  // Backward compatibility: legacy ogImage, ogTitle, ogDescription
-  if (config.ogImage) {
-    updateOrCreateMeta('meta[property="og:image"]', config.ogImage, {
+  // Backward compatibility: legacy ogImage, ogTitle (ogDescription handled via description)
+  const configWithLegacy = config as any;
+
+  if (configWithLegacy.ogImage) {
+    updateOrCreateMeta('meta[property="og:image"]', configWithLegacy.ogImage, {
       property: "og:image",
     });
   }
 
-  if (config.ogTitle) {
-    updateOrCreateMeta('meta[property="og:title"]', config.ogTitle, {
+  if (configWithLegacy.ogTitle) {
+    updateOrCreateMeta('meta[property="og:title"]', configWithLegacy.ogTitle, {
       property: "og:title",
     });
   }
 
-  if (config.ogDescription) {
+  if (configWithLegacy.ogDescription) {
     updateOrCreateMeta(
       'meta[property="og:description"]',
-      config.ogDescription,
+      configWithLegacy.ogDescription,
       { property: "og:description" }
     );
   }
@@ -185,7 +187,7 @@ export const setMetadata = (config: MetadataConfig): void => {
   if (config.aiHints) {
     const hints = config.aiHints;
 
-    if (hints.contentClassification) {
+    if (hints.contentClassification && typeof hints.contentClassification === 'string') {
       updateOrCreateMeta(
         'meta[name="ai-content-classification"]',
         hints.contentClassification,
@@ -194,14 +196,22 @@ export const setMetadata = (config: MetadataConfig): void => {
     }
 
     if (hints.modelHints) {
-      updateOrCreateMeta(
-        'meta[name="ai-model-hints"]',
-        hints.modelHints,
-        { name: 'ai-model-hints' }
-      );
+      const modelHints = Array.isArray(hints.modelHints)
+        ? hints.modelHints.join(', ')
+        : typeof hints.modelHints === 'string'
+        ? hints.modelHints
+        : undefined;
+
+      if (modelHints) {
+        updateOrCreateMeta(
+          'meta[name="ai-model-hints"]',
+          modelHints,
+          { name: 'ai-model-hints' }
+        );
+      }
     }
 
-    if (hints.contextualInfo) {
+    if (hints.contextualInfo && typeof hints.contextualInfo === 'string') {
       updateOrCreateMeta(
         'meta[name="ai-context"]',
         hints.contextualInfo,
@@ -235,27 +245,29 @@ export const setMetadata = (config: MetadataConfig): void => {
   }
 
   // Set custom meta tags (T063)
-  config.customMeta?.forEach((tag) => {
-    const selector = tag.id
-      ? `meta[id="${tag.id}"]`
-      : tag.name
-      ? `meta[name="${tag.name}"]`
-      : tag.property
-      ? `meta[property="${tag.property}"]`
-      : `meta[http-equiv="${tag.httpEquiv}"]`;
+  if (config.customMeta && Array.isArray(config.customMeta)) {
+    config.customMeta.forEach((tag) => {
+      const selector = tag.id
+        ? `meta[id="${tag.id}"]`
+        : tag.name
+        ? `meta[name="${tag.name}"]`
+        : tag.property
+        ? `meta[property="${tag.property}"]`
+        : `meta[http-equiv="${tag.httpEquiv}"]`;
 
-    const attributes: Record<string, string> = tag.name
-      ? { name: tag.name }
-      : tag.property
-      ? { property: tag.property }
-      : tag.httpEquiv
-      ? { "http-equiv": tag.httpEquiv }
-      : {};
+      const attributes: Record<string, string> = tag.name
+        ? { name: tag.name }
+        : tag.property
+        ? { property: tag.property }
+        : tag.httpEquiv
+        ? { "http-equiv": tag.httpEquiv }
+        : {};
 
-    if (tag.id) attributes.id = tag.id;
+      if (tag.id) attributes.id = tag.id;
 
-    updateOrCreateMeta(selector, tag.content, attributes);
-  });
+      updateOrCreateMeta(selector, tag.content, attributes);
+    });
+  }
 };
 
 /**

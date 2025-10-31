@@ -203,8 +203,8 @@ export const webAdapter: PlatformAdapter = {
   renderContainer(children: ReactNode, settings: ViewSettings): ReactNode {
     // Use custom container if provided, otherwise use a simple div
     if (settings.customPageContainer) {
-      const CustomContainer = settings.customPageContainer;
-      return React.createElement(CustomContainer, { withoutPadding: settings.withoutPadding }, children);
+      const CustomContainer = settings.customPageContainer as React.ComponentType<any>;
+      return React.createElement(CustomContainer, { withoutPadding: settings.withoutPadding } as any, children);
     }
 
     return React.createElement(
@@ -245,57 +245,8 @@ export const webAdapter: PlatformAdapter = {
       case 'intersectionObserver':
         return typeof IntersectionObserver !== 'undefined';
 
-      // T100: Web-specific lazy loading features
-      case 'viewportLazyLoading':
-      case 'interactionLazyLoading':
-      case 'conditionalLazyLoading':
-        return true;
-
-      case 'componentPreloading':
-        return typeof requestIdleCallback !== 'undefined' || true; // Fallback to setTimeout
-
       default:
         return false;
     }
-  },
-
-  // T101: Web platform-specific lazy loading configuration
-  getLazyLoadingConfig() {
-    return {
-      // Use IntersectionObserver for viewport detection
-      useIntersectionObserver: true,
-      // Enable preloading on hover for interactive elements
-      preloadOnHover: true,
-      // Use requestIdleCallback for non-urgent preloading
-      useRequestIdleCallback: typeof requestIdleCallback !== 'undefined',
-      // Default intersection observer options
-      observerOptions: {
-        threshold: 0.1,
-        rootMargin: '100px',
-      },
-      // Enable component code splitting
-      enableCodeSplitting: true,
-      // Preload critical chunks
-      preloadCriticalChunks: true,
-    };
-  },
-
-  // T101: Preload component on the web platform
-  preloadComponent(componentPath: string): Promise<unknown> {
-    return new Promise((resolve, reject) => {
-      // Use requestIdleCallback if available, otherwise setTimeout
-      const callback = () => {
-        // Dynamically import the component
-        import(componentPath)
-          .then(resolve)
-          .catch(reject);
-      };
-
-      if (typeof requestIdleCallback !== 'undefined') {
-        requestIdleCallback(callback);
-      } else {
-        setTimeout(callback, 0);
-      }
-    });
   },
 };
