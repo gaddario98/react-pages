@@ -12,7 +12,9 @@ import { defaultAdapter } from './platformAdapters';
 /**
  * Context for platform adapter
  */
-export const PlatformAdapterContext = createContext<PlatformAdapter | null>(null);
+export const PlatformAdapterContext = createContext<PlatformAdapter | null>(
+  null,
+);
 
 /**
  * Props for PlatformAdapterProvider
@@ -67,7 +69,6 @@ export function PlatformAdapterProvider({
 }: PlatformAdapterProviderProps): JSX.Element {
   // Memoize adapter to prevent unnecessary re-renders
   const memoizedAdapter = useMemo(() => adapter, [adapter]);
-
   return (
     <PlatformAdapterContext.Provider value={memoizedAdapter}>
       {children}
@@ -88,7 +89,7 @@ export function PlatformAdapterProvider({
  */
 export function withPlatformAdapter<P extends object>(
   Component: React.ComponentType<P>,
-  adapter?: PlatformAdapter
+  adapter?: PlatformAdapter,
 ): React.ComponentType<P> {
   const WrappedComponent = (props: P) => (
     <PlatformAdapterProvider adapter={adapter}>

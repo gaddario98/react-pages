@@ -35,8 +35,14 @@ export const nativeAdapter: PlatformAdapter = {
   injectMetadata(metadata: MetadataConfig): void {
     // React Native doesn't have document.head
     // Metadata can be logged for debugging or stored for SSR/analytics
-    if (typeof console !== 'undefined' && process.env.NODE_ENV === 'development') {
-      console.log('[PlatformAdapter:Native] Metadata (no-op on React Native):', metadata);
+    if (
+      typeof console !== 'undefined' &&
+      process.env.NODE_ENV === 'development'
+    ) {
+      console.log(
+        '[PlatformAdapter:Native] Metadata (no-op on React Native):',
+        metadata,
+      );
     }
 
     // For React Native apps with web target (Expo web), metadata could be
@@ -46,8 +52,13 @@ export const nativeAdapter: PlatformAdapter = {
   renderContainer(children: ReactNode, settings: ViewSettings): ReactNode {
     // Try to use custom container if provided
     if (settings.customPageContainer) {
-      const CustomContainer = settings.customPageContainer as React.ComponentType<any>;
-      return React.createElement(CustomContainer, { withoutPadding: settings.withoutPadding }, children);
+      const CustomContainer =
+        settings.customPageContainer as React.ComponentType<any>;
+      return React.createElement(
+        CustomContainer,
+        { withoutPadding: settings.withoutPadding },
+        children,
+      );
     }
 
     // Fallback: Use a simple wrapper (consumer app should provide actual View component)
@@ -62,16 +73,19 @@ export const nativeAdapter: PlatformAdapter = {
     // Consumer apps should provide customScrollView via settings
     const nativeSettings = settings as unknown as NativeViewSettings;
     if (nativeSettings.customScrollView) {
-      const CustomScrollView = nativeSettings.customScrollView as React.ComponentType<any>;
+      const CustomScrollView =
+        nativeSettings.customScrollView as React.ComponentType<any>;
       return React.createElement(
         CustomScrollView,
         {
           contentContainerStyle: {
             padding: settings.withoutPadding ? 0 : 16,
           },
-          refreshControl: settings.disableRefreshing ? undefined : nativeSettings.refreshControl,
+          refreshControl: settings.disableRefreshing
+            ? undefined
+            : nativeSettings.refreshControl,
         } as any,
-        children
+        children,
       );
     }
 
@@ -103,8 +117,7 @@ export const nativeAdapter: PlatformAdapter = {
  */
 export function isReactNative(): boolean {
   return (
-    typeof navigator !== 'undefined' &&
-    navigator.product === 'ReactNative'
+    typeof navigator !== 'undefined' && navigator.product === 'ReactNative'
   );
 }
 
@@ -130,7 +143,8 @@ export function createNativeAdapter(components: {
     ...nativeAdapter,
 
     renderContainer(children: ReactNode, settings: ViewSettings): ReactNode {
-      const Container = settings.customPageContainer || components.PageContainer;
+      const Container =
+        settings.customPageContainer || components.PageContainer;
 
       if (!Container) {
         return children;
@@ -144,24 +158,26 @@ export function createNativeAdapter(components: {
             padding: settings.withoutPadding ? 0 : 16,
           },
         } as any,
-        children
+        children,
       );
     },
 
     renderScrollView(children: ReactNode, settings: ViewSettings): ReactNode {
       const nativeSettings = settings as unknown as NativeViewSettings;
-      const ScrollViewComponent = nativeSettings.customScrollView || components.ScrollViewComponent;
+      const ScrollViewComponent =
+        nativeSettings.customScrollView || components.ScrollViewComponent;
 
       if (!ScrollViewComponent) {
         return children;
       }
 
-      const refreshControl = !settings.disableRefreshing && components.RefreshControl
-        ? React.createElement(components.RefreshControl, {
-            refreshing: false,
-            onRefresh: () => {},
-          } as any)
-        : undefined;
+      const refreshControl =
+        !settings.disableRefreshing && components.RefreshControl
+          ? React.createElement(components.RefreshControl, {
+              refreshing: false,
+              onRefresh: () => {},
+            } as any)
+          : undefined;
 
       return React.createElement(
         ScrollViewComponent,
@@ -171,7 +187,7 @@ export function createNativeAdapter(components: {
           },
           refreshControl,
         } as any,
-        children
+        children,
       );
     },
   };

@@ -53,7 +53,7 @@ export function usePageQueries<F extends FieldValues, Q extends QueriesArray>({
   }, [queries, formValues, setValue]);
 
   const { allMutation, allQuery } = useApi(
-    processedQueries as OriginalQueryConfigArray<Q>
+    processedQueries as OriginalQueryConfigArray<Q>,
   );
 
   // NEW IN 2.0: Use useMemoizedProps to ensure stable query/mutation references
@@ -66,12 +66,21 @@ export function usePageQueries<F extends FieldValues, Q extends QueriesArray>({
   });
 
   // Use stable references from useMemoizedProps
-  const stableAllQuery = stableMappedProps.allQuery;
-  const stableAllMutation = stableMappedProps.allMutation;
+  const stableAllQuery = useMemo(
+    () => stableMappedProps.allQuery,
+    [stableMappedProps.allQuery],
+  );
+  const stableAllMutation = useMemo(
+    () => stableMappedProps.allMutation,
+    [stableMappedProps.allMutation],
+  );
 
   const queriesKeys = useMemo(
-    () => Object.keys(stableAllQuery ?? {}).concat(Object.keys(stableAllMutation ?? {})),
-    [stableAllMutation, stableAllQuery]
+    () =>
+      Object.keys(stableAllQuery ?? {}).concat(
+        Object.keys(stableAllMutation ?? {}),
+      ),
+    [stableAllMutation, stableAllQuery],
   );
 
   const isAllQueryMapped = useMemo(() => {
@@ -83,9 +92,9 @@ export function usePageQueries<F extends FieldValues, Q extends QueriesArray>({
     () =>
       Object.values(stableAllQuery ?? {}).some(
         (el: any) =>
-          typeof el !== 'boolean' && el?.isLoadingMapped === true && !el.data
+          typeof el !== 'boolean' && el?.isLoadingMapped === true && !el.data,
       ),
-    [stableAllQuery]
+    [stableAllQuery],
   );
 
   const queryKeys = useMemo(
@@ -98,7 +107,7 @@ export function usePageQueries<F extends FieldValues, Q extends QueriesArray>({
           return queryConfig?.queryKey;
         })
         .filter(Boolean),
-    [processedQueries]
+    [processedQueries],
   );
 
   const hasQueries = useMemo(() => {

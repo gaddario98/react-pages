@@ -1,18 +1,18 @@
-import { useMemo, useRef } from "react";
-import { FieldValues, UseFormSetValue } from "react-hook-form";
+import { useMemo, useRef } from 'react';
+import { FieldValues, UseFormSetValue } from 'react-hook-form';
 import {
   AllMutation,
   MultipleQueryResponse,
   QueriesArray,
-} from "@gaddario98/react-queries";
+} from '@gaddario98/react-queries';
 import {
   FormElements,
   FormManagerConfig,
   Submit,
-} from "@gaddario98/react-form";
-import { ContentItem, ContentItemsType } from "../types";
-import { useDataExtractor } from "./useDataExtractor";
-import { useAutoRegisterDependencies } from "./useDependencyGraph";
+} from '@gaddario98/react-form';
+import { ContentItem, ContentItemsType } from '../types';
+import { useDataExtractor } from './useDataExtractor';
+import { useAutoRegisterDependencies } from './useDependencyGraph';
 
 export interface GenerateContentRenderProps<
   F extends FieldValues,
@@ -55,7 +55,7 @@ export const useGenerateContentRender = <
   Q extends QueriesArray,
 >({
   pageId,
-  ns = "",
+  ns = '',
   contents = [],
   allMutation,
   allQuery,
@@ -68,7 +68,7 @@ export const useGenerateContentRender = <
   const memorizedContentsRef = useRef<Elements[]>([]);
 
   const contentsWithQueriesDeps = useMemo(() => {
-    if (typeof contents === "function" && isAllQueryMapped) {
+    if (typeof contents === 'function' && isAllQueryMapped) {
       return contents({
         formValues,
         allMutation,
@@ -80,7 +80,7 @@ export const useGenerateContentRender = <
   }, [contents, isAllQueryMapped, formValues, allMutation, allQuery, setValue]);
 
   const filteredContents = useMemo(() => {
-    if (typeof contents === "function") {
+    if (typeof contents === 'function') {
       return contentsWithQueriesDeps.filter((el) => !el?.hidden);
     } else {
       return contents.filter((el) => !el?.hidden);
@@ -90,7 +90,7 @@ export const useGenerateContentRender = <
   // Register content items with dependency graph for selective re-rendering
   const { getAffectedComponents } = useAutoRegisterDependencies(
     filteredContents,
-    `${pageId}-content`
+    `${pageId}-content`,
   );
 
   const { extractFormValues, extractMutations, extractQuery } =
@@ -114,7 +114,9 @@ export const useGenerateContentRender = <
           pageId,
           allMutation: extractMutations(content.usedQueries ?? []),
           allQuery: extractQuery(
-            (content.usedQueries ?? []) as Array<keyof MultipleQueryResponse<Q>>
+            (content.usedQueries ?? []) as Array<
+              keyof MultipleQueryResponse<Q>
+            >,
           ),
           setValue,
           key: stableKey,
@@ -131,14 +133,14 @@ export const useGenerateContentRender = <
         (el: FormElements, idx: number) => ({
           ...el,
           key: (el as any).key ?? `form-element-${el.index ?? idx}`,
-        })
+        }),
       );
     }
     const next = [...dynamicElements, ...formElementsWithKey].sort(
-      (a, b) => a.index - b.index || String(a.key).localeCompare(String(b.key))
+      (a, b) => a.index - b.index || String(a.key).localeCompare(String(b.key)),
     );
     const prev = memorizedContentsRef.current;
-    // eslint-disable-next-line react-hooks/refs
+
     const merged = next.map((el) => {
       const found = prev.find((e) => e.key === el.key);
       if (found) {
@@ -146,7 +148,7 @@ export const useGenerateContentRender = <
       }
       return el;
     });
-    // eslint-disable-next-line react-hooks/refs
+
     memorizedContentsRef.current = merged;
     return next;
     // eslint-disable-next-line react-hooks/exhaustive-deps

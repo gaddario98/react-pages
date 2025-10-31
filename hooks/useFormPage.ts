@@ -1,9 +1,9 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
-import { DefaultValues, useForm, FieldValues, Path } from "react-hook-form";
-import { useQueryClient, QueryObserver } from "@tanstack/react-query";
-import { useDebounce } from "use-debounce";
-import { FormPageProps } from "../types";
-import { QueriesArray } from "@gaddario98/react-queries";
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { DefaultValues, useForm, FieldValues, Path } from 'react-hook-form';
+import { useQueryClient, QueryObserver } from '@tanstack/react-query';
+import { useDebounce } from 'use-debounce';
+import { FormPageProps } from '../types';
+import { QueriesArray } from '@gaddario98/react-queries';
 
 export const useFormPage = <F extends FieldValues, Q extends QueriesArray>({
   form,
@@ -21,7 +21,7 @@ export const useFormPage = <F extends FieldValues, Q extends QueriesArray>({
       return;
     }
     const initialData = queryClient.getQueryData<DefaultValues<F>>(
-      form.defaultValueQueryKey
+      form.defaultValueQueryKey,
     );
     if (initialData) {
       setDefaultValueQuery(initialData);
@@ -29,7 +29,7 @@ export const useFormPage = <F extends FieldValues, Q extends QueriesArray>({
     const observer = new QueryObserver<DefaultValues<F>>(queryClient, {
       queryKey: form.defaultValueQueryKey,
       enabled: true,
-      notifyOnChangeProps: ["data"],
+      notifyOnChangeProps: ['data'],
       refetchOnWindowFocus: false,
     });
     const unsubscribe = observer.subscribe((result) => {
@@ -46,11 +46,11 @@ export const useFormPage = <F extends FieldValues, Q extends QueriesArray>({
         ...(defaultValueQuery ?? {}),
         ...(form?.defaultValueQueryMap?.(defaultValueQuery) ?? {}),
       }) as DefaultValues<F>,
-    [defaultValueQuery, form]
+    [defaultValueQuery, form],
   );
 
   const formControl = useForm<F>({
-    mode: "all",
+    mode: 'all',
     ...(form?.formSettings ?? {}),
     defaultValues,
     resetOptions: {
@@ -61,7 +61,7 @@ export const useFormPage = <F extends FieldValues, Q extends QueriesArray>({
   });
 
   // Memoize formControl to avoid unnecessary re-renders
-  const stableFormControl = useMemo(() => formControl, []);
+  const stableFormControl = useMemo(() => formControl, [formControl]);
 
   useEffect(() => {
     stableFormControl.reset(defaultValues, {
@@ -73,24 +73,32 @@ export const useFormPage = <F extends FieldValues, Q extends QueriesArray>({
   // Watch form values (raw, updates on every keystroke)
   const rawFormValues = stableFormControl.watch();
 
+  // Memoize rawFormValues to prevent unnecessary debounce triggers
+  // Only update when actual values change, not object reference
+  const stableRawFormValues = useMemo(
+    () => rawFormValues,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [JSON.stringify(rawFormValues)],
+  );
+
   // NEW IN 2.0: Debounce form values to reduce re-render cascades
   // Default 300ms delay - reduces re-renders by ~80% during rapid typing
   // Components using formValues will only re-render after user stops typing
   const [debouncedFormValues] = useDebounce(
-    rawFormValues,
-    form?.debounceDelay ?? 300
+    stableRawFormValues,
+    form?.debounceDelay ?? 300,
   );
 
   const setValueAndTrigger = useCallback(
     async (
       name: Path<F>,
-      value: any,
-      options?: Parameters<typeof stableFormControl.setValue>[2]
+      value: F[Path<F>],
+      options?: Parameters<typeof stableFormControl.setValue>[2],
     ) => {
       stableFormControl.setValue(name, value, options);
       await stableFormControl.trigger(name);
     },
-    [stableFormControl]
+    [stableFormControl],
   );
 
   return {

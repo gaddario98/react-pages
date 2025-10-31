@@ -9,7 +9,11 @@
 
 import { useMemo } from 'react';
 import { FieldValues, UseFormSetValue } from 'react-hook-form';
-import type { AllMutation, QueriesArray, MultipleQueryResponse} from '@gaddario98/react-queries';
+import type {
+  AllMutation,
+  QueriesArray,
+  MultipleQueryResponse,
+} from '@gaddario98/react-queries';
 import equal from 'fast-deep-equal';
 
 /**
@@ -17,12 +21,12 @@ import equal from 'fast-deep-equal';
  */
 export interface MappedProps<
   F extends FieldValues = FieldValues,
-  Q extends QueriesArray = QueriesArray
+  Q extends QueriesArray = QueriesArray,
 > {
   formValues: F;
   setValue: UseFormSetValue<F>;
-  allQuery: MultipleQueryResponse<Q>
-  allMutation:  AllMutation<Q>
+  allQuery: MultipleQueryResponse<Q>;
+  allMutation: AllMutation<Q>;
 }
 
 /**
@@ -60,21 +64,17 @@ export interface UseMemoizedPropsOptions {
  */
 export function useMemoizedProps<
   F extends FieldValues = FieldValues,
-  Q extends QueriesArray = QueriesArray
+  Q extends QueriesArray = QueriesArray,
 >(
   props: MappedProps<F, Q>,
-  options: UseMemoizedPropsOptions = {}
+  options: UseMemoizedPropsOptions = {},
 ): MappedProps<F, Q> {
   const { deepEqual: useDeepEqual = true } = options;
 
   // Memoize formValues with deep equality
   const stableFormValues = useMemo(() => {
     return props.formValues;
-  }, [
-    useDeepEqual
-      ? JSON.stringify(props.formValues)
-      : props.formValues,
-  ]);
+  }, [useDeepEqual ? JSON.stringify(props.formValues) : props.formValues]);
 
   // Memoize allQuery with deep equality check on data
   const stableAllQuery = useMemo(() => {
@@ -108,7 +108,7 @@ export function useMemoizedProps<
       allQuery: stableAllQuery,
       allMutation: stableAllMutation,
     }),
-    [stableFormValues, stableSetValue, stableAllQuery, stableAllMutation]
+    [stableFormValues, stableSetValue, stableAllQuery, stableAllMutation],
   );
 
   return mappedProps;
@@ -132,10 +132,10 @@ export function useMemoizedProps<
 export function useMappedCallback<
   F extends FieldValues = FieldValues,
   Q extends QueriesArray = QueriesArray,
-  Args extends any[] = any[]
+  Args extends any[] = any[],
 >(
   callback: (mappedProps: MappedProps<F, Q>, ...args: Args) => void,
-  mappedProps: MappedProps<F, Q>
+  mappedProps: MappedProps<F, Q>,
 ): (...args: Args) => void {
   return useMemo(() => {
     return (...args: Args) => callback(mappedProps, ...args);
@@ -160,11 +160,11 @@ export function useMappedCallback<
 export function useMappedComputed<
   F extends FieldValues = FieldValues,
   Q extends QueriesArray = QueriesArray,
-  Result = any
+  Result = any,
 >(
   compute: (mappedProps: MappedProps<F, Q>) => Result,
   mappedProps: MappedProps<F, Q>,
-  deps: any[] = []
+  deps: any[] = [],
 ): Result {
   return useMemo(() => {
     return compute(mappedProps);
@@ -177,7 +177,7 @@ export function useMappedComputed<
  */
 export function areMappedPropsEqual<
   F extends FieldValues = FieldValues,
-  Q extends QueriesArray = QueriesArray
+  Q extends QueriesArray = QueriesArray,
 >(prev: MappedProps<F, Q>, next: MappedProps<F, Q>): boolean {
   // Check formValues
   if (!equal(prev.formValues, next.formValues)) {
@@ -195,7 +195,7 @@ export function areMappedPropsEqual<
       acc[key] = value?.data;
       return acc;
     },
-    {} as Record<string, any>
+    {} as Record<string, any>,
   );
 
   const nextQueryData = Object.entries(next.allQuery || {}).reduce(
@@ -203,7 +203,7 @@ export function areMappedPropsEqual<
       acc[key] = value?.data;
       return acc;
     },
-    {} as Record<string, any>
+    {} as Record<string, any>,
   );
 
   if (!equal(prevQueryData, nextQueryData)) {

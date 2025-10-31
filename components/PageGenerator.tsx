@@ -10,7 +10,10 @@ import { usePageConfig } from "../hooks";
 import { PlatformAdapterProvider } from "../config/PlatformAdapterProvider";
 import { defaultAdapter } from "../config/platformAdapters";
 import { validateAndLogPageProps } from "../utils/validation";
-import { validatePagePropsLazy, logLazyValidationErrors } from "../utils/lazyValidation";
+import {
+  validatePagePropsLazy,
+  logLazyValidationErrors,
+} from "../utils/lazyValidation";
 import { MetadataManager } from "./MetadataManager";
 
 /**
@@ -39,11 +42,15 @@ const PageGenerator = withMemo(
 
     // Validate PageProps configuration (development mode only)
     useEffect(() => {
-      if (process.env.NODE_ENV === 'development') {
+      if (process.env.NODE_ENV === "development") {
         validateAndLogPageProps({ ...props, meta, enableAuthControl });
 
         // T098: Validate lazy loading configuration
-        const lazyValidation = validatePagePropsLazy({ ...props, meta, enableAuthControl });
+        const lazyValidation = validatePagePropsLazy({
+          ...props,
+          meta,
+          enableAuthControl,
+        });
         logLazyValidationErrors(lazyValidation, `Page: ${props.id}`);
       }
     }, [props, meta, enableAuthControl]);
@@ -94,11 +101,17 @@ const PageGenerator = withMemo(
     });
 
     const Layout = useMemo(() => {
-      return mappedViewSettings?.customLayoutComponent ?? GlobalPageConfig.BodyContainer;
+      return (
+        mappedViewSettings?.customLayoutComponent ??
+        GlobalPageConfig.BodyContainer
+      );
     }, [mappedViewSettings?.customLayoutComponent]);
 
     const PageContainer = useMemo(() => {
-      return mappedViewSettings?.customPageContainer ?? GlobalPageConfig.PageContainer;
+      return (
+        mappedViewSettings?.customPageContainer ??
+        GlobalPageConfig.PageContainer
+      );
     }, [mappedViewSettings?.customPageContainer]);
 
     const pageContent = useMemo(
@@ -128,7 +141,21 @@ const PageGenerator = withMemo(
             GlobalPageConfig.LoaderComponent({ loading: isLoading })}
         </>
       ),
-      [meta, config.formValues, config.allQuery, config.allMutation, config.setValue, allContents, handleRefresh, hasQueries, mappedViewSettings?.header, id, header, isLoading, ns]
+      [
+        meta,
+        config.formValues,
+        config.allQuery,
+        config.allMutation,
+        config.setValue,
+        allContents,
+        handleRefresh,
+        hasQueries,
+        mappedViewSettings?.header,
+        id,
+        header,
+        isLoading,
+        ns,
+      ]
     );
 
     const layoutBody = useMemo(() => body, [body]);
@@ -145,7 +172,15 @@ const PageGenerator = withMemo(
           {layoutBody}
         </Layout>
       ),
-      [Layout, allContents, handleRefresh, hasQueries, id, layoutBody, mappedViewSettings]
+      [
+        Layout,
+        allContents,
+        handleRefresh,
+        hasQueries,
+        id,
+        layoutBody,
+        mappedViewSettings,
+      ]
     );
 
     const footerContent = useMemo(
@@ -169,7 +204,6 @@ const PageGenerator = withMemo(
         footer,
       ]
     );
-
     return (
       <PlatformAdapterProvider adapter={defaultAdapter}>
         <PageContainer id={id ?? ""} key={id}>

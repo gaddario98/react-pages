@@ -1,9 +1,13 @@
 /* eslint-disable react-hooks/refs */
-import { useMemo, useRef } from 'react';
-import { FieldValues } from 'react-hook-form';
-import { QueriesArray, AllMutation, MultipleQueryResponse } from '@gaddario98/react-queries';
-import { ViewSettings, MappedItemsFunction } from '../types';
-import { shallowEqual } from '../utils/optimization';
+import { useMemo, useRef } from "react";
+import { FieldValues, UseFormSetValue } from "react-hook-form";
+import {
+  QueriesArray,
+  AllMutation,
+  MultipleQueryResponse,
+} from "@gaddario98/react-queries";
+import { ViewSettings, MappedItemsFunction } from "../types";
+import { shallowEqual } from "../utils/optimization";
 
 /**
  * Specialized hook for managing view settings
@@ -26,14 +30,14 @@ export function useViewSettings<F extends FieldValues, Q extends QueriesArray>({
   allQuery: MultipleQueryResponse<Q>;
   allMutation: AllMutation<Q>;
   formValues: F;
-  setValue: any;
+  setValue: UseFormSetValue<F>;
 }) {
   const prevViewSettingsRef = useRef<ViewSettings | undefined>(undefined);
 
   const mappedViewSettings = useMemo((): ViewSettings => {
     let next: ViewSettings;
-    
-    if (typeof viewSettings === 'function') {
+
+    if (typeof viewSettings === "function") {
       next = viewSettings({
         allQuery,
         allMutation,
