@@ -197,13 +197,28 @@ export function validatePagePropsLazy<
   const errors: LazyValidationError[] = [];
 
   // Validate main contents
+  // Handle both array and function (MappedItemsFunction) types
   if (pageProps.contents) {
-    const contentsResult = validateLazyLoadingContents(pageProps.contents);
-    errors.push(...contentsResult.errors);
+    // If contents is a function, validation is deferred to runtime
+    // since we need the evaluation context (formValues, allQuery, allMutation)
+    if (typeof pageProps.contents === 'function') {
+      errors.push({
+        type: 'performance_issue',
+        severity: 'info',
+        message: 'Contents are dynamically evaluated (MappedItemsFunction). Lazy loading validation deferred to runtime with context',
+        path: 'contents',
+      });
+    } else if (Array.isArray(pageProps.contents)) {
+      const contentsResult = validateLazyLoadingContents(pageProps.contents);
+      errors.push(...contentsResult.errors);
+    }
   }
 
-  // Count lazy-loaded items
-  const lazyItemCount = pageProps.contents?.filter(c => c.lazy === true).length || 0;
+  // Count lazy-loaded items (only possible if contents is an array)
+  const contentsArray = pageProps.contents && Array.isArray(pageProps.contents)
+    ? pageProps.contents
+    : [];
+  const lazyItemCount = contentsArray.filter(c => c.lazy === true).length;
 
   // Warn if too many lazy items (performance consideration)
   if (lazyItemCount > 10) {
@@ -215,8 +230,8 @@ export function validatePagePropsLazy<
     });
   }
 
-  // Warn if all items are lazy
-  if (lazyItemCount === pageProps.contents?.length && lazyItemCount > 0) {
+  // Warn if all items are lazy (only check for static array contents)
+  if (contentsArray.length > 0 && lazyItemCount === contentsArray.length) {
     errors.push({
       type: 'accessibility_issue',
       severity: 'warning',
