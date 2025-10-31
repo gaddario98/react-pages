@@ -30,7 +30,7 @@ const PageGenerator = withMemo(
 
     const authControl = useMemo(
       () => enableAuthControl && !GlobalPageConfig.isLogged(user),
-      [enableAuthControl, user, GlobalPageConfig.isLogged]
+      [enableAuthControl, user]
     );
 
     const [usedProps, setUsedProps] = useState<"auth" | "page">(
@@ -105,12 +105,12 @@ const PageGenerator = withMemo(
       () => (
         <>
           {/* T066: Integrate MetadataManager for dynamic metadata updates */}
-          <MetadataManager
-            meta={meta as any}
-            formValues={config.formValues as any}
-            allQuery={config.allQuery as any}
-            allMutation={config.allMutation as any}
-            setValue={config.setValue as any}
+          <MetadataManager<F, Q>
+            meta={meta}
+            formValues={config.formValues}
+            allQuery={config.allQuery}
+            allMutation={config.allMutation}
+            setValue={config.setValue}
             ns={ns}
             pageId={id}
           />
@@ -145,7 +145,7 @@ const PageGenerator = withMemo(
           {layoutBody}
         </Layout>
       ),
-      [layoutBody]
+      [Layout, allContents, handleRefresh, hasQueries, id, layoutBody, mappedViewSettings]
     );
 
     const footerContent = useMemo(

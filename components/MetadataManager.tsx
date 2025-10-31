@@ -6,13 +6,14 @@
  * @module components/MetadataManager
  */
 
-import { useEffect, memo } from 'react';
+import { useEffect } from 'react';
 import { FieldValues, UseFormSetValue } from 'react-hook-form';
 import type { QueriesArray, AllMutation, MultipleQueryResponse } from '@gaddario98/react-queries';
 import type { MetadataConfig, MappedItemsFunction } from '../types';
 import { useMetadata } from '../hooks/useMetadata';
 import { usePlatformAdapter } from '../hooks/usePlatformAdapter';
 import { setMetadata } from '../config/metadata';
+import { withMemo } from '@gaddario98/utiles';
 
 /**
  * Props for MetadataManager component
@@ -124,4 +125,4 @@ MetadataManagerImpl.displayName = 'MetadataManager';
  * Export memoized component to prevent unnecessary re-renders
  * Re-renders only when metadata-related props actually change
  */
-export const MetadataManager = memo(MetadataManagerImpl);
+export const MetadataManager = withMemo(MetadataManagerImpl);

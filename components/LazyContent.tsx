@@ -91,7 +91,6 @@ export const LazyContent = React.memo(
     formValues,
     allQuery,
     allMutation,
-    setValue,
     fallback = <div>Loading...</div>,
     showPlaceholder = true,
     errorFallback,
@@ -122,8 +121,8 @@ export const LazyContent = React.memo(
         try {
           const conditionResult = lazyConfig.condition({
             formValues: formValues ?? ({} as F),
-            allQuery: allQuery ?? ({} as any),
-            allMutation: allMutation ?? ({} as any),
+            allQuery: allQuery ?? ({} as Q),
+            allMutation: allMutation ?? ({} as Q),
           });
           return conditionResult;
         } catch (e) {
@@ -145,7 +144,7 @@ export const LazyContent = React.memo(
       }
 
       return true;
-    }, [lazyConfig, inView, isVisible, formValues, allQuery, allMutation, setValue, contentId]);
+    }, [lazyConfig, inView, isVisible, formValues, allQuery, allMutation, contentId]);
 
     // T089: Lazy component using React.lazy() and Suspense
     const LazyComponent = useMemo(() => {

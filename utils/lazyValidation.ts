@@ -41,8 +41,11 @@ export interface LazyValidationResult {
  * @param contentKey - Key of the content item (for error messages)
  * @returns Validation result with errors if any
  */
-export function validateLazyLoadingConfig(
-  config: Partial<LazyLoadingConfig>,
+export function validateLazyLoadingConfig<
+  F extends FieldValues = FieldValues,
+  Q extends QueriesArray = QueriesArray
+>(
+  config: Partial<LazyLoadingConfig<F, Q>>,
   contentKey?: string
 ): LazyValidationResult {
   const errors: LazyValidationError[] = [];
@@ -89,7 +92,7 @@ export function validateLazyLoadingConfig(
   }
 
   // T098: Warn about high threshold values (might cause performance issues)
-  if (config.threshold !== undefined && config.threshold > 0.75) {
+  if (typeof config.threshold === 'number' && config.threshold > 0.75) {
     errors.push({
       type: 'performance_issue',
       severity: 'warning',
@@ -159,7 +162,7 @@ export function validateLazyLoadingContents<
 
   contents.forEach((content, index) => {
     if (content.lazy === true && content.lazyTrigger) {
-      const lazyConfig: Partial<LazyLoadingConfig> = {
+      const lazyConfig: Partial<LazyLoadingConfig<F, Q>> = {
         trigger: content.lazyTrigger,
         condition: content.lazyCondition,
       };

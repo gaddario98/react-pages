@@ -6,29 +6,16 @@
 
 import { FieldValues } from "react-hook-form";
 import { QueriesArray } from "@gaddario98/react-queries";
-import { PageProps } from "../types";
+import { MappedProps, PageProps } from "../types";
 
 /**
  * Context passed to dynamic metadata evaluator functions
  * Provides access to form values, queries, and page state
  */
-export interface MetadataEvaluatorContext<
+export type MetadataEvaluatorContext<
   F extends FieldValues = FieldValues,
-  Q extends QueriesArray = QueriesArray
-> {
-  /** Current form values */
-  formValues?: Partial<F>;
-  /** All query results mapped by key */
-  allQuery?: Record<string, any>;
-  /** All mutations mapped by key */
-  allMutation?: Record<string, any>;
-  /** Namespace for i18n */
-  ns?: string;
-  /** Page ID */
-  pageId?: string;
-  /** Page config */
-  pageConfig?: PageProps<F, Q>;
-}
+  Q extends QueriesArray = QueriesArray,
+> = MappedProps<F, Q>;
 
 export interface MetaTag {
   /** For <meta name="..." content="..." /> */
@@ -48,7 +35,7 @@ export interface MetaTag {
  */
 export interface OpenGraphConfig<
   F extends FieldValues = FieldValues,
-  Q extends QueriesArray = QueriesArray
+  Q extends QueriesArray = QueriesArray,
 > {
   type?: "website" | "article" | "product" | "profile";
   title?: string | ((context: MetadataEvaluatorContext<F, Q>) => string);
@@ -67,10 +54,18 @@ export interface OpenGraphConfig<
  */
 export interface StructuredDataConfig<
   F extends FieldValues = FieldValues,
-  Q extends QueriesArray = QueriesArray
+  Q extends QueriesArray = QueriesArray,
 > {
-  type: "Article" | "Product" | "WebPage" | "FAQPage" | "Organization" | "Person";
-  schema: Record<string, unknown> | ((context: MetadataEvaluatorContext<F, Q>) => Record<string, unknown>);
+  type:
+    | "Article"
+    | "Product"
+    | "WebPage"
+    | "FAQPage"
+    | "Organization"
+    | "Person";
+  schema:
+    | Record<string, unknown>
+    | ((context: MetadataEvaluatorContext<F, Q>) => Record<string, unknown>);
 }
 
 /**
@@ -78,14 +73,20 @@ export interface StructuredDataConfig<
  */
 export interface AIHintsConfig<
   F extends FieldValues = FieldValues,
-  Q extends QueriesArray = QueriesArray
+  Q extends QueriesArray = QueriesArray,
 > {
   /** Content classification (e.g., "documentation", "tutorial", "reference") */
-  contentClassification?: string | ((context: MetadataEvaluatorContext<F, Q>) => string);
+  contentClassification?:
+    | string
+    | ((context: MetadataEvaluatorContext<F, Q>) => string);
   /** Hints for AI models (e.g., ["code-heavy", "technical"]) */
-  modelHints?: string[] | ((context: MetadataEvaluatorContext<F, Q>) => string[]);
+  modelHints?:
+    | string[]
+    | ((context: MetadataEvaluatorContext<F, Q>) => string[]);
   /** Additional context for AI understanding */
-  contextualInfo?: string | ((context: MetadataEvaluatorContext<F, Q>) => string);
+  contextualInfo?:
+    | string
+    | ((context: MetadataEvaluatorContext<F, Q>) => string);
   /** Exclude this page from AI crawler indexing */
   excludeFromIndexing?: boolean;
 }
@@ -113,7 +114,7 @@ export interface RobotsConfig {
  */
 export interface MetadataConfig<
   F extends FieldValues = FieldValues,
-  Q extends QueriesArray = QueriesArray
+  Q extends QueriesArray = QueriesArray,
 > {
   // Basic Metadata
   /** Page title - sets document.title on web */
@@ -138,10 +139,14 @@ export interface MetadataConfig<
   robots?: RobotsConfig;
 
   // Additional custom meta tags
-  customMeta?: MetaTag[] | ((context: MetadataEvaluatorContext<F, Q>) => MetaTag[]);
+  customMeta?:
+    | MetaTag[]
+    | ((context: MetadataEvaluatorContext<F, Q>) => MetaTag[]);
 
   // Additional meta tags (alias for customMeta for backward compatibility)
-  otherMetaTags?: MetaTag[] | ((context: MetadataEvaluatorContext<F, Q>) => MetaTag[]);
+  otherMetaTags?:
+    | MetaTag[]
+    | ((context: MetadataEvaluatorContext<F, Q>) => MetaTag[]);
 
   // Disable search engine indexing
   disableIndexing?: boolean;
@@ -176,7 +181,10 @@ export interface MetadataProvider {
  * Configuration for lazy loading and code splitting behavior
  * Enables deferred component loading to reduce initial bundle size
  */
-export interface LazyLoadingConfig {
+export interface LazyLoadingConfig<
+  F extends FieldValues = FieldValues,
+  Q extends QueriesArray = QueriesArray,
+> {
   /** Enable lazy loading (default: true) */
   enabled?: boolean;
   /** Preload on hover for interactive elements (default: false) */
@@ -204,7 +212,7 @@ export interface LazyLoadingConfig {
   /** Trigger type for lazy loading: viewport (IntersectionObserver), interaction (manual), or conditional (based on function) */
   trigger?: "viewport" | "interaction" | "conditional";
   /** Conditional function to determine if content should load (for trigger: "conditional") */
-  condition?: (context: MetadataEvaluatorContext) => boolean;
+  condition?: (context: MetadataEvaluatorContext<F, Q>) => boolean;
   /** Placeholder component to show before lazy content loads */
   placeholder?: React.ReactNode;
 }
@@ -214,7 +222,10 @@ export interface LazyLoadingConfig {
  * Allows different behavior on web vs React Native
  * Note: This is a partial type - it will be completed in types.ts with full PageProps type
  */
-export interface PlatformOverrides<F extends FieldValues = FieldValues, Q extends QueriesArray = QueriesArray> {
+export interface PlatformOverrides<
+  F extends FieldValues = FieldValues,
+  Q extends QueriesArray = QueriesArray,
+> {
   /** Web-specific overrides (React DOM) */
   web?: Partial<PageProps<F, Q>>; // Will be Partial<PageProps<F, Q>> when imported in types.ts
   /** React Native-specific overrides */

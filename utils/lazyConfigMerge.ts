@@ -138,8 +138,17 @@ export function validateLazyConfig(config: Partial<LazyLoadingConfig>): string[]
   }
 
   if (config.threshold !== undefined) {
-    if (config.threshold < 0 || config.threshold > 1) {
-      errors.push('Threshold must be between 0 and 1');
+    if (Array.isArray(config.threshold)) {
+      for (const t of config.threshold) {
+        if (t < 0 || t > 1) {
+          errors.push('Threshold must be between 0 and 1');
+          break;
+        }
+      }
+    } else {
+      if (config.threshold < 0 || config.threshold > 1) {
+        errors.push('Threshold must be between 0 and 1');
+      }
     }
   }
 
@@ -192,7 +201,7 @@ export function isLazyLoadingEnabled(config?: Partial<LazyLoadingConfig>): boole
   }
 
   // Check global disable (if someone manually set it)
-  if (globalLazyConfig.trigger === 'disabled') {
+  if ((globalLazyConfig?.trigger as string) === 'disabled') {
     return false;
   }
 

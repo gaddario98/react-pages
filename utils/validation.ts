@@ -58,7 +58,7 @@ export function validatePageProps<F extends FieldValues, Q extends QueriesArray>
 
   // Rule 3: Check for circular dependencies in content items
   if (props.contents && Array.isArray(props.contents)) {
-    const circularDeps = detectCircularDependencies(props.contents, props.queries as Q);
+    const circularDeps = detectCircularDependencies(props.contents);
     if (circularDeps.length > 0) {
       issues.push({
         level: 'warn',
@@ -121,8 +121,7 @@ export function validateAndLogPageProps<F extends FieldValues, Q extends Queries
  * @returns Array of circular dependency paths
  */
 function detectCircularDependencies<F extends FieldValues, Q extends QueriesArray>(
-  contents: ContentItem<F, Q>[],
-  queries?: Q
+  contents: ContentItem<F, Q>[]
 ): string[][] {
   const cycles: string[][] = [];
 
@@ -207,7 +206,7 @@ function validateQueryReferences<F extends FieldValues, Q extends QueriesArray>(
 
     if (item.usedQueries) {
       item.usedQueries.forEach((queryKey) => {
-        if (!validQueryKeys.has(queryKey as any)) {
+        if (!validQueryKeys.has(queryKey)) {
           invalidRefs.push({
             itemKey,
             invalidQueryKey: String(queryKey),

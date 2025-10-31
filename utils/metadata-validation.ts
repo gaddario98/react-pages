@@ -52,12 +52,15 @@ export function validateMetadataConfig(config?: MetadataConfig): MetadataValidat
     });
   }
 
-  if (config.openGraph?.image && !isValidUrl(config.openGraph.image)) {
-    issues.push({
-      level: 'warn',
-      message: '[MetadataConfig] Invalid Open Graph image URL format.',
-      context: { ogImage: config.openGraph.image },
-    });
+  if (config.openGraph?.image) {
+    const ogImage = typeof config.openGraph.image === 'function' ? undefined : config.openGraph.image;
+    if (ogImage && !isValidUrl(ogImage)) {
+      issues.push({
+        level: 'warn',
+        message: '[MetadataConfig] Invalid Open Graph image URL format.',
+        context: { ogImage },
+      });
+    }
   }
 
   if (config.openGraph?.url) {

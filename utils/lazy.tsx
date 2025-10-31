@@ -90,7 +90,7 @@ export function lazyWithPreload<P extends Record<string, any>>(
 
     return (
       <div onMouseEnter={handleMouseEnter} onMouseLeave={onMouseLeave} style={{ display: 'contents' }}>
-        <LazyComponent {...(restProps as P)} />
+        <LazyComponent {...(restProps)} />
       </div>
     );
   };
