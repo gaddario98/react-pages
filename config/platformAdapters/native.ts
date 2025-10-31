@@ -5,13 +5,22 @@
  * @module config/platformAdapters/native
  */
 
-import React, { ReactNode } from 'react';
+import React, { ReactNode, ComponentType } from 'react';
 import type {
   PlatformAdapter,
   PlatformFeature,
   MetadataConfig,
   ViewSettings,
 } from './base';
+
+/**
+ * Extended view settings for React Native platform
+ * Includes React Native-specific components
+ */
+interface NativeViewSettings extends ViewSettings {
+  customScrollView?: ComponentType<unknown>;
+  refreshControl?: ComponentType<unknown>;
+}
 
 /**
  * React Native platform adapter implementation
@@ -51,15 +60,16 @@ export const nativeAdapter: PlatformAdapter = {
   renderScrollView(children: ReactNode, settings: ViewSettings): ReactNode {
     // Similar to renderContainer, we can't directly import ScrollView
     // Consumer apps should provide customScrollView via settings
-    if ((settings as any).customScrollView) {
-      const CustomScrollView = (settings as any).customScrollView;
+    const nativeSettings = settings as unknown as NativeViewSettings;
+    if (nativeSettings.customScrollView) {
+      const CustomScrollView = nativeSettings.customScrollView;
       return React.createElement(
         CustomScrollView,
         {
           contentContainerStyle: {
             padding: settings.withoutPadding ? 0 : 16,
           },
-          refreshControl: settings.disableRefreshing ? undefined : (settings as any).refreshControl,
+          refreshControl: settings.disableRefreshing ? undefined : nativeSettings.refreshControl,
         },
         children
       );
@@ -142,9 +152,9 @@ export function isReactNative(): boolean {
  * ```
  */
 export function createNativeAdapter(components: {
-  PageContainer?: any;
-  ScrollViewComponent?: any;
-  RefreshControl?: any;
+  PageContainer?: ComponentType<unknown>;
+  ScrollViewComponent?: ComponentType<unknown>;
+  RefreshControl?: ComponentType<unknown>;
 }): PlatformAdapter {
   return {
     ...nativeAdapter,
@@ -169,7 +179,8 @@ export function createNativeAdapter(components: {
     },
 
     renderScrollView(children: ReactNode, settings: ViewSettings): ReactNode {
-      const ScrollViewComponent = (settings as any).customScrollView || components.ScrollViewComponent;
+      const nativeSettings = settings as unknown as NativeViewSettings;
+      const ScrollViewComponent = nativeSettings.customScrollView || components.ScrollViewComponent;
 
       if (!ScrollViewComponent) {
         return children;

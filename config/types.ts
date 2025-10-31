@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Metadata Configuration Types
  * Custom metadata system replacing react-helmet-async
@@ -8,6 +7,28 @@
 import { FieldValues } from "react-hook-form";
 import { QueriesArray } from "@gaddario98/react-queries";
 import { PageProps } from "../types";
+
+/**
+ * Context passed to dynamic metadata evaluator functions
+ * Provides access to form values, queries, and page state
+ */
+export interface MetadataEvaluatorContext<
+  F extends FieldValues = FieldValues,
+  Q extends QueriesArray = QueriesArray
+> {
+  /** Current form values */
+  formValues?: Partial<F>;
+  /** All query results mapped by key */
+  allQuery?: Record<string, any>;
+  /** All mutations mapped by key */
+  allMutation?: Record<string, any>;
+  /** Namespace for i18n */
+  ns?: string;
+  /** Page ID */
+  pageId?: string;
+  /** Page config */
+  pageConfig?: PageProps<F, Q>;
+}
 
 export interface MetaTag {
   /** For <meta name="..." content="..." /> */
@@ -30,12 +51,12 @@ export interface OpenGraphConfig<
   Q extends QueriesArray = QueriesArray
 > {
   type?: "website" | "article" | "product" | "profile";
-  title?: string | ((props: any) => string);
-  description?: string | ((props: any) => string);
+  title?: string | ((context: MetadataEvaluatorContext<F, Q>) => string);
+  description?: string | ((context: MetadataEvaluatorContext<F, Q>) => string);
   /** URL to preview image (must be absolute) */
-  image?: string | ((props: any) => string);
+  image?: string | ((context: MetadataEvaluatorContext<F, Q>) => string);
   /** Canonical URL */
-  url?: string | ((props: any) => string);
+  url?: string | ((context: MetadataEvaluatorContext<F, Q>) => string);
   siteName?: string;
   /** Locale (e.g., "en_US", "it_IT") */
   locale?: string;
@@ -49,7 +70,7 @@ export interface StructuredDataConfig<
   Q extends QueriesArray = QueriesArray
 > {
   type: "Article" | "Product" | "WebPage" | "FAQPage" | "Organization" | "Person";
-  schema: Record<string, any> | ((props: any) => Record<string, any>);
+  schema: Record<string, unknown> | ((context: MetadataEvaluatorContext<F, Q>) => Record<string, unknown>);
 }
 
 /**
@@ -60,11 +81,11 @@ export interface AIHintsConfig<
   Q extends QueriesArray = QueriesArray
 > {
   /** Content classification (e.g., "documentation", "tutorial", "reference") */
-  contentClassification?: string | ((props: any) => string);
+  contentClassification?: string | ((context: MetadataEvaluatorContext<F, Q>) => string);
   /** Hints for AI models (e.g., ["code-heavy", "technical"]) */
-  modelHints?: string[] | ((props: any) => string[]);
+  modelHints?: string[] | ((context: MetadataEvaluatorContext<F, Q>) => string[]);
   /** Additional context for AI understanding */
-  contextualInfo?: string | ((props: any) => string);
+  contextualInfo?: string | ((context: MetadataEvaluatorContext<F, Q>) => string);
   /** Exclude this page from AI crawler indexing */
   excludeFromIndexing?: boolean;
 }
@@ -96,13 +117,13 @@ export interface MetadataConfig<
 > {
   // Basic Metadata
   /** Page title - sets document.title on web */
-  title?: string | ((props: any) => string);
+  title?: string | ((context: MetadataEvaluatorContext<F, Q>) => string);
   /** Page description meta tag */
-  description?: string | ((props: any) => string);
+  description?: string | ((context: MetadataEvaluatorContext<F, Q>) => string);
   /** HTML lang attribute (e.g., "en", "it") */
   documentLang?: string;
   /** Keywords for SEO */
-  keywords?: string[] | ((props: any) => string[]);
+  keywords?: string[] | ((context: MetadataEvaluatorContext<F, Q>) => string[]);
 
   // Open Graph (Social Media)
   openGraph?: OpenGraphConfig<F, Q>;
@@ -117,10 +138,10 @@ export interface MetadataConfig<
   robots?: RobotsConfig;
 
   // Additional custom meta tags
-  customMeta?: MetaTag[] | ((props: any) => MetaTag[]);
+  customMeta?: MetaTag[] | ((context: MetadataEvaluatorContext<F, Q>) => MetaTag[]);
 
   // Additional meta tags (alias for customMeta for backward compatibility)
-  otherMetaTags?: MetaTag[] | ((props: any) => MetaTag[]);
+  otherMetaTags?: MetaTag[] | ((context: MetadataEvaluatorContext<F, Q>) => MetaTag[]);
 
   // Disable search engine indexing
   disableIndexing?: boolean;
@@ -183,7 +204,7 @@ export interface LazyLoadingConfig {
   /** Trigger type for lazy loading: viewport (IntersectionObserver), interaction (manual), or conditional (based on function) */
   trigger?: "viewport" | "interaction" | "conditional";
   /** Conditional function to determine if content should load (for trigger: "conditional") */
-  condition?: (props: any) => boolean;
+  condition?: (context: MetadataEvaluatorContext) => boolean;
   /** Placeholder component to show before lazy content loads */
   placeholder?: React.ReactNode;
 }

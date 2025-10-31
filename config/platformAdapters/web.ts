@@ -40,7 +40,7 @@ function updateOrCreateMeta(
 /**
  * Helper to inject JSON-LD structured data
  */
-function injectStructuredData(id: string, data: Record<string, any>): void {
+function injectStructuredData(id: string, data: Record<string, unknown>): void {
   let script = document.querySelector(`script[id="${id}"]`) as HTMLScriptElement;
 
   if (!script) {
@@ -281,7 +281,7 @@ export const webAdapter: PlatformAdapter = {
   },
 
   // T101: Preload component on the web platform
-  preloadComponent(componentPath: string): Promise<any> {
+  preloadComponent(componentPath: string): Promise<unknown> {
     return new Promise((resolve, reject) => {
       // Use requestIdleCallback if available, otherwise setTimeout
       const callback = () => {

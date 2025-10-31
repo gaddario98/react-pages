@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { DefaultValues, FieldValues, UseFormSetValue } from "react-hook-form";
 import { ComponentProps, JSX } from "react";
 import {
@@ -31,6 +30,19 @@ type MappedItemsFunction<
   Q extends QueriesArray,
   ComponentType,
 > = (props: MappedProps<F, Q>) => ComponentType;
+
+/**
+ * Context passed to lifecycle callbacks
+ * Provides access to form, queries, mutations, and utilities
+ */
+type LifecycleContext<
+  F extends FieldValues = FieldValues,
+  Q extends QueriesArray = QueriesArray
+> = MappedProps<F, Q> & {
+  ns?: string;
+  pageId?: string;
+  pageConfig?: PageProps<F, Q>;
+};
 
 /* ======================================================
    CONTENT ITEMS & CONTAINER ITEMS
@@ -194,15 +206,15 @@ interface PageProps<
 
   // NEW IN 2.0: Complete lifecycle callbacks (T074-T078)
   lifecycleCallbacks?: {
-    onMountComplete?: (context: any) => void | Promise<void>;
-    onQuerySuccess?: (context: any, queryKey: string, data: any) => void | Promise<void>;
-    onQueryError?: (context: any, queryKey: string, error: Error) => void | Promise<void>;
-    onFormSubmit?: (context: any, result: any) => void | Promise<void>;
+    onMountComplete?: (context: LifecycleContext<F, Q>) => void | Promise<void>;
+    onQuerySuccess?: (context: LifecycleContext<F, Q>, queryKey: string, data: unknown) => void | Promise<void>;
+    onQueryError?: (context: LifecycleContext<F, Q>, queryKey: string, error: Error) => void | Promise<void>;
+    onFormSubmit?: (context: LifecycleContext<F, Q>, result: unknown) => void | Promise<void>;
     onValuesChange?: MappedItemsFunction<F, Q, void>;
   };
 
   // NEW IN 2.0: Custom configuration for extensibility (T083)
-  customConfig?: Record<string, any>;
+  customConfig?: Record<string, unknown>;
 
   // Feature flags
   enableAuthControl?: boolean;
