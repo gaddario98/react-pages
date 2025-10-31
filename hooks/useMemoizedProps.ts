@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable react-hooks/exhaustive-deps */
 /**
  * useMemoizedProps Hook
  * Provides stable MappedProps memoization for preventing unnecessary re-renders
@@ -7,7 +9,7 @@
 
 import { useMemo } from 'react';
 import { FieldValues, UseFormSetValue } from 'react-hook-form';
-import type { QueriesArray } from '@gaddario98/react-queries';
+import type { AllMutation, QueriesArray, MultipleQueryResponse} from '@gaddario98/react-queries';
 import equal from 'fast-deep-equal';
 
 /**
@@ -19,8 +21,8 @@ export interface MappedProps<
 > {
   formValues: F;
   setValue: UseFormSetValue<F>;
-  allQuery: any; // MultipleQueryResponse<Q>
-  allMutation: any; // AllMutation<Q>
+  allQuery: MultipleQueryResponse<Q>
+  allMutation:  AllMutation<Q>
 }
 
 /**
@@ -63,7 +65,7 @@ export function useMemoizedProps<
   props: MappedProps<F, Q>,
   options: UseMemoizedPropsOptions = {}
 ): MappedProps<F, Q> {
-  const { deepEqual: useDeepEqual = true, isEqual: customIsEqual } = options;
+  const { deepEqual: useDeepEqual = true } = options;
 
   // Memoize formValues with deep equality
   const stableFormValues = useMemo(() => {

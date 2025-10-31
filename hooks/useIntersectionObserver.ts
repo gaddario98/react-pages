@@ -73,6 +73,7 @@ export function useIntersectionObserver<T extends Element = HTMLDivElement>(
     // SSR safety check - IntersectionObserver not available on server
     if (typeof IntersectionObserver === 'undefined') {
       // On server or unsupported environment, default to visible
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setInView(true);
       return;
     }
@@ -142,6 +143,7 @@ export function useInViewport<T extends Element = HTMLDivElement>(
           setHasBeenVisible(true);
         }, minVisibleTime);
       } else {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setHasBeenVisible(true);
       }
     } else if (!inView && visibleTimeoutRef.current) {

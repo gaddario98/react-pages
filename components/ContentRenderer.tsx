@@ -20,7 +20,9 @@ export const ContentRenderer = withMemo(
     if (content.type === "container") {
       // Container items should be handled by the renderComponent function in useGenerateContentRender
       // This component is now primarily for direct usage of non-container items
-      console.warn("ContentRenderer received a container item. Container items should be handled by the renderComponent function in useGenerateContentRender.");
+      console.warn(
+        "ContentRenderer received a container item. Container items should be handled by the renderComponent function in useGenerateContentRender."
+      );
       return null;
     }
 
@@ -78,8 +80,8 @@ export const ContentRenderer = withMemo(
           </div>
         )}
       >
-        <LazyContent
-          component={() => renderContent as any}
+        <LazyContent<F, Q>
+          component={() => renderContent}
           componentProps={{}}
           lazyConfig={{
             trigger: lazyTrigger,

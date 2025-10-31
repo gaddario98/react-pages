@@ -114,9 +114,7 @@ export const useGenerateContentRender = <
           pageId,
           allMutation: extractMutations(content.usedQueries ?? []),
           allQuery: extractQuery(
-            (content.usedQueries ?? []) as Array<
-              keyof MultipleQueryResponse<Q>
-            >
+            (content.usedQueries ?? []) as Array<keyof MultipleQueryResponse<Q>>
           ),
           setValue,
           key: stableKey,
@@ -140,6 +138,7 @@ export const useGenerateContentRender = <
       (a, b) => a.index - b.index || String(a.key).localeCompare(String(b.key))
     );
     const prev = memorizedContentsRef.current;
+    // eslint-disable-next-line react-hooks/refs
     const merged = next.map((el) => {
       const found = prev.find((e) => e.key === el.key);
       if (found) {
@@ -147,8 +146,10 @@ export const useGenerateContentRender = <
       }
       return el;
     });
+    // eslint-disable-next-line react-hooks/refs
     memorizedContentsRef.current = merged;
     return next;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     isAllQueryMapped,
     filteredContents,

@@ -1,12 +1,10 @@
-import { useEffect, useMemo, useState, useRef } from "react";
-import { useTranslation } from "react-i18next";
+import { useEffect, useMemo, useState } from "react";
 import { withMemo } from "@gaddario98/utiles";
-import { PageProps, PageMetadataProps } from "../types";
+import { PageProps } from "../types";
 import { FieldValues } from "react-hook-form";
 import { QueriesArray, QueryConfigArray } from "@gaddario98/react-queries";
 import { useAuthValue } from "@gaddario98/react-auth";
-import { Helmet } from "react-helmet-async";
-import { pageConfig as GlobalPageConfig, pageConfig } from "../config";
+import { pageConfig as GlobalPageConfig } from "../config";
 import { useGenerateContent } from "../hooks/useGenerateContent";
 import { usePageConfig } from "../hooks";
 import { PlatformAdapterProvider } from "../config/PlatformAdapterProvider";
@@ -14,50 +12,6 @@ import { defaultAdapter } from "../config/platformAdapters";
 import { validateAndLogPageProps } from "../utils/validation";
 import { validatePagePropsLazy, logLazyValidationErrors } from "../utils/lazyValidation";
 import { MetadataManager } from "./MetadataManager";
-
-/**
- * Renders page metadata using react-helmet-async
- * @param title - Page title
- * @param description - Page description
- * @param documentLang - Document language
- * @param otherMetaTags - Additional meta tags
- * @param disableIndexing - Whether to disable search engine indexing
- */
-const PageMetadata = ({
-  title = "Addario Giosuè App",
-  description,
-  documentLang = "it",
-  otherMetaTags,
-  disableIndexing,
-}: PageMetadataProps) => {
-  // Evaluate dynamic metadata functions (pass empty context for now)
-  const emptyContext = { formValues: {}, allQuery: {}, allMutation: {}, setValue: () => {} };
-  const resolvedTitle = typeof title === 'function' ? title(emptyContext) : title || pageConfig.meta?.title || "";
-  const resolvedDescription = typeof description === 'function' ? description(emptyContext) : description || pageConfig.meta?.description || "";
-
-  // Handle otherMetaTags if it's a function
-  const resolvedTags = typeof otherMetaTags === 'function' ? otherMetaTags(emptyContext) : otherMetaTags;
-
-  return (
-    <Helmet>
-      <html lang={documentLang} />
-      <title>{resolvedTitle}</title>
-      {
-        <meta
-          name="description"
-          content={resolvedDescription}
-        />
-      }
-      <meta
-        name="robots"
-        content={disableIndexing ? "noindex, nofollow" : "index, follow"}
-      />
-      {Array.isArray(resolvedTags) && resolvedTags.map((tag, idx) => (
-        <meta key={tag.id || idx} {...tag} />
-      ))}
-    </Helmet>
-  );
-};
 
 /**
  * Main page generator component that orchestrates page rendering
@@ -120,19 +74,6 @@ const PageGenerator = withMemo(
       customConfig,
     } = selectedProps;
 
-    const { t, i18n } = useTranslation(ns);
-    const pageMetadata = useMemo(
-      (): PageMetadataProps => ({
-        ...meta,
-        title: meta?.title ? t(meta?.title, { ns: "meta" }) : "",
-        description: meta?.description
-          ? t(meta?.description, { ns: "meta" })
-          : "",
-        documentLang: i18n.language,
-      }),
-      [t, i18n.language, meta]
-    );
-
     const config = usePageConfig<F, Q>({
       queries,
       form,
@@ -163,7 +104,6 @@ const PageGenerator = withMemo(
     const pageContent = useMemo(
       () => (
         <>
-          <PageMetadata {...pageMetadata} />
           {/* T066: Integrate MetadataManager for dynamic metadata updates */}
           <MetadataManager<F, Q>
             meta={meta}
@@ -188,22 +128,7 @@ const PageGenerator = withMemo(
             GlobalPageConfig.LoaderComponent({ loading: isLoading })}
         </>
       ),
-      [
-        pageMetadata,
-        meta,
-        config.formValues,
-        config.allQuery,
-        config.allMutation,
-        config.setValue,
-        allContents,
-        handleRefresh,
-        hasQueries,
-        mappedViewSettings?.header,
-        id,
-        header,
-        isLoading,
-        ns,
-      ]
+      [meta, config.formValues, config.allQuery, config.allMutation, config.setValue, allContents, handleRefresh, hasQueries, mappedViewSettings?.header, id, header, isLoading, ns]
     );
 
     const layoutBody = useMemo(() => body, [body]);

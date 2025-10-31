@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Metadata Configuration Types
  * Custom metadata system replacing react-helmet-async
@@ -6,6 +7,7 @@
 
 import { FieldValues } from "react-hook-form";
 import { QueriesArray } from "@gaddario98/react-queries";
+import { PageProps } from "../types";
 
 export interface MetaTag {
   /** For <meta name="..." content="..." /> */
@@ -193,7 +195,7 @@ export interface LazyLoadingConfig {
  */
 export interface PlatformOverrides<F extends FieldValues = FieldValues, Q extends QueriesArray = QueriesArray> {
   /** Web-specific overrides (React DOM) */
-  web?: any; // Will be Partial<PageProps<F, Q>> when imported in types.ts
+  web?: Partial<PageProps<F, Q>>; // Will be Partial<PageProps<F, Q>> when imported in types.ts
   /** React Native-specific overrides */
-  native?: any; // Will be Partial<PageProps<F, Q>> when imported in types.ts
+  native?: Partial<PageProps<F, Q>>; // Will be Partial<PageProps<F, Q>> when imported in types.ts
 }

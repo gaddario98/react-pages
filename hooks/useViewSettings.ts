@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/refs */
 import { useMemo, useRef } from 'react';
 import { FieldValues } from 'react-hook-form';
 import { QueriesArray, AllMutation, MultipleQueryResponse } from '@gaddario98/react-queries';

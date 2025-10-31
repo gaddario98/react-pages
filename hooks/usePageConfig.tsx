@@ -18,13 +18,16 @@ import { usePageQueries } from "./usePageQueries";
 import { useViewSettings } from "./useViewSettings";
 import { useFormData } from "./useFormData";
 import { usePlatformAdapter } from "./usePlatformAdapter";
-import { useLifecycleCallbacks, type LifecycleCallbacks } from "./useLifecycleCallbacks";
+import {
+  useLifecycleCallbacks,
+  type LifecycleCallbacks,
+} from "./useLifecycleCallbacks";
 import { deepMerge } from "../utils/merge";
 
 const EMPTY_ARRAY: [] = [];
 
 export const usePageConfig = <F extends FieldValues, Q extends QueriesArray>({
-  queries = EMPTY_ARRAY as QueryPageConfigArray<F,Q>,
+  queries = EMPTY_ARRAY as QueryPageConfigArray<F, Q>,
   form,
   ns,
   onValuesChange,
@@ -36,7 +39,7 @@ export const usePageConfig = <F extends FieldValues, Q extends QueriesArray>({
   lifecycleCallbacks,
   customConfig,
 }: {
-  queries: QueryPageConfigArray<F,Q>;
+  queries: QueryPageConfigArray<F, Q>;
   form?: FormPageProps<F, Q>;
   ns: string;
   onValuesChange?: MappedItemsFunction<F, Q, void>;
@@ -89,9 +92,10 @@ export const usePageConfig = <F extends FieldValues, Q extends QueriesArray>({
     if (!meta) return undefined;
 
     // Apply platform-specific overrides
-    const platformSpecificMeta = platformAdapter.name === 'web'
-      ? platformOverrides?.web?.meta
-      : platformOverrides?.native?.meta;
+    const platformSpecificMeta =
+      platformAdapter.name === "web"
+        ? platformOverrides?.web?.meta
+        : platformOverrides?.native?.meta;
 
     return platformSpecificMeta || meta;
   }, [meta, platformOverrides, platformAdapter.name]);
@@ -100,28 +104,43 @@ export const usePageConfig = <F extends FieldValues, Q extends QueriesArray>({
     if (!lazyLoading) return undefined;
 
     // Apply platform-specific overrides
-    const platformSpecificLazyLoading = platformAdapter.name === 'web'
-      ? platformOverrides?.web?.lazyLoading
-      : platformOverrides?.native?.lazyLoading;
+    const platformSpecificLazyLoading =
+      platformAdapter.name === "web"
+        ? platformOverrides?.web?.lazyLoading
+        : platformOverrides?.native?.lazyLoading;
 
     return platformSpecificLazyLoading || lazyLoading;
   }, [lazyLoading, platformOverrides, platformAdapter.name]);
 
   const resolvedViewSettings = useMemo(() => {
     // Apply platform-specific view settings overrides
-    const platformSpecificViewSettings = platformAdapter.name === 'web'
-      ? platformOverrides?.web?.viewSettings
-      : platformOverrides?.native?.viewSettings;
+    const platformSpecificViewSettings =
+      platformAdapter.name === "web"
+        ? platformOverrides?.web?.viewSettings
+        : platformOverrides?.native?.viewSettings;
 
     if (platformSpecificViewSettings) {
       // Merge with base view settings
-      return typeof platformSpecificViewSettings === 'function'
-        ? platformSpecificViewSettings({ allQuery, allMutation, formValues, setValue })
+      return typeof platformSpecificViewSettings === "function"
+        ? platformSpecificViewSettings({
+            allQuery,
+            allMutation,
+            formValues,
+            setValue,
+          })
         : { ...mappedViewSettings, ...platformSpecificViewSettings };
     }
 
     return mappedViewSettings;
-  }, [mappedViewSettings, platformOverrides, platformAdapter.name, allQuery, allMutation, formValues, setValue]);
+  }, [
+    mappedViewSettings,
+    platformOverrides,
+    platformAdapter.name,
+    allQuery,
+    allMutation,
+    formValues,
+    setValue,
+  ]);
 
   // Prepare stable references for query extraction
   // Optimized: Only depend on form?.usedQueries, not the entire form object
@@ -135,7 +154,7 @@ export const usePageConfig = <F extends FieldValues, Q extends QueriesArray>({
     return extractMutations(form.usedQueries as string[]);
   }, [allMutation, extractMutations, form?.usedQueries]);
 
-  const { mappedFormData, formSubmit } = useFormData({
+  const { mappedFormData, formSubmit } = useFormData<F, Q>({
     form,
     isAllQueryMapped,
     formValues,
@@ -147,10 +166,10 @@ export const usePageConfig = <F extends FieldValues, Q extends QueriesArray>({
   // Call useFormManager hook at top level (maintains hook order)
   const formData = useFormManager({
     ...form,
-    data: mappedFormData as any[],
+    data: mappedFormData,
     ns,
     formControl,
-    submit: formSubmit as any[],
+    submit: formSubmit,
   });
 
   const handleRefresh = useCallback(async () => {
@@ -181,19 +200,29 @@ export const usePageConfig = <F extends FieldValues, Q extends QueriesArray>({
 
   useEffect(() => {
     if (isAllQueryMapped && lifecycleCallbacksConfig.onMountComplete) {
-      lifecycleCallbacksConfig.onMountComplete({
-        formValues,
-        setValue,
-        allQuery: allQuery ?? {},
-        allMutation,
-        ns,
-      }).catch((error: unknown) => {
-        if (process.env.NODE_ENV === 'development') {
-          console.error('[usePageConfig] onMountComplete error:', error);
-        }
-      });
+      lifecycleCallbacksConfig
+        .onMountComplete({
+          formValues,
+          setValue,
+          allQuery: allQuery ?? {},
+          allMutation,
+          ns,
+        })
+        ?.catch((error: unknown) => {
+          if (process.env.NODE_ENV === "development") {
+            console.error("[usePageConfig] onMountComplete error:", error);
+          }
+        });
     }
-  }, [isAllQueryMapped, lifecycleCallbacksConfig, formValues, setValue, allQuery, allMutation, ns]);
+  }, [
+    isAllQueryMapped,
+    lifecycleCallbacksConfig,
+    formValues,
+    setValue,
+    allQuery,
+    allMutation,
+    ns,
+  ]);
 
   // T083: Merge custom configuration with defaults (deep merge)
   const mergedConfig = useMemo(() => {

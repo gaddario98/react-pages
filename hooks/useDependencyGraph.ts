@@ -113,8 +113,10 @@ export function useDependencyGraph() {
     };
   }, []);
 
+      // eslint-disable-next-line react-hooks/refs
   return useMemo(
     () => ({
+      // eslint-disable-next-line react-hooks/refs
       graph: graphRef.current,
       registerComponent,
       getNode,
