@@ -6,7 +6,8 @@
  */
 
 import type { ContentItem, LazyLoadingConfig, PageProps } from '../types';
-import type { FieldValues, QueriesArray } from '@gaddario98/react-queries';
+import type { FieldValues } from 'react-hook-form';
+import type { QueriesArray } from '@gaddario98/react-queries';
 
 /**
  * Validation error for lazy loading configuration

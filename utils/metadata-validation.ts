@@ -60,19 +60,19 @@ export function validateMetadataConfig(config?: MetadataConfig): MetadataValidat
     });
   }
 
-  if (config.openGraph?.url && !isValidUrl(config.openGraph.url)) {
-    issues.push({
-      level: 'warn',
-      message: '[MetadataConfig] Invalid Open Graph URL format.',
-      context: { ogUrl: config.openGraph.url },
-    });
+  if (config.openGraph?.url) {
+    const ogUrl = typeof config.openGraph.url === 'function' ? undefined : config.openGraph.url;
+    if (ogUrl && !isValidUrl(ogUrl)) {
+      issues.push({
+        level: 'warn',
+        message: '[MetadataConfig] Invalid Open Graph URL format.',
+        context: { ogUrl },
+      });
+    }
   }
 
   // Rule 3: Warn about incompatible configurations
-  const robotsNoindex =
-    typeof config.robots === 'string'
-      ? config.robots.includes('noindex')
-      : config.robots?.noindex;
+  const robotsNoindex = config.robots?.noindex;
 
   if (robotsNoindex && config.structuredData) {
     issues.push({

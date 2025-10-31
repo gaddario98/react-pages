@@ -15,7 +15,7 @@
     "test:coverage": "vitest run --coverage",
     "test:native": "vitest -c vitest.config.native.ts",
     "test:perf": "vitest run --testNamePattern='performance'",
-    "lint": "eslint . --ext .ts,.tsx",
+    "lint": "eslint .",
     "type-check": "tsc --noEmit"
   },
   "devDependencies": {

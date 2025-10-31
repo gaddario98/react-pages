@@ -78,7 +78,7 @@ export const ContentRenderer = withMemo(
           </div>
         )}
       >
-        <LazyContent<F, Q>
+        <LazyContent
           component={() => renderContent as any}
           componentProps={{}}
           lazyConfig={{

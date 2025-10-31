@@ -13,6 +13,7 @@ import {
 } from "@gaddario98/react-queries";
 import { FormManager, FormManagerConfig, Submit } from "@gaddario98/react-form";
 import { pageConfig } from "./config";
+import { MetadataConfig, LazyLoadingConfig } from "./config/types";
 
 /* ======================================================
    MAPPABLE PROPS E FUNZIONI DI MAPPING

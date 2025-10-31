@@ -65,7 +65,7 @@ export const basicPageConfig: PageProps<UserProfileForm, UserProfileQueries> = {
           // Invalidate and refetch user query
           // queryClient.invalidateQueries(['getUser']);
         },
-        onError: (error) => {
+        onError: (error: unknown) => {
           console.error("Failed to update user:", error);
         },
       },

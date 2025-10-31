@@ -216,11 +216,13 @@ export function mergeArraysByKey<T extends Record<string, any>>(
 /**
  * Check if two objects are deeply equal
  * Useful for detecting if a merge actually changed anything
+ * Note: Use the fast-deep-equal version from optimization.ts instead
+ * @deprecated - Use deepEqual from utils/optimization.ts instead
  * @param obj1 - First object
  * @param obj2 - Second object
  * @returns True if objects are deeply equal
  */
-export function deepEqual(obj1: any, obj2: any): boolean {
+export function deepEqualFallback(obj1: any, obj2: any): boolean {
   if (obj1 === obj2) {
     return true;
   }
@@ -245,7 +247,7 @@ export function deepEqual(obj1: any, obj2: any): boolean {
       return false;
     }
 
-    if (!deepEqual(obj1[key], obj2[key])) {
+    if (!deepEqualFallback(obj1[key], obj2[key])) {
       return false;
     }
   }

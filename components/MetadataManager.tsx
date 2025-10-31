@@ -122,6 +122,7 @@ const MetadataManagerImpl = <
  * Export memoized component to prevent unnecessary re-renders
  * Re-renders only when metadata-related props actually change
  */
-export const MetadataManager = memo(MetadataManagerImpl) as typeof MetadataManagerImpl;
+const MemoizedMetadataManager = memo(MetadataManagerImpl) as typeof MetadataManagerImpl;
+MemoizedMetadataManager.displayName = 'MetadataManager';
 
-MetadataManager.displayName = 'MetadataManager';
+export const MetadataManager = MemoizedMetadataManager;

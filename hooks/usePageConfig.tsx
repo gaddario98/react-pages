@@ -187,7 +187,7 @@ export const usePageConfig = <F extends FieldValues, Q extends QueriesArray>({
         allQuery: allQuery ?? {},
         allMutation,
         ns,
-      }).catch((error) => {
+      }).catch((error: unknown) => {
         if (process.env.NODE_ENV === 'development') {
           console.error('[usePageConfig] onMountComplete error:', error);
         }

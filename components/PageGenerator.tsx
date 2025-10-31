@@ -152,23 +152,12 @@ const PageGenerator = withMemo(
       pageConfig: config,
     });
 
-    const layoutComponentRef = useRef<typeof GlobalPageConfig.BodyContainer>();
-    const pageContainerRef = useRef<typeof GlobalPageConfig.PageContainer>();
-
     const Layout = useMemo(() => {
-      const newComponent = mappedViewSettings?.customLayoutComponent ?? GlobalPageConfig.BodyContainer;
-      if (layoutComponentRef.current !== newComponent) {
-        layoutComponentRef.current = newComponent;
-      }
-      return layoutComponentRef.current;
+      return mappedViewSettings?.customLayoutComponent ?? GlobalPageConfig.BodyContainer;
     }, [mappedViewSettings?.customLayoutComponent]);
 
     const PageContainer = useMemo(() => {
-      const newComponent = mappedViewSettings?.customPageContainer ?? GlobalPageConfig.PageContainer;
-      if (pageContainerRef.current !== newComponent) {
-        pageContainerRef.current = newComponent;
-      }
-      return pageContainerRef.current;
+      return mappedViewSettings?.customPageContainer ?? GlobalPageConfig.PageContainer;
     }, [mappedViewSettings?.customPageContainer]);
 
     const pageContent = useMemo(
