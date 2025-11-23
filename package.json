@@ -1,6 +1,6 @@
 {
   "name": "@gaddario98/react-pages",
-  "version": "2.0.21",
+  "version": "2.0.22",
   "type": "module",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -50,7 +50,7 @@
   },
   "dependencies": {
     "@gaddario98/react-auth": "^1.0.16",
-    "@gaddario98/react-form": "^1.0.22",
+    "@gaddario98/react-form": "^1.0.23",
     "@gaddario98/react-queries": "^1.0.21",
     "@gaddario98/utiles": "^1.0.15",
     "@tanstack/react-query": "^5.90.2",

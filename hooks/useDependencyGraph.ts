@@ -5,8 +5,11 @@
  * @module hooks/useDependencyGraph
  */
 
-import { useRef, useCallback, useMemo } from 'react';
-import { DependencyGraph, DependencyNode } from '../utils/dependencyGraph';
+import { useRef, useCallback, useMemo } from "react";
+import { DependencyGraph, DependencyNode } from "../utils/dependencyGraph";
+import { ContentItem } from "../types";
+import { FieldValues } from "react-hook-form";
+import { QueriesArray } from "@gaddario98/react-queries";
 
 /**
  * Hook for managing a dependency graph within a page
@@ -113,7 +116,7 @@ export function useDependencyGraph() {
     };
   }, []);
 
-      // eslint-disable-next-line react-hooks/refs
+  // eslint-disable-next-line react-hooks/refs
   return useMemo(
     () => ({
       // eslint-disable-next-line react-hooks/refs
@@ -144,16 +147,16 @@ export function useDependencyGraph() {
  * Hook variant that automatically registers components from a list
  * Simplifies common use case of registering content items
  */
-export function useAutoRegisterDependencies<T extends { usedQueries?: string[]; usedFormValues?: string[]; key?: string }>(
-  items: T[],
-  idPrefix: string = 'item'
-) {
+export function useAutoRegisterDependencies<
+  F extends FieldValues,
+  Q extends QueriesArray,
+>(items: ContentItem<F, Q>[], idPrefix: string = "item") {
   const {
     graph,
     registerComponent,
     getAffectedComponents,
     detectCircularDependencies,
-    clear
+    clear,
   } = useDependencyGraph();
 
   // Register all items
@@ -166,7 +169,7 @@ export function useAutoRegisterDependencies<T extends { usedQueries?: string[]; 
       registerComponent({
         componentId,
         usedQueries: item.usedQueries || [],
-        usedFormValues: item.usedFormValues || [],
+        usedFormValues: (item.usedFormValues as string[]) || [],
         usedMutations: [],
         parentComponent: null,
         childComponents: [],
@@ -175,8 +178,11 @@ export function useAutoRegisterDependencies<T extends { usedQueries?: string[]; 
 
     // Detect and warn about circular dependencies
     const cycles = detectCircularDependencies();
-    if (cycles.length > 0 && typeof console !== 'undefined') {
-      console.warn('[useDependencyGraph] Circular dependencies detected:', cycles);
+    if (cycles.length > 0 && typeof console !== "undefined") {
+      console.warn(
+        "[useDependencyGraph] Circular dependencies detected:",
+        cycles
+      );
     }
   }, [items, idPrefix, registerComponent, detectCircularDependencies, clear]);
 
