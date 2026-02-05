@@ -9,7 +9,7 @@ export default defineConfig({
       babel: {
         plugins: ['babel-plugin-react-compiler'],
       },
-    }),
+    }) as any,
   ],
   test: {
     environment: 'jsdom',
