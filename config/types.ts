@@ -4,9 +4,9 @@
  * Platform-agnostic: works on web, React Native, and SSR
  */
 
-import { FieldValues } from "react-hook-form";
-import { QueriesArray } from "@gaddario98/react-queries";
-import { MappedProps, PageProps } from "../types";
+import type { FieldValues } from '@gaddario98/react-form'
+import type { QueriesArray } from '@gaddario98/react-queries'
+import type { FunctionProps, PageProps } from '../types'
 
 /**
  * Context passed to dynamic metadata evaluator functions
@@ -15,39 +15,150 @@ import { MappedProps, PageProps } from "../types";
 export type MetadataEvaluatorContext<
   F extends FieldValues = FieldValues,
   Q extends QueriesArray = QueriesArray,
-> = MappedProps<F, Q>;
+> = FunctionProps<F, Q>
 
 export interface MetaTag {
   /** For <meta name="..." content="..." /> */
-  name?: string;
+  name?: string
   /** For <meta property="og:..." content="..." /> */
-  property?: string;
+  property?: string
   /** For <meta http-equiv="..." content="..." /> */
-  httpEquiv?: string;
+  httpEquiv?: string
   /** Meta tag content */
-  content: string;
+  content: string
   /** Unique identifier for updating existing tags */
-  id?: string;
+  id?: string
+}
+
+// ─── Open Graph ──────────────────────────────────────────────
+
+/**
+ * Open Graph Image Configuration
+ */
+export interface OpenGraphImage {
+  /** Absolute URL to the image */
+  url: string
+  /** Alt text for the image */
+  alt?: string
+  /** Image width in pixels */
+  width?: number
+  /** Image height in pixels */
+  height?: number
+  /** MIME type (e.g., "image/jpeg", "image/png") */
+  type?: string
 }
 
 /**
- * Open Graph Configuration (Facebook, LinkedIn, Twitter/X)
+ * Open Graph Article Configuration (when type='article')
+ */
+export interface OpenGraphArticle {
+  /** ISO 8601 date string */
+  publishedTime?: string
+  /** ISO 8601 date string */
+  modifiedTime?: string
+  /** ISO 8601 date string */
+  expirationTime?: string
+  /** Author name or URL */
+  author?: string | Array<string>
+  /** Article section/category */
+  section?: string
+  /** Article tags */
+  tags?: Array<string>
+}
+
+/**
+ * Open Graph Configuration (Facebook, LinkedIn, etc.)
  */
 export interface OpenGraphConfig<
   F extends FieldValues = FieldValues,
   Q extends QueriesArray = QueriesArray,
 > {
-  type?: "website" | "article" | "product" | "profile";
-  title?: string | ((context: MetadataEvaluatorContext<F, Q>) => string);
-  description?: string | ((context: MetadataEvaluatorContext<F, Q>) => string);
-  /** URL to preview image (must be absolute) */
-  image?: string | ((context: MetadataEvaluatorContext<F, Q>) => string);
+  type?: 'website' | 'article' | 'product' | 'profile'
+  title?: string | ((context: MetadataEvaluatorContext<F, Q>) => string)
+  description?: string | ((context: MetadataEvaluatorContext<F, Q>) => string)
+  /** Single image URL or full image config */
+  image?: string | OpenGraphImage | ((context: MetadataEvaluatorContext<F, Q>) => string | OpenGraphImage)
+  /** Multiple images for the page */
+  images?: Array<OpenGraphImage> | ((context: MetadataEvaluatorContext<F, Q>) => Array<OpenGraphImage>)
   /** Canonical URL */
-  url?: string | ((context: MetadataEvaluatorContext<F, Q>) => string);
-  siteName?: string;
+  url?: string | ((context: MetadataEvaluatorContext<F, Q>) => string)
+  siteName?: string
   /** Locale (e.g., "en_US", "it_IT") */
-  locale?: string;
+  locale?: string
+  /** Article-specific metadata (when type='article') */
+  article?: OpenGraphArticle
 }
+
+// ─── Twitter Card ────────────────────────────────────────────
+
+/**
+ * Twitter Card Configuration
+ */
+export interface TwitterCardConfig<
+  F extends FieldValues = FieldValues,
+  Q extends QueriesArray = QueriesArray,
+> {
+  /** Card type */
+  card?: 'summary' | 'summary_large_image' | 'app' | 'player'
+  /** @username of the website */
+  site?: string
+  /** @username of the content creator */
+  creator?: string
+  /** Title (falls back to og:title then page title) */
+  title?: string | ((context: MetadataEvaluatorContext<F, Q>) => string)
+  /** Description (falls back to og:description then page description) */
+  description?: string | ((context: MetadataEvaluatorContext<F, Q>) => string)
+  /** Image URL (falls back to og:image) */
+  image?: string | ((context: MetadataEvaluatorContext<F, Q>) => string)
+  /** Alt text for the image */
+  imageAlt?: string | ((context: MetadataEvaluatorContext<F, Q>) => string)
+}
+
+// ─── Alternates / hreflang ───────────────────────────────────
+
+/**
+ * Alternate languages/URLs configuration for i18n SEO
+ */
+export interface AlternatesConfig {
+  /** Canonical URL for this page */
+  canonical?: string
+  /** Map of locale → URL for hreflang tags (e.g., { "en": "/en/page", "it": "/it/page" }) */
+  languages?: Record<string, string>
+  /** Media-specific alternates (e.g., mobile version) */
+  media?: Record<string, string>
+  /** RSS/Atom feed alternates */
+  types?: Record<string, Array<{ url: string; title?: string }>>
+}
+
+// ─── Icons / Manifest / PWA ──────────────────────────────────
+
+/**
+ * Icon configuration
+ */
+export interface IconConfig {
+  /** URL to the icon */
+  url: string
+  /** Icon type (e.g., "image/png", "image/svg+xml") */
+  type?: string
+  /** Icon sizes (e.g., "32x32", "192x192") */
+  sizes?: string
+  /** Color for SVG mask icons */
+  color?: string
+}
+
+/**
+ * Icons & PWA configuration
+ */
+export interface IconsConfig {
+  /** Standard favicon(s) - link[rel="icon"] */
+  icon?: string | IconConfig | Array<IconConfig>
+  /** Apple touch icon(s) - link[rel="apple-touch-icon"] */
+  apple?: string | IconConfig | Array<IconConfig>
+  /** Shortcut icon (legacy) */
+  shortcut?: string
+}
+
+// ─── Structured Data ─────────────────────────────────────────
 
 /**
  * Structured Data Configuration (schema.org JSON-LD)
@@ -57,16 +168,20 @@ export interface StructuredDataConfig<
   Q extends QueriesArray = QueriesArray,
 > {
   type:
-    | "Article"
-    | "Product"
-    | "WebPage"
-    | "FAQPage"
-    | "Organization"
-    | "Person";
+    | 'Article'
+    | 'Product'
+    | 'WebPage'
+    | 'FAQPage'
+    | 'Organization'
+    | 'Person'
+    | 'WebSite'
+    | 'BreadcrumbList'
   schema:
     | Record<string, unknown>
-    | ((context: MetadataEvaluatorContext<F, Q>) => Record<string, unknown>);
+    | ((context: MetadataEvaluatorContext<F, Q>) => Record<string, unknown>)
 }
+
+// ─── AI Hints ────────────────────────────────────────────────
 
 /**
  * AI Crawler Hints (for AI search engines and LLMs)
@@ -78,39 +193,119 @@ export interface AIHintsConfig<
   /** Content classification (e.g., "documentation", "tutorial", "reference") */
   contentClassification?:
     | string
-    | ((context: MetadataEvaluatorContext<F, Q>) => string);
+    | ((context: MetadataEvaluatorContext<F, Q>) => string)
   /** Hints for AI models (e.g., ["code-heavy", "technical"]) */
   modelHints?:
-    | string[]
-    | ((context: MetadataEvaluatorContext<F, Q>) => string[]);
+    | Array<string>
+    | ((context: MetadataEvaluatorContext<F, Q>) => Array<string>)
   /** Additional context for AI understanding */
   contextualInfo?:
     | string
-    | ((context: MetadataEvaluatorContext<F, Q>) => string);
+    | ((context: MetadataEvaluatorContext<F, Q>) => string)
   /** Exclude this page from AI crawler indexing */
-  excludeFromIndexing?: boolean;
+  excludeFromIndexing?: boolean
 }
+
+// ─── Robots ──────────────────────────────────────────────────
 
 /**
  * Robots Configuration (indexing directives)
  */
 export interface RobotsConfig {
   /** Prevent indexing */
-  noindex?: boolean;
+  noindex?: boolean
   /** Don't follow links */
-  nofollow?: boolean;
+  nofollow?: boolean
   /** Don't cache page */
-  noarchive?: boolean;
+  noarchive?: boolean
   /** Don't show snippets in search results */
-  nosnippet?: boolean;
+  nosnippet?: boolean
   /** Image preview size in search results */
-  maxImagePreview?: "none" | "standard" | "large";
+  maxImagePreview?: 'none' | 'standard' | 'large'
   /** Max snippet length in search results */
-  maxSnippet?: number;
+  maxSnippet?: number
 }
+
+// ─── Resolved Metadata (all values are plain strings/objects) ─
+
+/**
+ * Resolved Metadata - all dynamic functions have been evaluated.
+ * This is the output of resolveMetadata() and is what gets applied to the DOM
+ * or passed to framework helpers (toNextMetadata, etc.).
+ */
+export interface ResolvedMetadata {
+  // Basic
+  title?: string
+  description?: string
+  canonical?: string
+  lang?: string
+  keywords?: Array<string>
+  author?: string
+  viewport?: string
+  themeColor?: string
+
+  // Open Graph
+  openGraph?: {
+    type?: 'website' | 'article' | 'product' | 'profile'
+    title?: string
+    description?: string
+    image?: string | OpenGraphImage
+    images?: Array<OpenGraphImage>
+    url?: string
+    siteName?: string
+    locale?: string
+    article?: OpenGraphArticle
+  }
+
+  // Twitter Card
+  twitter?: {
+    card?: 'summary' | 'summary_large_image' | 'app' | 'player'
+    site?: string
+    creator?: string
+    title?: string
+    description?: string
+    image?: string
+    imageAlt?: string
+  }
+
+  // Alternates / hreflang
+  alternates?: AlternatesConfig
+
+  // Icons / PWA
+  icons?: IconsConfig
+  /** Web app manifest URL */
+  manifest?: string
+
+  // Structured Data
+  structuredData?: {
+    type: string
+    schema: Record<string, unknown>
+  }
+
+  // AI Hints
+  aiHints?: {
+    contentClassification?: string
+    modelHints?: Array<string>
+    contextualInfo?: string
+    excludeFromIndexing?: boolean
+  }
+
+  // Robots
+  robots?: RobotsConfig
+
+  // Disable search engine indexing (shorthand for robots.noindex + robots.nofollow)
+  disableIndexing?: boolean
+
+  // Custom meta tags
+  customMeta?: Array<MetaTag>
+}
+
+// ─── MetadataConfig (input, with dynamic functions) ──────────
 
 /**
  * Complete Metadata Configuration (Generic over F and Q for dynamic metadata)
+ * This is the "input" type — values can be strings or evaluator functions.
+ * Use resolveMetadata() to convert this to ResolvedMetadata.
  */
 export interface MetadataConfig<
   F extends FieldValues = FieldValues,
@@ -118,63 +313,84 @@ export interface MetadataConfig<
 > {
   // Basic Metadata
   /** Page title - sets document.title on web */
-  title?: string | ((context: MetadataEvaluatorContext<F, Q>) => string);
+  title?: string | ((context: MetadataEvaluatorContext<F, Q>) => string)
   /** Page description meta tag */
-  description?: string | ((context: MetadataEvaluatorContext<F, Q>) => string);
+  description?: string | ((context: MetadataEvaluatorContext<F, Q>) => string)
+  /** Canonical URL for the page */
+  canonical?: string | ((context: MetadataEvaluatorContext<F, Q>) => string)
   /** HTML lang attribute (e.g., "en", "it") */
-  documentLang?: string;
+  lang?: string
+  /**
+   * @deprecated Use `lang` instead. Will be removed in a future version.
+   */
+  documentLang?: string
   /** Keywords for SEO */
-  keywords?: string[] | ((context: MetadataEvaluatorContext<F, Q>) => string[]);
+  keywords?:
+    | Array<string>
+    | ((context: MetadataEvaluatorContext<F, Q>) => Array<string>)
 
   // Open Graph (Social Media)
-  openGraph?: OpenGraphConfig<F, Q>;
+  openGraph?: OpenGraphConfig<F, Q>
+
+  // Twitter Card
+  twitter?: TwitterCardConfig<F, Q>
+
+  // Alternates / hreflang (i18n SEO)
+  alternates?: AlternatesConfig
+
+  // Icons / PWA
+  icons?: IconsConfig
+  /** Web app manifest URL */
+  manifest?: string
 
   // Structured Data (Search Engines)
-  structuredData?: StructuredDataConfig<F, Q>;
+  structuredData?: StructuredDataConfig<F, Q>
 
-  // AI Crawler Hints (NEW)
-  aiHints?: AIHintsConfig<F, Q>;
+  // AI Crawler Hints
+  aiHints?: AIHintsConfig<F, Q>
 
   // Robots Meta Tags
-  robots?: RobotsConfig;
+  robots?: RobotsConfig
 
   // Additional custom meta tags
   customMeta?:
-    | MetaTag[]
-    | ((context: MetadataEvaluatorContext<F, Q>) => MetaTag[]);
+    | Array<MetaTag>
+    | ((context: MetadataEvaluatorContext<F, Q>) => Array<MetaTag>)
 
-  // Additional meta tags (alias for customMeta for backward compatibility)
-  otherMetaTags?:
-    | MetaTag[]
-    | ((context: MetadataEvaluatorContext<F, Q>) => MetaTag[]);
+  // Disable search engine indexing (shorthand for robots.noindex + robots.nofollow)
+  disableIndexing?: boolean
 
-  // Disable search engine indexing
-  disableIndexing?: boolean;
-
-  // Legacy fields (backward compatibility)
-  /** @deprecated Use openGraph.image instead */
-  ogImage?: string;
-  /** @deprecated Use openGraph.title instead */
-  ogTitle?: string;
-  /** @deprecated Use openGraph.url instead */
-  canonical?: string;
-  /** @deprecated Use documentLang instead */
-  lang?: string;
   /** Author meta tag */
-  author?: string;
+  author?: string
   /** Viewport meta tag (defaults to "width=device-width, initial-scale=1") */
-  viewport?: string;
+  viewport?: string
   /** Theme color for browser UI */
-  themeColor?: string;
+  themeColor?: string
+}
+
+// ─── Metadata Store & Provider ───────────────────────────────
+
+/**
+ * Request-scoped metadata store.
+ * In SSR each request gets its own store to avoid cross-request leaks.
+ * On the client, a single global store is used.
+ */
+export interface MetadataStore {
+  /** Get current resolved metadata */
+  getMetadata: () => ResolvedMetadata
+  /** Set (merge) resolved metadata into the store */
+  setMetadata: (meta: ResolvedMetadata) => void
+  /** Reset store to empty */
+  reset: () => void
 }
 
 export interface MetadataProvider {
   /** Apply metadata configuration to the page */
-  setMetadata: (config: MetadataConfig) => void;
+  setMetadata: (config: MetadataConfig) => void
   /** Get current metadata configuration */
-  getMetadata: () => MetadataConfig;
+  getMetadata: () => MetadataConfig
   /** Reset all metadata to defaults */
-  resetMetadata: () => void;
+  resetMetadata: () => void
 }
 
 /**
@@ -186,35 +402,35 @@ export interface LazyLoadingConfig<
   Q extends QueriesArray = QueriesArray,
 > {
   /** Enable lazy loading (default: true) */
-  enabled?: boolean;
+  enabled?: boolean
   /** Preload on hover for interactive elements (default: false) */
-  preloadOnHover?: boolean;
+  preloadOnHover?: boolean
   /** Preload on focus for keyboard navigation (default: false) */
-  preloadOnFocus?: boolean;
+  preloadOnFocus?: boolean
   /** Preload after render with delay (in ms, default: undefined - no delay) */
-  preloadAfterRender?: number;
+  preloadAfterRender?: number
   /** Fallback component to show while loading (default: null) */
-  suspenseFallback?: React.ReactNode;
+  suspenseFallback?: React.ReactNode
   /** Custom error boundary component for lazy-loaded modules */
-  errorBoundary?: React.ComponentType<{ error: Error; retry: () => void }>;
+  errorBoundary?: React.ComponentType<{ error: Error; retry: () => void }>
   /** Maximum time to wait before showing error state (in ms, default: 30000) */
-  timeout?: number;
+  timeout?: number
   /** Log performance metrics for lazy loading (development only) */
-  logMetrics?: boolean;
+  logMetrics?: boolean
   /** IntersectionObserver threshold (0-1, default: 0.1) - alias for intersectionThreshold */
-  threshold?: number | number[];
+  threshold?: number | Array<number>
   /** IntersectionObserver threshold (0-1, default: 0.1) */
-  intersectionThreshold?: number | number[];
+  intersectionThreshold?: number | Array<number>
   /** IntersectionObserver root margin (default: "100px") - alias for intersectionRootMargin */
-  rootMargin?: string;
+  rootMargin?: string
   /** IntersectionObserver root margin (default: "100px") */
-  intersectionRootMargin?: string;
+  intersectionRootMargin?: string
   /** Trigger type for lazy loading: viewport (IntersectionObserver), interaction (manual), or conditional (based on function) */
-  trigger?: "viewport" | "interaction" | "conditional";
+  trigger?: 'viewport' | 'interaction' | 'conditional'
   /** Conditional function to determine if content should load (for trigger: "conditional") */
-  condition?: (context: MetadataEvaluatorContext<F, Q>) => boolean;
+  condition?: (context: MetadataEvaluatorContext<F, Q>) => boolean
   /** Placeholder component to show before lazy content loads */
-  placeholder?: React.ReactNode;
+  placeholder?: React.ReactNode
 }
 
 /**
@@ -227,7 +443,33 @@ export interface PlatformOverrides<
   Q extends QueriesArray = QueriesArray,
 > {
   /** Web-specific overrides (React DOM) */
-  web?: Partial<PageProps<F, Q>>; // Will be Partial<PageProps<F, Q>> when imported in types.ts
+  web?: Partial<PageProps<F, Q>> // Will be Partial<PageProps<F, Q>> when imported in types.ts
   /** React Native-specific overrides */
-  native?: Partial<PageProps<F, Q>>; // Will be Partial<PageProps<F, Q>> when imported in types.ts
+  native?: Partial<PageProps<F, Q>> // Will be Partial<PageProps<F, Q>> when imported in types.ts
+}
+
+// ─── LLMs.txt ────────────────────────────────────────────────
+
+/**
+ * Entry for the llms.txt file
+ */
+export interface LlmsTxtEntry {
+  /** URL of the page */
+  url: string
+  /** Short title / label for this page */
+  title: string
+  /** Brief description for the LLM */
+  description?: string
+}
+
+/**
+ * Configuration for llms.txt generation
+ */
+export interface LlmsTxtConfig {
+  /** Site title / name shown at the top of llms.txt */
+  siteName: string
+  /** Brief description of the site */
+  siteDescription?: string
+  /** Curated list of pages to expose in llms.txt */
+  entries: Array<LlmsTxtEntry>
 }

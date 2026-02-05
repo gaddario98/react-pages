@@ -1,128 +1,71 @@
 /**
  * MetadataManager Component
- * Consumes PageProps.meta and manages metadata injection
- * Integrates with platform adapters for web/native differences
+ * Consumes PageProps.meta and manages metadata injection.
+ *
+ * Delegates to `useMetadata` which:
+ * - Resolves dynamic functions via `resolveMetadata`
+ * - Translates strings via i18n
+ * - Applies metadata to DOM (client) or MetadataStore (SSR)
  *
  * @module components/MetadataManager
  */
 
-import { useEffect } from 'react';
-import { FieldValues, UseFormSetValue } from 'react-hook-form';
-import type { QueriesArray, AllMutation, MultipleQueryResponse } from '@gaddario98/react-queries';
-import type { MetadataConfig, MappedItemsFunction } from '../types';
-import { useMetadata } from '../hooks/useMetadata';
-import { usePlatformAdapter } from '../hooks/usePlatformAdapter';
-import { setMetadata } from '../config/metadata';
-import { withMemo } from '@gaddario98/utiles';
+import { useMetadata } from '../hooks/useMetadata'
+import type { FieldValues } from '@gaddario98/react-form'
+import type { QueriesArray } from '@gaddario98/react-queries'
+import type { MappedItemsFunction, MetadataConfig } from '../types'
 
 /**
  * Props for MetadataManager component
  */
 export interface MetadataManagerProps<
   F extends FieldValues = FieldValues,
-  Q extends QueriesArray = QueriesArray
+  Q extends QueriesArray = QueriesArray,
 > {
   /** Page metadata configuration (static or dynamic function) */
-  meta?: MetadataConfig<F, Q> | MappedItemsFunction<F, Q, MetadataConfig>;
-
-  /** Form values for dynamic evaluation */
-  formValues: F;
-
-  /** Query data for dynamic evaluation */
-  allQuery: MultipleQueryResponse<Q>;
-
-  /** Query mutations for dynamic evaluation */
-  allMutation: AllMutation<Q>;
-
-  /** Form setValue function */
-  setValue: UseFormSetValue<F>;
+  meta?: MetadataConfig<F, Q> | MappedItemsFunction<F, Q, MetadataConfig>
 
   /** Namespace for i18n translations */
-  ns?: string;
+  ns?: string
 
-  /** Page ID for debugging */
-  pageId?: string;
+  /** Page ID for scoping */
+  pageId: string
 }
 
 /**
- * MetadataManager component that manages metadata injection
- * Automatically applies metadata to document head when on web platform
- * Stores metadata for SSR when on server/React Native
+ * Headless component that manages metadata injection.
+ * On web: injects metadata into `<head>`.
+ * On SSR: stores metadata in the request-scoped MetadataStore (via context).
+ * On React Native: metadata is resolved but not applied to DOM.
  *
  * @example
- * ```typescript
- * function PageWithMetadata() {
- *   const { formValues, allQuery, allMutation, setValue } = usePageConfig();
- *
- *   return (
- *     <>
- *       <MetadataManager
- *         meta={{
- *           title: 'My Page',
- *           description: 'Page description',
- *           openGraph: {}
- *         }}
- *         formValues={formValues}
- *         allQuery={allQuery}
- *         allMutation={allMutation}
- *         setValue={setValue}
- *       />
- *       <PageContent />
- *     </>
- *   );
- * }
+ * ```tsx
+ * <MetadataManager
+ *   meta={{
+ *     title: 'My Page',
+ *     description: 'Page description',
+ *     openGraph: { type: 'website', image: '/og.png' },
+ *     twitter: { card: 'summary_large_image' },
+ *   }}
+ *   pageId="my-page"
+ * />
  * ```
  */
 const MetadataManagerImpl = <
   F extends FieldValues = FieldValues,
-  Q extends QueriesArray = QueriesArray
+  Q extends QueriesArray = QueriesArray,
 >({
   meta,
-  formValues,
-  allQuery,
-  allMutation,
-  setValue,
   ns = 'common',
   pageId,
 }: MetadataManagerProps<F, Q>) => {
-  // Get platform adapter for platform-aware rendering
-  const platformAdapter = usePlatformAdapter();
+  // useMetadata handles the full pipeline:
+  // evaluate → resolve → translate → apply (DOM or store)
+  useMetadata({ meta, ns, pageId })
 
-  // Evaluate and translate metadata
-  const resolvedMetadata = useMetadata({
-    meta,
-    formValues,
-    allQuery,
-    allMutation,
-    setValue,
-    ns,
-  });
+  return null
+}
 
-  // Apply metadata through platform adapter (T067: dynamic updates on data changes)
-  useEffect(() => {
-    if (platformAdapter.name === 'web') {
-      // Web: inject into document head
-      setMetadata(resolvedMetadata);
-    } else {
-      // React Native: store metadata (no-op rendering)
-      // Can be used for SSR or analytics
-      setMetadata(resolvedMetadata);
-    }
+MetadataManagerImpl.displayName = 'MetadataManager'
 
-    // Log in development mode
-    if (process.env.NODE_ENV === 'development' && pageId) {
-      console.log(`[MetadataManager] Updated metadata for page "${pageId}":`, resolvedMetadata);
-    }
-  }, [resolvedMetadata, platformAdapter, pageId]);
-
-  // This component doesn't render anything (headless)
-  return null;
-};
-
-MetadataManagerImpl.displayName = 'MetadataManager';
-
-/**
- * Export memoized component to prevent unnecessary re-renders
- * Re-renders only when metadata-related props actually change
- */
-export const MetadataManager = withMemo(MetadataManagerImpl);
+export const MetadataManager = MetadataManagerImpl

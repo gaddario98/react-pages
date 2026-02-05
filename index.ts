@@ -1,6 +1,1 @@
-
-export * from './types';
-export * from './hooks';
-export * from './config';
-export * from './components';
-export * from './utils';
+export * from "@gaddario98/react-pages";

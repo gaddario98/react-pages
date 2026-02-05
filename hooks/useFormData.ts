@@ -1,12 +1,8 @@
-import { useMemo } from "react";
-import { FieldValues, UseFormSetValue } from "react-hook-form";
-import {
-  QueriesArray,
-  AllMutation,
-  MultipleQueryResponse,
-} from "@gaddario98/react-queries";
-import { FormPageProps } from "../types";
-import { FormManagerConfig, Submit } from "@gaddario98/react-form";
+import { useCallback, useMemo } from 'react'
+import { usePageValues } from './usePageValues'
+import type { FieldValues, FormManagerConfig, Submit } from '@gaddario98/react-form'
+import type { QueriesArray } from '@gaddario98/react-queries'
+import type { FormPageProps } from '../types'
 
 /**
  * Specialized hook for managing form data processing
@@ -19,74 +15,54 @@ import { FormManagerConfig, Submit } from "@gaddario98/react-form";
  * @param setValue - Form setValue function
  * @returns Processed form data and submit handlers
  */
-export function useFormData<F extends FieldValues, Q extends QueriesArray>({
-  form,
-  isAllQueryMapped,
-  formValues,
-  extractMutationsHandle,
-  extractQueryHandle,
-  setValue,
-}: {
-  form?: FormPageProps<F, Q>;
-  isAllQueryMapped: boolean;
-  formValues: F;
-  extractMutationsHandle: AllMutation<Q>;
-  extractQueryHandle: MultipleQueryResponse<Q>;
-  setValue: UseFormSetValue<F>;
-}) {
+export function useFormData<
+  F extends FieldValues,
+  Q extends QueriesArray,
+  V extends Record<string, unknown> = Record<string, unknown>,
+>({ form, pageId }: { form?: FormPageProps<F, Q, V>; pageId: string }) {
+  const { get, set } = usePageValues<F, Q, V>({ pageId })
+
+  const hiddenMapped = useCallback(() => {
+    const isHidden = form?.hidden
+    if (!isHidden) return false
+    if (typeof isHidden === 'function') {
+      return isHidden({
+        get,
+        set,
+      })
+    } else {
+      return !!isHidden
+    }
+  }, [form?.hidden, get, set])
+
   const mappedFormData = useMemo((): Array<FormManagerConfig<F>> => {
-    if (!form?.data || !isAllQueryMapped) return [];
+    if (!form?.data || hiddenMapped()) return []
 
     return (
       form.data
-        ?.map((el) => {
-          if (typeof el === "function") {
-            return el({
-              formValues,
-              allMutation: extractMutationsHandle,
-              allQuery: extractQueryHandle,
-              setValue,
-            });
+        .map((el) => {
+          if (typeof el === 'function') {
+            return el({ get, set })
           }
-          return el;
+          return el
         })
-        ?.map((el, i) => ({ ...el, key: el.key ?? i })) ?? []
-    );
-  }, [
-    form?.data,
-    isAllQueryMapped,
-    formValues,
-    extractMutationsHandle,
-    extractQueryHandle,
-    setValue,
-  ]);
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        .filter((el) => !!el)
+        .map((el, i) => ({ ...el, key: el.key ?? `${i}` }))
+    )
+  }, [form, get, hiddenMapped, set])
 
   const formSubmit = useMemo((): Array<Submit<F>> => {
-    if (!isAllQueryMapped || !form?.submit) return [];
+    if (!form?.submit || hiddenMapped()) return []
 
-    const submitFn = form.submit;
+    const submitFn = form.submit
     return (
-      (typeof submitFn === "function"
-        ? submitFn({
-            formValues,
-            allMutation: extractMutationsHandle,
-            allQuery: extractQueryHandle,
-            setValue,
-          })
-        : submitFn
-      )?.map((el, i) => ({ ...el, key: el.key ?? i })) ?? []
-    );
-  }, [
-    isAllQueryMapped,
-    form?.submit,
-    formValues,
-    extractMutationsHandle,
-    extractQueryHandle,
-    setValue,
-  ]);
+      typeof submitFn === 'function' ? submitFn({ get, set }) : submitFn
+    ).map((el, i) => ({ ...el, key: el.key ?? `${i}` }))
+  }, [form, hiddenMapped, get, set])
 
   return {
     mappedFormData,
     formSubmit,
-  };
+  }
 }

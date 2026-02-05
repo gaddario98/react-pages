@@ -1,7 +1,7 @@
-import { QueriesArray } from "@gaddario98/react-queries";
 import { useCallback } from "react";
-import { FieldValues } from "react-hook-form";
-import {  ContentItem } from "../types";
+import type { FieldValues } from "@gaddario98/react-form";
+import type { QueriesArray } from "@gaddario98/react-queries";
+import type {  ContentItem } from "../types";
 
 export const usePageUtiles = () => {
   const getContentProps = useCallback(
@@ -18,7 +18,7 @@ export const usePageUtiles = () => {
       F extends FieldValues = FieldValues,
       Q extends QueriesArray = QueriesArray,
     >(
-      props: ContentItem<F, Q>[]
+      props: Array<ContentItem<F, Q>>
     ) => props,
     []
   );

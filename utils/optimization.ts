@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import equal from 'fast-deep-equal';
 
 /**
@@ -60,7 +61,7 @@ export function isStableValue(value: any): boolean {
  * @param deps - Array of dependencies to optimize
  * @returns Filtered array of stable dependencies
  */
-export function optimizeDeps(deps: any[]): any[] {
+export function optimizeDeps(deps: Array<any>): Array<any> {
   return deps.filter(dep => isStableValue(dep) || typeof dep === 'object');
 }
 
@@ -139,7 +140,7 @@ export class MemoizationCache<K, V> {
  * @param cacheKeyFn - Optional function to generate cache key from arguments
  * @returns Memoized function
  */
-export function memoize<Args extends any[], Result>(
+export function memoize<Args extends Array<any>, Result>(
   fn: (...args: Args) => Result,
   cacheKeyFn?: (...args: Args) => string
 ): (...args: Args) => Result {

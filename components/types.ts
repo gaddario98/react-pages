@@ -1,46 +1,30 @@
-import {
-  AllMutation,
-  MultipleQueryResponse,
-  QueriesArray,
-} from "@gaddario98/react-queries";
-import { FieldValues, UseFormSetValue } from "react-hook-form";
-import { ContainerItem, ContentItem, Items, PageProps } from "../types";
+import type { FieldValues } from '@gaddario98/react-form'
+import type { QueriesArray } from '@gaddario98/react-queries'
+import type { ContainerItem, ContentItem, Items } from '../types'
 
 export interface Props<
   F extends FieldValues = FieldValues,
   Q extends QueriesArray = QueriesArray,
+  V extends Record<string, unknown> = Record<string, unknown>,
 > {
-  content: ContentItem<F, Q>;
-  ns: string;
-  formValues: F;
-  pageId: string;
-  allQuery: MultipleQueryResponse<Q>;
-  allMutation: AllMutation<Q>;
-  setValue: UseFormSetValue<F>;
+  content: ContentItem<F, Q, V>
+  ns: string
+  pageId: string
 }
 
 export interface ContentProps<
   F extends FieldValues = FieldValues,
   Q extends QueriesArray = QueriesArray,
-> extends Omit<Props<F, Q>, "content"> {
-  content: Items<F, Q>;
+  V extends Record<string, unknown> = Record<string, unknown>,
+> extends Omit<Props<F, Q, V>, 'content'> {
+  content: Items<F, Q, V>
+  pageId: string
 }
 
 export interface ItemContainerProps<
   F extends FieldValues = FieldValues,
   Q extends QueriesArray = QueriesArray,
-> extends Omit<Props<F, Q>, "content"> {
-  content: ContainerItem<F, Q>;
-}
-
-export interface ContentListProps<
-  F extends FieldValues = FieldValues,
-  Q extends QueriesArray = QueriesArray,
-> {
-  contents: Required<PageProps<F, Q>>["contents"];
-  ns?: PageProps<F, Q>["ns"];
-  queries: Required<PageProps<F, Q>>["queries"];
-  prefix?: string;
-  form?: PageProps<F, Q>["form"];
-  pageId: string;
+  V extends Record<string, unknown> = Record<string, unknown>,
+> extends Omit<Props<F, Q, V>, 'content'> {
+  content: ContainerItem<F, Q, V>
 }

@@ -1,13 +1,7 @@
-/* eslint-disable react-hooks/refs */
-import { useMemo, useRef } from "react";
-import { FieldValues, UseFormSetValue } from "react-hook-form";
-import {
-  QueriesArray,
-  AllMutation,
-  MultipleQueryResponse,
-} from "@gaddario98/react-queries";
-import { ViewSettings, MappedItemsFunction } from "../types";
-import { shallowEqual } from "../utils/optimization";
+import { usePageValues } from './usePageValues'
+import type { FieldValues } from '@gaddario98/react-form'
+import type { QueriesArray } from '@gaddario98/react-queries'
+import type { MappedItemsFunction, ViewSettings } from '../types'
 
 /**
  * Specialized hook for managing view settings
@@ -19,45 +13,25 @@ import { shallowEqual } from "../utils/optimization";
  * @param setValue - Form setValue function
  * @returns Processed view settings
  */
-export function useViewSettings<F extends FieldValues, Q extends QueriesArray>({
+
+export function useViewSettings<
+  F extends FieldValues,
+  Q extends QueriesArray,
+  V extends Record<string, unknown> = Record<string, unknown>,
+>({
   viewSettings = {},
-  allQuery,
-  allMutation,
-  formValues,
-  setValue,
+  pageId,
 }: {
-  viewSettings?: MappedItemsFunction<F, Q, ViewSettings> | ViewSettings;
-  allQuery: MultipleQueryResponse<Q>;
-  allMutation: AllMutation<Q>;
-  formValues: F;
-  setValue: UseFormSetValue<F>;
+  viewSettings?: MappedItemsFunction<F, Q, ViewSettings, V> | ViewSettings
+  pageId: string
 }) {
-  const prevViewSettingsRef = useRef<ViewSettings | undefined>(undefined);
-
-  const mappedViewSettings = useMemo((): ViewSettings => {
-    let next: ViewSettings;
-
-    if (typeof viewSettings === "function") {
-      next = viewSettings({
-        allQuery,
-        allMutation,
-        formValues,
-        setValue,
-      });
-    } else {
-      next = viewSettings;
-    }
-
-    if (
-      prevViewSettingsRef.current &&
-      shallowEqual(prevViewSettingsRef.current, next)
-    ) {
-      return prevViewSettingsRef.current;
-    }
-
-    prevViewSettingsRef.current = next;
-    return next;
-  }, [viewSettings, allQuery, allMutation, formValues, setValue]);
-
-  return mappedViewSettings;
+  const { get, set } = usePageValues<F, Q, V>({ pageId })
+  if (typeof viewSettings === 'function') {
+    return viewSettings({
+      get,
+      set,
+    })
+  } else {
+    return viewSettings
+  }
 }

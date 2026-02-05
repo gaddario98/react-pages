@@ -1,73 +1,42 @@
-import { QueriesArray } from "@gaddario98/react-queries";
-import { useMemo, memo } from "react";
-import { FieldValues } from "react-hook-form";
-import { useGenerateContentRender } from "../hooks/useGenerateContentRender";
-import { pageConfig } from "../config";
-import { ItemContainerProps } from "./types";
-import { RenderComponent } from "./RenderComponent";
-import { deepEqual } from "../utils/optimization";
+import { memo, useMemo } from 'react'
+import { useGenerateContentRender } from '../hooks/useGenerateContentRender'
+import { usePageConfigValue } from '../config'
+import { deepEqual } from '../utils/optimization'
+import type { FieldValues } from '@gaddario98/react-form'
+import type { ItemContainerProps } from './types'
+import type { QueriesArray } from '@gaddario98/react-queries'
 
-const ContainerImpl = <F extends FieldValues, Q extends QueriesArray>({
-    content,
-    ns,
+const ContainerImpl = <
+  F extends FieldValues,
+  Q extends QueriesArray,
+  V extends Record<string, unknown> = Record<string, unknown>,
+>({
+  content,
+  ns,
+  pageId,
+}: ItemContainerProps<F, Q, V>) => {
+  const { ItemsContainer } = usePageConfigValue()
+  const { components } = useGenerateContentRender<F, Q, V>({
     pageId,
-    allMutation,
-    allQuery,
-    formValues,
-    setValue,
-  }: ItemContainerProps<F, Q>) => {
-    const { components } = useGenerateContentRender<F, Q>({
-      allMutation,
-      allQuery,
-      formValues,
-      pageId,
-      isAllQueryMapped: true,
-      formData: false,
-      contents: content.items,
-      ns,
-      setValue,
-      renderComponent: (props) => {
-        if (props.content.type === "container") {
-          return (
-            <Container<F, Q>
-              key={props.key}
-              content={props.content}
-              ns={props.ns}
-              pageId={props.pageId}
-              allMutation={props.allMutation}
-              allQuery={props.allQuery}
-              formValues={props.formValues}
-              setValue={props.setValue}
-            />
-          );
-        }
-        return (
-          <RenderComponent<F, Q>
-            key={props.key}
-            content={props.content}
-            ns={props.ns}
-            formValues={props.formValues}
-            pageId={props.pageId}
-            allMutation={props.allMutation}
-            allQuery={props.allQuery}
-            setValue={props.setValue}
-          />
-        );
-      },
-    });
+    contents: content.items,
+    ns,
+    formData: { elements: [], formContents: [], errors: [], formValues: {} as F, setValue: () => { } },
+  })
 
-    const Layout = useMemo(
-      () => content?.component ?? pageConfig.ItemsContainer,
-      [content?.component]
-    );
-    return <Layout>{components?.map((el) => el.element)}</Layout>;
-};
+  const CustomContainer = useMemo(() => content.component, [content.component])
+  const children = useMemo(
+    () => components.map((el) => el.element),
+    [components],
+  )
+
+  if (!CustomContainer) {
+    return <ItemsContainer>{children}</ItemsContainer>
+  }
+  return <CustomContainer>{children}</CustomContainer>
+}
 
 // Export with React.memo and fast-deep-equal comparator for optimal performance
-export const Container = memo(
-  ContainerImpl,
-  (prevProps, nextProps) => {
-    // Return true if props are equal (component should NOT re-render)
-    return deepEqual(prevProps, nextProps);
-  }
-) as typeof ContainerImpl;
+export const Container = memo(ContainerImpl, (prevProps, nextProps) => {
+  // Return true if props are equal (component should NOT re-render)
+  return deepEqual(prevProps, nextProps)
+}) as typeof ContainerImpl

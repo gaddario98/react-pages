@@ -1,6 +1,6 @@
 {
   "name": "@gaddario98/react-pages",
-  "version": "2.0.22",
+  "version": "2.0.3",
   "type": "module",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -36,29 +36,23 @@
     "@vitest/ui": "^3.0.0",
     "babel-plugin-react-compiler": "1",
     "happy-dom": "^15.0.0",
-    "i18next": "^25.5.3",
     "jsdom": "^25.0.0",
     "react": "^19.2.0",
-    "react-hook-form": "^7.64.0",
-    "react-i18next": "^16.0.0",
     "rollup": "^4.40.0",
     "rollup-plugin-filesize": "^10.0.0",
     "rollup-plugin-peer-deps-external": "^2.2.4",
     "rollup-plugin-visualizer": "^6.0.5",
     "typescript": "^5.8.3",
+    "jotai": "^2.16.0",
+    "jotai-family": "^1.0.1",
     "vitest": "^3.0.0"
   },
   "dependencies": {
-    "@gaddario98/react-auth": "^1.0.16",
-    "@gaddario98/react-form": "^1.0.23",
-    "@gaddario98/react-queries": "^1.0.21",
-    "@gaddario98/utiles": "^1.0.15",
+    "@gaddario98/react-state": "^2.0.0",
     "@tanstack/react-query": "^5.90.2",
-    "fast-deep-equal": "^3.1.3",
-    "i18next": "^25.5.3",
-    "react-hook-form": "^7.64.0",
-    "react-i18next": "^16.0.1",
-    "use-debounce": "^10.0.3"
+    "jotai": "^2.16.0",
+    "jotai-family": "^1.0.1",
+    "fast-deep-equal": "^3.1.3"
   },
   "peerDependencies": {
     "react": ">=18.0.0 <20.0.0"
