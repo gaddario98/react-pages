@@ -1,8 +1,5 @@
 import { createRequire } from "module";
-import {
-  createMultiEntryConfig,
-  createTypeDeclarations
-} from "../../rollup.common.config.js";
+import { createMultiEntryConfig } from "../../../rollup.common.config.js";
 import { visualizer } from "rollup-plugin-visualizer";
 import filesize from "rollup-plugin-filesize";
 
@@ -36,7 +33,7 @@ configs[0].plugins.push(
     showGzippedSize: true,
     showBrotliSize: false,
     showMinifiedSize: false,
-  })
+  }),
 );
 
 // Code splitting is handled by multiple entry points defined above:
