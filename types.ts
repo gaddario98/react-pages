@@ -216,6 +216,9 @@ type Items<
   // React optimization
   key?: string;
 
+  /** @deprecated Query dependencies for selective rendering */
+  usedQueries?: string[];
+
   // NEW IN 2.0: Lazy loading support
   lazy?: boolean;
   lazyTrigger?: "viewport" | "interaction" | "conditional";
@@ -244,6 +247,9 @@ type ContainerItem<
 
   // React optimization
   key?: string;
+
+  /** @deprecated Query dependencies for selective rendering */
+  usedQueries?: string[];
 
   // NEW IN 2.0: Lazy loading support
   lazy?: boolean;

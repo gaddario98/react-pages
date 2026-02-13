@@ -61,8 +61,9 @@ export const usePageFormManager = <
   const defaultValues = useMemo(
     () =>
       ({
-        ...(defaultValueQuery ?? {}),
-        ...(form?.defaultValueQueryMap?.(defaultValueQuery) ?? {}),
+        ...(form?.defaultValueQueryMap?.(defaultValueQuery) ??
+          defaultValueQuery ??
+          {}),
       }) as F,
     [defaultValueQuery, form],
   );

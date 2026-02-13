@@ -1,14 +1,13 @@
-import { useCallback, useMemo } from 'react'
-import { queriesAtom } from '@gaddario98/react-queries'
-import { useStore } from 'jotai'
-import { useGenerateContent } from '../hooks/useGenerateContent'
-import { usePageConfig } from '../hooks'
-import { usePageConfigValue } from '../config'
-import { MetadataManager } from './MetadataManager'
-import type { FieldValues } from '@gaddario98/react-form'
-import type { QueriesArray } from '@gaddario98/react-queries'
-import type { PageProps, QueryPageConfigArray } from '../types'
-
+import { useCallback, useMemo } from "react";
+import { queriesAtom } from "@gaddario98/react-queries";
+import { useStore } from "jotai";
+import { useGenerateContent } from "../hooks/useGenerateContent";
+import { usePageConfig } from "../hooks";
+import { usePageConfigValue } from "../config";
+import { MetadataManager } from "./MetadataManager";
+import type { FieldValues } from "@gaddario98/react-form";
+import type { QueriesArray } from "@gaddario98/react-queries";
+import type { PageProps, QueryPageConfigArray } from "../types";
 
 const PageGenerator = <
   F extends FieldValues = FieldValues,
@@ -28,76 +27,70 @@ const PageGenerator = <
     isLogged,
     authValues,
     authPageProps,
-  } = usePageConfigValue()
+  } = usePageConfigValue();
 
   const isUnlogged = useMemo(
     () => enableAuthControl && !isLogged(authValues ? authValues : null),
     [enableAuthControl, authValues, isLogged],
-  )
+  );
 
   const selectedProps = useMemo(() => {
-    return enableAuthControl && isUnlogged
+    return isUnlogged
       ? (authPageProps as unknown as PageProps<F, Q, V>)
-      : props
-  }, [enableAuthControl, isUnlogged, authPageProps, props])
+      : props;
+  }, [isUnlogged, authPageProps, props]);
 
   const {
     contents = [],
     queries = [] as QueryPageConfigArray<F, Q, V>,
     form,
-    id = 'default-page-id',
+    id = "default-page-id",
     viewSettings,
     ns,
-  } = useMemo(() => selectedProps, [selectedProps])
+  } = useMemo(() => selectedProps, [selectedProps]);
 
   const config = usePageConfig<F, Q, V>({
     queries,
     form,
-    ns: ns ?? '',
+    ns: ns ?? "",
     viewSettings,
     pageId: id,
     variables,
-  })
+  });
 
-  const { mappedViewSettings } = config
+  const { mappedViewSettings } = config;
   const { allContents, body, footer, header } = useGenerateContent<F, Q, V>({
     contents,
     pageId: id,
     ns,
     pageConfig: config,
-  })
+  });
 
   const LayoutComponent = useMemo(() => {
-    return mappedViewSettings.layoutComponent ?? BodyContainer
-  }, [mappedViewSettings.layoutComponent, BodyContainer])
+    return mappedViewSettings.layoutComponent ?? BodyContainer;
+  }, [mappedViewSettings.layoutComponent, BodyContainer]);
 
   const layoutProps = useMemo(() => {
-    return mappedViewSettings.layoutProps ?? {}
-  }, [mappedViewSettings.layoutProps])
+    return mappedViewSettings.layoutProps ?? {};
+  }, [mappedViewSettings.layoutProps]);
 
   const PageContainerComponent = useMemo(() => {
-    return (
-      mappedViewSettings.pageContainerComponent ??
-      PageContainer
-    )
-  }, [
-    mappedViewSettings.pageContainerComponent,
-    PageContainer,
-  ])
+    return mappedViewSettings.pageContainerComponent ?? PageContainer;
+  }, [mappedViewSettings.pageContainerComponent, PageContainer]);
 
   const pageContainerProps = useMemo(() => {
-    return mappedViewSettings.pageContainerProps ?? {}
-  }, [mappedViewSettings.pageContainerProps])
+    return mappedViewSettings.pageContainerProps ?? {};
+  }, [mappedViewSettings.pageContainerProps]);
 
-  const layoutBody = useMemo(() => body, [body])
+  const layoutBody = useMemo(() => body, [body]);
 
-  const store = useStore()
+  const store = useStore();
   const refreshQueries = useCallback(() => {
-    const val = store.get(queriesAtom)
+    const val = store.get(queriesAtom);
     Object.values(val).forEach((query) => {
-      query.refetch()
-    })
-  }, [store])
+      query.refetch();
+    });
+  }, [store]);
 
   return (
     <PageContainerComponent id={id} key={id} {...pageContainerProps}>
@@ -131,7 +124,7 @@ const PageGenerator = <
         {footer}
       </FooterContainer>
     </PageContainerComponent>
-  )
-}
+  );
+};
 
-export default PageGenerator
+export default PageGenerator;
