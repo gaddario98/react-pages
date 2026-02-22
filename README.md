@@ -20,6 +20,7 @@ A powerful, performance-optimized React component library for creating dynamic p
 ## 🚀 Features
 
 ### Core Capabilities
+
 - **🌐 Universal Cross-Platform**: Single `PageProps` configuration works on web (React DOM) and React Native
 - **⚡ Performance Optimized**: Dependency graph for selective re-rendering, debounced form inputs, 90% fewer re-renders
 - **🔍 SEO & AI Metadata**: Dynamic metadata with Open Graph, JSON-LD, and AI hints for search engines
@@ -29,6 +30,7 @@ A powerful, performance-optimized React component library for creating dynamic p
 - **🚨 Deprecation Warnings**: v1.x API migration guidance with built-in deprecation notices
 
 ### Developer Experience
+
 - **TypeScript First**: Full generic type support with strict mode enabled
 - **Form Integration**: Built-in form management with validation and React Hook Form integration
 - **Query Management**: Seamless integration with TanStack React Query
@@ -57,24 +59,40 @@ npm install react@^19.2.0 react-dom@^19.2.0 react-hook-form@^7.64.0 @tanstack/re
 Get started in 5 minutes:
 
 ```tsx
-import { PageGenerator } from '@gaddario98/react-pages';
+import { useMemo } from "react";
+import {
+  PageGenerator,
+  type PageProps,
+  type QueryDefinition,
+} from "@gaddario98/react-pages";
+
+interface MyForm {
+  name: string;
+}
+type MyQueries = [QueryDefinition<"hello", "query", never, string>];
 
 export function MyPage() {
-  return (
-    <PageGenerator
-      id="my-page"
-      meta={{
+  const props: PageProps<MyForm, MyQueries> = useMemo(
+    () => ({
+      id: "my-page",
+      meta: {
         title: "My Page",
-        description: "My awesome page"
-      }}
-      contents={[
+        description: "My awesome page",
+      },
+      contents: [
         {
           type: "custom",
-          component: <h1>Welcome!</h1>
-        }
-      ]}
-    />
+          // Components can be inline functions accessing form/query state via `get` and `set`
+          component: ({ get }) => {
+            return <h1>Welcome to {get("form", "name", "Guest")}!</h1>;
+          },
+        },
+      ],
+    }),
+    [],
   );
+
+  return <PageGenerator<MyForm, MyQueries> {...props} />;
 }
 ```
 
@@ -85,6 +103,7 @@ export function MyPage() {
 The main orchestrator component that manages page lifecycle, rendering, and data flow.
 
 **What it does:**
+
 - Orchestrates entire page lifecycle and state management
 - Integrates form management with React Hook Form
 - Manages queries and mutations with React Query
@@ -96,6 +115,7 @@ The main orchestrator component that manages page lifecycle, rendering, and data
 - Manages dependency graphs for selective re-rendering
 
 **When to use:**
+
 - Creating any dynamic page with forms, queries, or dynamic content
 - Pages requiring SEO metadata
 - Pages with complex data dependencies
@@ -106,6 +126,7 @@ The main orchestrator component that manages page lifecycle, rendering, and data
 Renders individual content items with dependency tracking and performance optimization.
 
 **What it does:**
+
 - Renders different content item types (custom, container, mapped)
 - Tracks content dependencies on queries and form values
 - Enables selective re-rendering based on actual data usage
@@ -114,6 +135,7 @@ Renders individual content items with dependency tracking and performance optimi
 - Supports custom component injection
 
 **When to use:**
+
 - When you need selective re-rendering of page sections
 - Complex pages with many independent content sections
 - Performance-critical applications with frequent updates
@@ -123,6 +145,7 @@ Renders individual content items with dependency tracking and performance optimi
 Layout container that organizes content hierarchically.
 
 **What it does:**
+
 - Provides flexible layout for organizing content items
 - Manages header/footer sections
 - Handles responsive layout on web and React Native
@@ -131,6 +154,7 @@ Layout container that organizes content hierarchically.
 - Manages platform-specific rendering
 
 **When to use:**
+
 - Creating multi-section layouts (header, body, footer)
 - Organizing complex page structures
 - Building responsive designs
@@ -140,6 +164,7 @@ Layout container that organizes content hierarchically.
 Component for lazy-loading content with Suspense and fallbacks.
 
 **What it does:**
+
 - Lazy-loads components on demand (viewport, interaction, conditional)
 - Uses React Suspense for loading states
 - Provides error boundaries for failed loads
@@ -148,6 +173,7 @@ Component for lazy-loading content with Suspense and fallbacks.
 - Performance metrics tracking in development
 
 **When to use:**
+
 - Loading heavy components only when needed
 - Reducing initial bundle size
 - Improving time-to-interactive (TTI)
@@ -158,6 +184,7 @@ Component for lazy-loading content with Suspense and fallbacks.
 Manages all metadata injection and SEO optimization.
 
 **What it does:**
+
 - Injects metadata into document head (web platforms)
 - Supports dynamic metadata evaluation based on page state
 - Handles Open Graph tags for social sharing
@@ -168,6 +195,7 @@ Manages all metadata injection and SEO optimization.
 - Platform-aware injection (web: document head, native: no-op)
 
 **When to use:**
+
 - Pages requiring search engine optimization
 - Social media sharing (Open Graph)
 - Structured data for rich snippets
@@ -178,6 +206,7 @@ Manages all metadata injection and SEO optimization.
 Error boundary for graceful error handling in lazy-loaded content.
 
 **What it does:**
+
 - Catches errors in lazy-loaded components
 - Provides fallback UI for error states
 - Logs errors for debugging
@@ -185,6 +214,7 @@ Error boundary for graceful error handling in lazy-loaded content.
 - Optional error reporting integration
 
 **When to use:**
+
 - Wrapping lazy-loaded content
 - Preventing cascade failures in complex pages
 - Development debugging of async components
@@ -194,12 +224,14 @@ Error boundary for graceful error handling in lazy-loaded content.
 ### 1. Universal Cross-Platform Support
 
 **What it does:**
+
 - Single PageProps configuration generates web and React Native pages
 - Platform adapters abstract platform-specific implementations
 - Feature detection with graceful degradation
 - Platform-specific component overrides
 
 **Example:**
+
 ```tsx
 <PageGenerator
   id="universal-page"
@@ -219,6 +251,7 @@ Error boundary for graceful error handling in lazy-loaded content.
 ### 2. Performance Optimization (80-90% fewer re-renders)
 
 **What it does:**
+
 - **Dependency Graph**: Tracks which content items depend on which queries/form values
 - **Selective Re-rendering**: Only updates components whose dependencies changed
 - **Memoization**: React.memo + fast-deep-equal for stable props
@@ -227,6 +260,7 @@ Error boundary for graceful error handling in lazy-loaded content.
 - **Stable References**: useMemoizedProps hook for stable object/function references
 
 **Example:**
+
 ```tsx
 <PageGenerator
   id="optimized-page"
@@ -237,14 +271,15 @@ Error boundary for graceful error handling in lazy-loaded content.
     {
       type: "custom",
       component: <SearchResults />,
-      usedFormValues: ["search"],  // Re-renders only when search changes
-      usedQueries: ["results"]      // Re-renders only when results query changes
-    }
+      usedFormValues: ["search"], // Re-renders only when search changes
+      usedQueries: ["results"], // Re-renders only when results query changes
+    },
   ]}
 />
 ```
 
 **Performance Metrics:**
+
 - Without optimization: Full page re-render on any query/form change
 - With optimization: Only affected sections re-render
 - Result: 80-90% reduction in re-renders for complex pages
@@ -252,6 +287,7 @@ Error boundary for graceful error handling in lazy-loaded content.
 ### 3. SEO & Metadata Management
 
 **What it does:**
+
 - **Page Title**: Dynamic or static page titles
 - **Meta Description**: SEO description tags
 - **Keywords**: Searchable keywords for SEO
@@ -264,6 +300,7 @@ Error boundary for graceful error handling in lazy-loaded content.
 - **Dynamic Evaluation**: Metadata based on page state
 
 **Example:**
+
 ```tsx
 <PageGenerator
   id="seo-page"
@@ -301,6 +338,7 @@ Error boundary for graceful error handling in lazy-loaded content.
 ### 4. Form Management & Validation
 
 **What it does:**
+
 - **Field Configuration**: Text, email, password, textarea, select, checkbox, radio, date, etc.
 - **Built-in Validation**: Required, pattern, min/max length, email format, custom validators
 - **React Hook Form Integration**: Full form state management
@@ -311,18 +349,19 @@ Error boundary for graceful error handling in lazy-loaded content.
 - **Custom Submit**: Full control over submission logic
 
 **Example:**
+
 ```tsx
 <PageGenerator
   id="form-page"
   form={{
+    defaultValues: { email: "", message: "" },
     data: [
       {
         name: "email",
         type: "email",
         placeholder: "your@email.com",
-        validation: {
-          required: "Email is required",
-          pattern: { value: /^[^@]+@[^@]+$/, message: "Invalid email" }
+        rules: {
+          onChange: ({ value }) => !value ? 'Email is required' : undefined
         }
       },
       {
@@ -331,19 +370,23 @@ Error boundary for graceful error handling in lazy-loaded content.
         placeholder: "Your message"
       }
     ],
-    submit: [
-      {
-        onSuccess: (values, { allMutation }) => {
-          allMutation.sendEmail.mutate(values);
-        },
-        onError: (error) => console.error(error),
-        component: ({ onClick, isLoading }) => (
-          <button onClick={onClick} disabled={isLoading}>
-            {isLoading ? "Sending..." : "Send"}
-          </button>
-        )
-      }
-    ]
+    // The submit array can be a function accessing queries and mutations
+    submit: ({ get }) => {
+      const sendEmail = get('mutation', 'sendEmail.mutateAsync');
+      const isPending = get('mutation', 'sendEmail.isPending', false);
+
+      return [
+        {
+          values: ['email', 'message'],
+          component: ({ onClick }) => (
+            <button onClick={onClick} disabled={isPending}>
+              {isPending ? "Sending..." : "Send"}
+            </button>
+          ),
+          onSuccess: sendEmail
+        }
+      ];
+    }
   }}
   contents={[...]}
 />
@@ -352,6 +395,7 @@ Error boundary for graceful error handling in lazy-loaded content.
 ### 5. Query & Mutation Management
 
 **What it does:**
+
 - **React Query Integration**: Seamless query and mutation handling
 - **Query Definitions**: Type-safe query configurations
 - **Mutation Support**: Data mutation with success/error handling
@@ -363,6 +407,7 @@ Error boundary for graceful error handling in lazy-loaded content.
 - **Polling**: Automatic periodic refetch support
 
 **Example:**
+
 ```tsx
 <PageGenerator
   id="data-page"
@@ -372,37 +417,45 @@ Error boundary for graceful error handling in lazy-loaded content.
       key: "products",
       queryConfig: {
         queryKey: ["products"],
-        queryFn: () => fetch("/api/products").then(r => r.json()),
-        staleTime: 1000 * 60 * 5  // 5 minutes
-      }
+        queryFn: () => fetch("/api/products").then((r) => r.json()),
+        staleTime: 1000 * 60 * 5, // 5 minutes
+      },
     },
     {
       type: "mutation",
       key: "addProduct",
       mutationConfig: {
         mutationFn: (newProduct) =>
-          fetch("/api/products", { method: "POST", body: JSON.stringify(newProduct) })
-      }
-    }
+          fetch("/api/products", {
+            method: "POST",
+            body: JSON.stringify(newProduct),
+          }),
+      },
+    },
   ]}
-  contents={({ allQuery, allMutation }) => [
+  contents={[
     {
       type: "custom",
-      component: (
-        <div>
-          {allQuery.products.isLoading ? (
-            <p>Loading...</p>
-          ) : (
-            <ul>
-              {allQuery.products.data?.map(p => (
-                <li key={p.id}>{p.name}</li>
-              ))}
-            </ul>
-          )}
-        </div>
-      ),
-      usedQueries: ["products"]
-    }
+      component: ({ get }) => {
+        const isLoading = get("query", "products.isLoading", false);
+        const products = get("query", "products.data", []);
+
+        return (
+          <div>
+            {isLoading ? (
+              <p>Loading...</p>
+            ) : (
+              <ul>
+                {products.map((p) => (
+                  <li key={p.id}>{p.name}</li>
+                ))}
+              </ul>
+            )}
+          </div>
+        );
+      },
+      // Note: usedQueries is deprecated. React-pages tracks usage via the `get` method automatically.
+    },
   ]}
 />
 ```
@@ -410,6 +463,7 @@ Error boundary for graceful error handling in lazy-loaded content.
 ### 6. Lazy Loading & Code Splitting
 
 **What it does:**
+
 - **Viewport Detection**: Uses Intersection Observer to detect when content enters viewport
 - **On-Demand Loading**: Load components only when needed
 - **Suspense Integration**: Native React 18+ Suspense support with fallbacks
@@ -420,25 +474,31 @@ Error boundary for graceful error handling in lazy-loaded content.
 - **Preloading**: Optional preload hints for optimization
 
 **Example:**
+
 ```tsx
 <PageGenerator
   id="lazy-page"
+  // Global page-level configuration for lazy loading
+  lazyLoading={{
+    threshold: 0.1,
+    rootMargin: "100px",
+    placeholder: <div className="animate-pulse h-64 bg-gray-200 rounded-md" />,
+  }}
   contents={[
     {
       type: "custom",
       component: <HeavyChart />,
+      // Content-item level lazy loading activation
+      lazy: true,
+      lazyTrigger: "conditional",
+      lazyCondition: ({ get }) => get("form", "showChart", false) === true,
+    },
+    {
+      type: "custom",
+      component: <AnotherHeavyComponent />,
       lazy: true,
       lazyTrigger: "viewport",
-      lazyCondition: ({ formValues }) => formValues.showChart === true,
-      lazyConfig: {
-        threshold: 0.1,
-        rootMargin: "100px",
-        placeholder: {
-          content: <div>Loading chart...</div>,
-          style: { height: "400px", background: "#f0f0f0" }
-        }
-      }
-    }
+    },
   ]}
 />
 ```
@@ -446,6 +506,7 @@ Error boundary for graceful error handling in lazy-loaded content.
 ### 7. Extensibility & Customization
 
 **What it does:**
+
 - **Custom Components**: Override default containers and layouts
 - **Lifecycle Callbacks**: Hooks into component lifecycle
   - `onMountComplete`: After component mounts and queries load
@@ -458,28 +519,30 @@ Error boundary for graceful error handling in lazy-loaded content.
 - **Custom Metadata Evaluation**: Dynamic metadata from page state
 
 **Example:**
+
 ```tsx
 <PageGenerator
   id="extensible-page"
   lifecycleCallbacks={{
-    onMountComplete: async (context) => {
-      console.log("Page mounted with queries:", context.allQuery);
+    onMountComplete: async ({ get }) => {
+      // Access current state via 'get'
+      const queryData = get('query', 'myQuery');
+      console.log("Page mounted with queries:", queryData);
       // Track analytics, initialize third-party services, etc.
     },
-    onQuerySuccess: async (queryKey, data) => {
+    onQuerySuccess: async (context, queryKey, data) => {
       console.log(`Query ${queryKey} succeeded:`, data);
     },
-    onQueryError: async (queryKey, error) => {
+    onQueryError: async (context, queryKey, error) => {
       console.error(`Query ${queryKey} failed:`, error);
     },
-    onFormSubmit: async (formValues) => {
-      console.log("Form submitted:", formValues);
+    onFormSubmit: async (context, result) => {
+      console.log("Form submitted successfully:", result);
     }
   }}
   viewSettings={{
-    customLayoutComponent: MyCustomLayout,
-    customPageContainer: MyCustomPageContainer,
-    customHeaderComponent: MyCustomHeader
+    layoutComponent: MyCustomLayout,
+    pageContainerComponent: MyCustomPageContainer,
   }}
   contents={[...]}
 />
@@ -488,6 +551,7 @@ Error boundary for graceful error handling in lazy-loaded content.
 ### 8. Authentication & Access Control
 
 **What it does:**
+
 - **Global Authentication State**: Track if user is logged in
 - **Protected Pages**: Redirect to login if not authenticated
 - **Role-Based Access**: Custom access control logic
@@ -496,6 +560,7 @@ Error boundary for graceful error handling in lazy-loaded content.
 - **User Context**: Access to user data throughout page
 
 **Example:**
+
 ```tsx
 // Configure globally
 pageConfig.isLogged = (user) => !!user?.token;
@@ -515,6 +580,7 @@ pageConfig.authPageProps = {
 ### 9. Internationalization (i18n)
 
 **What it does:**
+
 - **Built-in i18next Support**: Full internationalization support
 - **Namespace Support**: Organize translations by feature
 - **Dynamic Keys**: Translate content dynamically
@@ -523,6 +589,7 @@ pageConfig.authPageProps = {
 - **Fallback Languages**: Graceful degradation for missing translations
 
 **Example:**
+
 ```tsx
 <PageGenerator
   id="i18n-page"
@@ -538,6 +605,7 @@ pageConfig.authPageProps = {
 ### 10. Container & Layout Management
 
 **What it does:**
+
 - **Hierarchical Layout**: Organize content in nested containers
 - **Header/Footer Support**: Dedicated header and footer sections
 - **Responsive Design**: Different layouts for mobile/tablet/desktop
@@ -547,6 +615,7 @@ pageConfig.authPageProps = {
 - **Refresh Control**: Manual refresh buttons for content
 
 **Example:**
+
 ```tsx
 <PageGenerator
   id="layout-page"
@@ -554,71 +623,43 @@ pageConfig.authPageProps = {
     header: { component: <Header /> },
     footer: { component: <Footer /> },
     withoutPadding: false,
-    disableRefreshing: false
+    disableRefreshing: false,
   }}
   contents={[
     {
       type: "container",
       items: [
         { type: "custom", component: <Section1 />, index: 0 },
-        { type: "custom", component: <Section2 />, index: 1 }
-      ]
-    }
+        { type: "custom", component: <Section2 />, index: 1 },
+      ],
+    },
   ]}
 />
-```
-
-### 11. Deprecation Warnings & Migration Support
-
-**What it does:**
-- **v1.x Deprecation Notices**: Clear warnings about deprecated APIs
-- **Migration Guidance**: Examples of how to upgrade patterns
-- **One-Time Warnings**: Prevents console spam with feature tracking
-- **Development-Only**: Warnings don't affect production
-- **Detailed Messages**: Links to migration docs
-
-**Deprecated Patterns Tracked:**
-1. HelmetProvider wrapper (no longer needed)
-2. Inline metadata via viewSettings
-3. Manual React.lazy() wrapping
-4. Custom form debouncing
-5. Implicit query dependencies
-6. Direct react-helmet-async imports
-
-**Example (automatic warning):**
-```tsx
-// Using deprecated pattern triggers warning:
-// ⚠️ [react-pages v2] Deprecation Warning
-// Feature: react-helmet-async wrapper
-// The <HelmetProvider> wrapper is no longer needed...
-import { HelmetProvider } from 'react-helmet-async';
-<HelmetProvider>
-  <PageGenerator {...props} />
-</HelmetProvider>
 ```
 
 ## 🔧 API Reference
 
 ### PageGenerator Props (Complete)
 
-| Prop | Type | Description |
-|------|------|-------------|
-| `id` | `string` | Unique page identifier (required) |
-| `contents` | `ContentItemsType<F, Q>` | Page content configuration |
-| `queries` | `QueryPageConfigArray<F, Q>` | Query and mutation definitions |
-| `form` | `FormPageProps<F>` | Form configuration and fields |
-| `viewSettings` | `ViewSettings<F, Q>` | Layout, styling, and behavior settings |
-| `meta` | `MetadataConfig<F, Q>` | SEO and metadata configuration |
-| `ns` | `string` | i18n namespace for translations |
-| `enableAuthControl` | `boolean` | Enable authentication checks |
-| `onValuesChange` | `(values: Partial<F>) => void` | Form value change handler |
-| `lifecycleCallbacks` | `LifecycleCallbacks<F, Q>` | Mount, query, and form callbacks |
-| `platformOverrides` | `PlatformOverrides<F, Q>` | Platform-specific prop overrides |
-| `customConfig` | `Record<string, any>` | Custom configuration object |
+| Prop                 | Type                           | Description                            |
+| -------------------- | ------------------------------ | -------------------------------------- |
+| `id`                 | `string`                       | Unique page identifier (required)      |
+| `contents`           | `ContentItemsType<F, Q>`       | Page content configuration             |
+| `queries`            | `QueryPageConfigArray<F, Q>`   | Query and mutation definitions         |
+| `form`               | `FormPageProps<F>`             | Form configuration and fields          |
+| `viewSettings`       | `ViewSettings<F, Q>`           | Layout, styling, and behavior settings |
+| `meta`               | `MetadataConfig<F, Q>`         | SEO and metadata configuration         |
+| `ns`                 | `string`                       | i18n namespace for translations        |
+| `enableAuthControl`  | `boolean`                      | Enable authentication checks           |
+| `onValuesChange`     | `(values: Partial<F>) => void` | Form value change handler              |
+| `lifecycleCallbacks` | `LifecycleCallbacks<F, Q>`     | Mount, query, and form callbacks       |
+| `platformOverrides`  | `PlatformOverrides<F, Q>`      | Platform-specific prop overrides       |
+| `customConfig`       | `Record<string, any>`          | Custom configuration object            |
 
 ### Content Item Types
 
 #### Custom Content
+
 ```tsx
 {
   type: "custom",
@@ -637,6 +678,7 @@ import { HelmetProvider } from 'react-helmet-async';
 ```
 
 #### Container Content
+
 ```tsx
 {
   type: "container",
@@ -745,16 +787,16 @@ import { HelmetProvider } from 'react-helmet-async';
   form={{
     data: [
       { name: "type", type: "select", options: ["A", "B", "C"] },
-      { name: "details", type: "textarea" }
-    ]
+      { name: "details", type: "textarea" },
+    ],
   }}
   contents={({ formValues }) => [
     {
       type: "custom",
       component: <TypeSpecificContent type={formValues.type} />,
-      usedFormValues: ["type"],  // Only re-render when type changes
-      index: 0
-    }
+      usedFormValues: ["type"], // Only re-render when type changes
+      index: 0,
+    },
   ]}
 />
 ```
@@ -796,8 +838,8 @@ interface UserFormData {
 }
 
 type PageQueries = [
-  QueryDefinition<'users', 'query', never, User[]>,
-  QueryDefinition<'createUser', 'mutation', UserFormData, User>
+  QueryDefinition<"users", "query", never, User[]>,
+  QueryDefinition<"createUser", "mutation", UserFormData, User>,
 ];
 
 // Full type safety
@@ -807,8 +849,8 @@ type PageQueries = [
     data: [
       // Fully typed - autocomplete for field names
       { name: "username", type: "text" },
-      { name: "email", type: "email" }
-    ]
+      { name: "email", type: "email" },
+    ],
   }}
   contents={({ formValues, allMutation }) => [
     {
@@ -817,23 +859,23 @@ type PageQueries = [
         <button onClick={() => allMutation.createUser.mutate(formValues)}>
           Create User
         </button>
-      )
-    }
+      ),
+    },
   ]}
-/>
+/>;
 ```
 
 ## ⚡ Performance
 
 ### Bundle Size (All Tree-Shakeable)
 
-| Entry Point | Size | Gzipped |
-|------------|------|---------|
-| Main | 145 KB | ~35 KB |
-| /components | 132 KB | ~31 KB |
-| /hooks | 76 KB | ~18 KB |
-| /config | 12 KB | ~2 KB |
-| /utils | 24 KB | ~5 KB |
+| Entry Point | Size   | Gzipped |
+| ----------- | ------ | ------- |
+| Main        | 145 KB | ~35 KB  |
+| /components | 132 KB | ~31 KB  |
+| /hooks      | 76 KB  | ~18 KB  |
+| /config     | 12 KB  | ~2 KB   |
+| /utils      | 24 KB  | ~5 KB   |
 
 ### Performance Improvements
 
@@ -853,56 +895,98 @@ type PageQueries = [
 ## 🏗️ Global Configuration
 
 ```tsx
-import { pageConfig } from '@gaddario98/react-pages';
+import { usePageConfigState } from "@gaddario98/react-pages";
+import { useEffect } from "react";
 
-// Set default metadata
-pageConfig.meta = {
-  title: "My App",
-  description: "Default description"
-};
+export function GlobalProvider({ children }) {
+  const [, setPageConfig] = usePageConfigState();
 
-// Set custom components
-pageConfig.PageContainer = MyPageContainer;
-pageConfig.BodyContainer = MyBodyContainer;
+  useEffect(() => {
+    setPageConfig((prev) => ({
+      ...prev,
+      // Set default metadata
+      defaultMetadata: {
+        title: "My App",
+        description: "Default description",
+      },
+      // Set custom components
+      PageContainer: MyPageContainer,
+      BodyContainer: MyBodyContainer,
+      // Configure authentication
+      isLogged: (user) => !!user?.token,
+      authPageProps: { id: "login-page" },
+      // Configure lazy loading globally
+      lazyLoading: {
+        enabled: true,
+        preloadOnHover: true,
+        timeout: 30000,
+      },
+    }));
+  }, [setPageConfig]);
 
-// Configure authentication
-pageConfig.isLogged = (user) => !!user?.token;
-pageConfig.authPageProps = { ... };
-
-// Configure lazy loading globally
-pageConfig.lazyLoading = {
-  enabled: true,
-  preloadOnHover: true,
-  timeout: 30000
-};
+  return <>{children}</>;
+}
 ```
 
 ## 🐛 Troubleshooting
 
 ### Form Not Submitting
+
 - Check `submit` array is configured
 - Verify form validation passes
 - Check `onSuccess` callback doesn't throw
 
 ### Queries Not Loading
+
 - Verify `queryFn` is correct
 - Check `enabled` flag (defaults to true)
 - Verify network requests in DevTools
 
 ### Metadata Not Appearing
+
 - Ensure `meta` is provided in PageGenerator
 - Check MetadataManager component is rendered
 - Verify browser head element exists (web only)
 
 ### Re-renders Too Frequent
+
 - Add `usedQueries` and `usedFormValues` props
 - Use `debounceDelay` on form fields
 - Wrap custom components with `React.memo`
 
 ### TypeScript Errors
+
 - Ensure generic types match form/query definitions
 - Use `as const` for query key arrays
 - Verify peer dependencies are installed
+
+## 🏗️ Workspace Integration
+
+Within the monorepo, `@gaddario98/react-pages` is extended by `@gaddario98/react-ionic-pages` to build the app's foundational framework for Ionic mobile environments.
+
+### Ionic Integration Strategy
+
+The `react-ionic-pages` package abstracts `react-pages` global configuration to provide an Ionic-compatible rendering context via the native `<IonPage>` component.
+
+```tsx
+// react-ionic-pages/components/page/index.tsx
+import React from "react";
+import { IonPage } from "@ionic/react";
+import { withMemo } from "@gaddario98/utiles";
+import { pageConfig } from "@gaddario98/react-pages";
+
+export const IonicPageContainer = withMemo(
+  ({ children, id }: React.ComponentProps<typeof pageConfig.PageContainer>) => {
+    return (
+      <IonPage id={id} key={id}>
+        {children}
+      </IonPage>
+    );
+  },
+);
+```
+
+By substituting the core `PageContainer` with `IonicPageContainer` globally within `react-ionic-pages`, Ionic Native can handle native animations and routing transitions, while delegating the complex logical configuration (forms, queries, metadata, code-splitting) to `react-pages`.
 
 ## 📄 License
 
@@ -915,6 +999,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 ## 📞 Support
 
 For support and questions:
+
 - Check [MIGRATION.md](./MIGRATION.md) for v1.x upgrade help
 - Review [examples](./specs/002-page-system-redesign/contracts/examples/)
 - Open an issue on GitHub
