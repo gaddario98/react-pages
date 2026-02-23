@@ -10,10 +10,10 @@
  * @module components/MetadataManager
  */
 
-import { useMetadata } from '../hooks/useMetadata'
-import type { FieldValues } from '@gaddario98/react-form'
-import type { QueriesArray } from '@gaddario98/react-queries'
-import type { MappedItemsFunction, MetadataConfig } from '../types'
+import { useMetadata } from "../hooks/useMetadata";
+import type { FieldValues } from "@gaddario98/react-form";
+import type { QueriesArray } from "@gaddario98/react-queries";
+import type { MappedItemsFunction, MetadataConfig } from "../types";
 
 /**
  * Props for MetadataManager component
@@ -21,15 +21,18 @@ import type { MappedItemsFunction, MetadataConfig } from '../types'
 export interface MetadataManagerProps<
   F extends FieldValues = FieldValues,
   Q extends QueriesArray = QueriesArray,
+  V extends Record<string, unknown> = Record<string, unknown>,
 > {
   /** Page metadata configuration (static or dynamic function) */
-  meta?: MetadataConfig<F, Q> | MappedItemsFunction<F, Q, MetadataConfig>
+  meta?:
+    | MetadataConfig<F, Q, V>
+    | MappedItemsFunction<F, Q, MetadataConfig<F, Q, V>, V>;
 
   /** Namespace for i18n translations */
-  ns?: string
+  ns?: string;
 
   /** Page ID for scoping */
-  pageId: string
+  pageId: string;
 }
 
 /**
@@ -54,18 +57,19 @@ export interface MetadataManagerProps<
 const MetadataManagerImpl = <
   F extends FieldValues = FieldValues,
   Q extends QueriesArray = QueriesArray,
+  V extends Record<string, unknown> = Record<string, unknown>,
 >({
   meta,
-  ns = 'common',
+  ns = "common",
   pageId,
-}: MetadataManagerProps<F, Q>) => {
+}: MetadataManagerProps<F, Q, V>) => {
   // useMetadata handles the full pipeline:
   // evaluate → resolve → translate → apply (DOM or store)
-  useMetadata({ meta, ns, pageId })
+  useMetadata<F, Q, V>({ meta, ns, pageId });
 
-  return null
-}
+  return null;
+};
 
-MetadataManagerImpl.displayName = 'MetadataManager'
+MetadataManagerImpl.displayName = "MetadataManager";
 
-export const MetadataManager = MetadataManagerImpl
+export const MetadataManager = MetadataManagerImpl;

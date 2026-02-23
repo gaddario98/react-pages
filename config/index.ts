@@ -1,7 +1,7 @@
 import { atomStateGenerator } from "@gaddario98/react-state";
 import { getMetadata, resetMetadata, setMetadata } from "./metadata";
 import type { ContentItem, PageProps, ViewSettings } from "../types";
-import type { LazyLoadingConfig, MetadataConfig } from "./types";
+import type { MetadataConfig } from "../types";
 import type { QueriesArray } from "@gaddario98/react-queries";
 import type {
   FieldValues,
@@ -78,8 +78,6 @@ export interface PageConfigProps {
   setMetadata: (config: MetadataConfig) => void;
   getMetadata: () => MetadataConfig;
   resetMetadata: () => void;
-  // Lazy loading configuration
-  lazyLoading: LazyLoadingConfig;
   authValues?: PageAuthState | null;
   locale?: string;
   translateText?: (key: string, options?: PageTranslationOptions) => string;
@@ -115,14 +113,6 @@ let _pageConfig: PageConfigProps = {
   setMetadata,
   getMetadata,
   resetMetadata,
-  // Lazy loading configuration
-  lazyLoading: {
-    enabled: true,
-    preloadOnHover: false,
-    preloadOnFocus: false,
-    timeout: 30000,
-    logMetrics: process.env.NODE_ENV === "development",
-  },
 };
 
 /**
@@ -148,14 +138,6 @@ function initializePageConfig(): PageConfigProps {
     setMetadata,
     getMetadata,
     resetMetadata,
-    // Lazy loading configuration
-    lazyLoading: {
-      enabled: true,
-      preloadOnHover: false,
-      preloadOnFocus: false,
-      timeout: 30000,
-      logMetrics: process.env.NODE_ENV === "development",
-    },
   };
   return _pageConfig;
 }
@@ -205,7 +187,6 @@ export type {
   MetaTag,
   MetadataProvider,
   MetadataStore,
-  LazyLoadingConfig,
   ResolvedMetadata,
   OpenGraphConfig,
   OpenGraphImage,
@@ -219,4 +200,4 @@ export type {
   RobotsConfig,
   LlmsTxtConfig,
   LlmsTxtEntry,
-} from "./types";
+} from "../types";

@@ -9,26 +9,26 @@
  * @module config/metadataLogger
  */
 
-import type { ResolvedMetadata } from './types'
+import type { ResolvedMetadata } from "../types";
 
-const isDev = process.env.NODE_ENV === 'development'
+const isDev = process.env.NODE_ENV === "development";
 
 export interface MetadataLogEntry {
-  pageId: string
-  action: 'resolve' | 'apply-dom' | 'apply-store' | 'translate'
-  metadata: ResolvedMetadata
-  timestamp: number
+  pageId: string;
+  action: "resolve" | "apply-dom" | "apply-store" | "translate";
+  metadata: ResolvedMetadata;
+  timestamp: number;
 }
 
-let logEnabled = false
-const logEntries: Array<MetadataLogEntry> = []
+let logEnabled = false;
+const logEntries: Array<MetadataLogEntry> = [];
 
 /**
  * Enable or disable metadata logging.
  * Only effective in development mode.
  */
 export function setMetadataLogging(enabled: boolean): void {
-  logEnabled = isDev && enabled
+  logEnabled = isDev && enabled;
 }
 
 /**
@@ -37,30 +37,32 @@ export function setMetadataLogging(enabled: boolean): void {
  */
 export function logMetadata(
   pageId: string,
-  action: MetadataLogEntry['action'],
+  action: MetadataLogEntry["action"],
   metadata: ResolvedMetadata,
 ): void {
-  if (!logEnabled) return
+  if (!logEnabled) return;
 
   const entry: MetadataLogEntry = {
     pageId,
     action,
     metadata,
     timestamp: Date.now(),
-  }
+  };
 
-  logEntries.push(entry)
+  logEntries.push(entry);
 
   // Keep only last 50 entries to avoid memory leaks
   if (logEntries.length > 50) {
-    logEntries.splice(0, logEntries.length - 50)
+    logEntries.splice(0, logEntries.length - 50);
   }
 
   console.log(
     `[Metadata:${action}] page="${pageId}"`,
-    metadata.title ? `title="${metadata.title}"` : '',
-    metadata.description ? `desc="${metadata.description.slice(0, 60)}..."` : '',
-  )
+    metadata.title ? `title="${metadata.title}"` : "",
+    metadata.description
+      ? `desc="${metadata.description.slice(0, 60)}..."`
+      : "",
+  );
 }
 
 /**
@@ -68,12 +70,12 @@ export function logMetadata(
  * Useful for inspecting metadata in browser devtools.
  */
 export function getMetadataLog(): Array<MetadataLogEntry> {
-  return [...logEntries]
+  return [...logEntries];
 }
 
 /**
  * Clear the metadata log.
  */
 export function clearMetadataLog(): void {
-  logEntries.length = 0
+  logEntries.length = 0;
 }

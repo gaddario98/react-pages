@@ -10,7 +10,7 @@
  * @module integrations/llms
  */
 
-import type { LlmsTxtConfig, LlmsTxtEntry } from '../config/types'
+import type { LlmsTxtConfig, LlmsTxtEntry } from "../types";
 
 /**
  * Generate llms.txt content from configuration.
@@ -41,32 +41,32 @@ import type { LlmsTxtConfig, LlmsTxtEntry } from '../config/types'
  * ```
  */
 export function generateLlmsTxt(config: LlmsTxtConfig): string {
-  const lines: Array<string> = []
+  const lines: Array<string> = [];
 
   // Header
-  lines.push(`# ${config.siteName}`)
-  lines.push('')
+  lines.push(`# ${config.siteName}`);
+  lines.push("");
 
   // Description
   if (config.siteDescription) {
-    lines.push(`> ${config.siteDescription}`)
-    lines.push('')
+    lines.push(`> ${config.siteDescription}`);
+    lines.push("");
   }
 
   // Entries grouped under "Docs"
   if (config.entries.length > 0) {
-    lines.push('## Docs')
-    lines.push('')
+    lines.push("## Docs");
+    lines.push("");
 
     config.entries.forEach((entry) => {
-      const desc = entry.description ? `: ${entry.description}` : ''
-      lines.push(`- [${entry.title}](${entry.url})${desc}`)
-    })
+      const desc = entry.description ? `: ${entry.description}` : "";
+      lines.push(`- [${entry.title}](${entry.url})${desc}`);
+    });
 
-    lines.push('')
+    lines.push("");
   }
 
-  return lines.join('\n')
+  return lines.join("\n");
 }
 
 /**
@@ -80,32 +80,32 @@ export function generateLlmsFullTxt(
   config: LlmsTxtConfig,
   pageContents: Array<{ entry: LlmsTxtEntry; markdown: string }>,
 ): string {
-  const lines: Array<string> = []
+  const lines: Array<string> = [];
 
-  lines.push(`# ${config.siteName}`)
-  lines.push('')
+  lines.push(`# ${config.siteName}`);
+  lines.push("");
 
   if (config.siteDescription) {
-    lines.push(`> ${config.siteDescription}`)
-    lines.push('')
+    lines.push(`> ${config.siteDescription}`);
+    lines.push("");
   }
 
   pageContents.forEach(({ entry, markdown }) => {
-    lines.push(`## ${entry.title}`)
-    lines.push('')
+    lines.push(`## ${entry.title}`);
+    lines.push("");
     if (entry.description) {
-      lines.push(`> ${entry.description}`)
-      lines.push('')
+      lines.push(`> ${entry.description}`);
+      lines.push("");
     }
-    lines.push(`Source: ${entry.url}`)
-    lines.push('')
-    lines.push(markdown)
-    lines.push('')
-    lines.push('---')
-    lines.push('')
-  })
+    lines.push(`Source: ${entry.url}`);
+    lines.push("");
+    lines.push(markdown);
+    lines.push("");
+    lines.push("---");
+    lines.push("");
+  });
 
-  return lines.join('\n')
+  return lines.join("\n");
 }
 
 /**
@@ -115,24 +115,24 @@ export function generateLlmsFullTxt(
  * Strips HTML chrome, keeps headings coherent, and prepends metadata summary.
  */
 export function pageToMarkdown(options: {
-  title: string
-  description?: string
-  url: string
-  content: string
+  title: string;
+  description?: string;
+  url: string;
+  content: string;
 }): string {
-  const lines: Array<string> = []
+  const lines: Array<string> = [];
 
-  lines.push(`# ${options.title}`)
-  lines.push('')
+  lines.push(`# ${options.title}`);
+  lines.push("");
 
   if (options.description) {
-    lines.push(options.description)
-    lines.push('')
+    lines.push(options.description);
+    lines.push("");
   }
 
-  lines.push(`URL: ${options.url}`)
-  lines.push('')
-  lines.push(options.content)
+  lines.push(`URL: ${options.url}`);
+  lines.push("");
+  lines.push(options.content);
 
-  return lines.join('\n')
+  return lines.join("\n");
 }

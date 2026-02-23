@@ -9,27 +9,32 @@
  * @module config/resolveMetadata
  */
 
-import type { FieldValues } from '@gaddario98/react-form'
-import type { QueriesArray } from '@gaddario98/react-queries'
+import type { FieldValues } from "@gaddario98/react-form";
+import type { QueriesArray } from "@gaddario98/react-queries";
 import type {
   MetadataConfig,
   MetadataEvaluatorContext,
   OpenGraphImage,
   ResolvedMetadata,
-} from './types'
+} from "../types";
 
 /**
  * Safely evaluate a value that may be a function or a plain value.
  */
-function evaluate<T, F extends FieldValues, Q extends QueriesArray>(
-  value: T | ((ctx: MetadataEvaluatorContext<F, Q>) => T) | undefined,
-  ctx: MetadataEvaluatorContext<F, Q>,
+function evaluate<
+  T,
+  F extends FieldValues,
+  Q extends QueriesArray,
+  V extends Record<string, unknown> = Record<string, unknown>,
+>(
+  value: T | ((ctx: MetadataEvaluatorContext<F, Q, V>) => T) | undefined,
+  ctx: MetadataEvaluatorContext<F, Q, V>,
 ): T | undefined {
-  if (value === undefined || value === null) return undefined
-  if (typeof value === 'function') {
-    return (value as (ctx: MetadataEvaluatorContext<F, Q>) => T)(ctx)
+  if (value === undefined || value === null) return undefined;
+  if (typeof value === "function") {
+    return (value as (ctx: MetadataEvaluatorContext<F, Q, V>) => T)(ctx);
   }
-  return value as T
+  return value as T;
 }
 
 /**
@@ -43,29 +48,30 @@ function evaluate<T, F extends FieldValues, Q extends QueriesArray>(
 export function resolveMetadata<
   F extends FieldValues = FieldValues,
   Q extends QueriesArray = QueriesArray,
+  V extends Record<string, unknown> = Record<string, unknown>,
 >(
-  meta: MetadataConfig<F, Q>,
-  ctx: MetadataEvaluatorContext<F, Q>,
+  meta: MetadataConfig<F, Q, V>,
+  ctx: MetadataEvaluatorContext<F, Q, V>,
 ): ResolvedMetadata {
-  const resolved: ResolvedMetadata = {}
+  const resolved: ResolvedMetadata = {};
 
   // ── Basic fields ────────────────────────────────────────────
-  resolved.title = evaluate(meta.title, ctx)
-  resolved.description = evaluate(meta.description, ctx)
-  resolved.canonical = evaluate(meta.canonical, ctx)
+  resolved.title = evaluate(meta.title, ctx);
+  resolved.description = evaluate(meta.description, ctx);
+  resolved.canonical = evaluate(meta.canonical, ctx);
   // Unify lang / documentLang: prefer `lang`, fall back to deprecated `documentLang`
-  resolved.lang = meta.lang ?? meta.documentLang
-  resolved.keywords = evaluate(meta.keywords, ctx)
-  resolved.author = meta.author
-  resolved.viewport = meta.viewport
-  resolved.themeColor = meta.themeColor
-  resolved.disableIndexing = meta.disableIndexing
+  resolved.lang = meta.lang ?? meta.documentLang;
+  resolved.keywords = evaluate(meta.keywords, ctx);
+  resolved.author = meta.author;
+  resolved.viewport = meta.viewport;
+  resolved.themeColor = meta.themeColor;
+  resolved.disableIndexing = meta.disableIndexing;
 
   // ── Open Graph ──────────────────────────────────────────────
   if (meta.openGraph) {
-    const og = meta.openGraph
-    const resolvedImage = evaluate(og.image, ctx)
-    const resolvedImages = evaluate(og.images, ctx)
+    const og = meta.openGraph;
+    const resolvedImage = evaluate(og.image, ctx);
+    const resolvedImages = evaluate(og.images, ctx);
 
     resolved.openGraph = {
       type: og.type,
@@ -77,21 +83,21 @@ export function resolveMetadata<
       siteName: og.siteName,
       locale: og.locale,
       article: og.article,
-    }
+    };
 
     // Normalize: if single image string, also put it in images array
     if (resolvedImage && !resolvedImages) {
       const imgObj: OpenGraphImage =
-        typeof resolvedImage === 'string'
+        typeof resolvedImage === "string"
           ? { url: resolvedImage }
-          : resolvedImage
-      resolved.openGraph.images = [imgObj]
+          : resolvedImage;
+      resolved.openGraph.images = [imgObj];
     }
   }
 
   // ── Twitter Card ────────────────────────────────────────────
   if (meta.twitter) {
-    const tw = meta.twitter
+    const tw = meta.twitter;
     resolved.twitter = {
       card: tw.card,
       site: tw.site,
@@ -100,53 +106,52 @@ export function resolveMetadata<
       description: evaluate(tw.description, ctx),
       image: evaluate(tw.image, ctx),
       imageAlt: evaluate(tw.imageAlt, ctx),
-    }
+    };
   }
 
   // ── Alternates / hreflang ───────────────────────────────────
   if (meta.alternates) {
-    resolved.alternates = { ...meta.alternates }
+    resolved.alternates = { ...meta.alternates };
   }
 
   // ── Icons / PWA ─────────────────────────────────────────────
   if (meta.icons) {
-    resolved.icons = { ...meta.icons }
+    resolved.icons = { ...meta.icons };
   }
   if (meta.manifest) {
-    resolved.manifest = meta.manifest
+    resolved.manifest = meta.manifest;
   }
 
   // ── Structured Data ─────────────────────────────────────────
   if (meta.structuredData) {
-    const sd = meta.structuredData
+    const sd = meta.structuredData;
     resolved.structuredData = {
       type: sd.type,
-      schema:
-        typeof sd.schema === 'function' ? sd.schema(ctx) : sd.schema,
-    }
+      schema: typeof sd.schema === "function" ? sd.schema(ctx) : sd.schema,
+    };
   }
 
   // ── AI Hints ────────────────────────────────────────────────
   if (meta.aiHints) {
-    const hints = meta.aiHints
+    const hints = meta.aiHints;
     resolved.aiHints = {
       contentClassification: evaluate(hints.contentClassification, ctx),
       modelHints: evaluate(hints.modelHints, ctx),
       contextualInfo: evaluate(hints.contextualInfo, ctx),
       excludeFromIndexing: hints.excludeFromIndexing,
-    }
+    };
   }
 
   // ── Robots ──────────────────────────────────────────────────
   if (meta.robots) {
-    resolved.robots = { ...meta.robots }
+    resolved.robots = { ...meta.robots };
   }
 
   // ── Custom Meta Tags ───────────────────────────────────────
-  const customMeta = evaluate(meta.customMeta, ctx)
+  const customMeta = evaluate(meta.customMeta, ctx);
   if (customMeta) {
-    resolved.customMeta = customMeta
+    resolved.customMeta = customMeta;
   }
 
-  return resolved
+  return resolved;
 }

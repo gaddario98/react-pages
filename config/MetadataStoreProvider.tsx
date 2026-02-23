@@ -7,16 +7,16 @@
  * @module config/MetadataStoreProvider
  */
 
-import { createContext, useContext, useMemo } from 'react'
-import { createMetadataStore } from './metadata'
-import type { MetadataStore } from './types'
+import { createContext, useContext, useMemo } from "react";
+import { createMetadataStore } from "./metadata";
+import type { MetadataStore } from "../types";
 
-const MetadataStoreContext = createContext<MetadataStore | null>(null)
+const MetadataStoreContext = createContext<MetadataStore | null>(null);
 
 export interface MetadataStoreProviderProps {
   /** Optional pre-created store. If not provided, a new one is created. */
-  store?: MetadataStore
-  children: React.ReactNode
+  store?: MetadataStore;
+  children: React.ReactNode;
 }
 
 /**
@@ -42,12 +42,12 @@ export function MetadataStoreProvider({
   store,
   children,
 }: MetadataStoreProviderProps) {
-  const value = useMemo(() => store ?? createMetadataStore(), [store])
+  const value = useMemo(() => store ?? createMetadataStore(), [store]);
   return (
     <MetadataStoreContext.Provider value={value}>
       {children}
     </MetadataStoreContext.Provider>
-  )
+  );
 }
 
 /**
@@ -55,5 +55,5 @@ export function MetadataStoreProvider({
  * Returns `null` if no provider is found (falls back to global store in consumers).
  */
 export function useMetadataStore(): MetadataStore | null {
-  return useContext(MetadataStoreContext)
+  return useContext(MetadataStoreContext);
 }

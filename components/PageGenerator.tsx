@@ -94,7 +94,7 @@ const PageGenerator = <
 
   return (
     <PageContainerComponent id={id} key={id} {...pageContainerProps}>
-      <MetadataManager<F, Q> meta={meta} ns={ns} pageId={id} />
+      <MetadataManager<F, Q, V> meta={meta} ns={ns} pageId={id} />
       <HeaderContainer<F, Q, V>
         allContents={allContents}
         handleRefresh={refreshQueries}

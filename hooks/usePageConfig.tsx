@@ -1,21 +1,20 @@
-import { useMemo } from 'react'
-import { useApi } from '@gaddario98/react-queries'
-import { usePageConfigValue } from '../config'
-import { useViewSettings } from './useViewSettings'
-import { usePageFormManager } from './usePageFormManager'
-import { usePageValues } from './usePageValues'
-import type { FieldValues } from '@gaddario98/react-form'
-import type { QueriesArray, QueryConfigArray } from '@gaddario98/react-queries'
+import { useMemo } from "react";
+import { useApi } from "@gaddario98/react-queries";
+import { usePageConfigValue } from "../config";
+import { useViewSettings } from "./useViewSettings";
+import { usePageFormManager } from "./usePageFormManager";
+import { usePageValues } from "./usePageValues";
+import type { FieldValues } from "@gaddario98/react-form";
+import type { QueriesArray, QueryConfigArray } from "@gaddario98/react-queries";
 import type {
   FormPageProps,
-  LazyLoadingConfig,
   MappedItemsFunction,
   MetadataConfig,
   QueryPageConfigArray,
   ViewSettings,
-} from '../types'
+} from "../types";
 
-const EMPTY_ARRAY: [] = []
+const EMPTY_ARRAY: [] = [];
 
 export const usePageConfig = <
   F extends FieldValues,
@@ -27,71 +26,69 @@ export const usePageConfig = <
   ns,
   viewSettings = {},
   meta,
-  lazyLoading,
   variables,
   pageId,
 }: {
-  queries: QueryPageConfigArray<F, Q, V>
-  form?: FormPageProps<F, Q, V>
-  ns: string
-  viewSettings?: MappedItemsFunction<F, Q, ViewSettings, V> | ViewSettings
+  queries: QueryPageConfigArray<F, Q, V>;
+  form?: FormPageProps<F, Q, V>;
+  ns: string;
+  viewSettings?: MappedItemsFunction<F, Q, ViewSettings, V> | ViewSettings;
   // Metadata and lazy loading configuration
-  meta?: MetadataConfig<F, Q>
-  lazyLoading?: LazyLoadingConfig
-  variables?: V
-  pageId: string
+  meta?: MetadataConfig<F, Q>;
+  variables?: V;
+  pageId: string;
 }) => {
   // Use global config usage if needed, but per-page config is primary
-  const globalConfig = usePageConfigValue()
+  const globalConfig = usePageConfigValue();
 
   // 1. Form Management
   const { formData } = usePageFormManager<F, Q, V>({
     form,
     pageId,
     ns,
-  })
+  });
   const { get, set } = usePageValues<F, Q, V>({
     pageId,
     initialValues: variables,
-  })
+  });
 
   // 2. Query Generation
 
   const processedQueries = useMemo((): QueryConfigArray<Q> => {
     return queries.map((q) => {
-      if (q.type === 'mutation') {
+      if (q.type === "mutation") {
         const mutationConfig =
-          typeof q.mutationConfig === 'function'
+          typeof q.mutationConfig === "function"
             ? q.mutationConfig<Q>({ get, set })
-            : q.mutationConfig
+            : q.mutationConfig;
         return {
           ...q,
           mutationConfig,
-        }
+        };
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      } else if (q.type === 'query') {
+      } else if (q.type === "query") {
         const queryConfig =
-          typeof q.queryConfig === 'function'
+          typeof q.queryConfig === "function"
             ? q.queryConfig<Q>({ get, set })
-            : q.queryConfig
+            : q.queryConfig;
         return {
           ...q,
           queryConfig,
-        }
+        };
       }
-      return q
-    }) as QueryConfigArray<Q>
-  }, [queries, get, set])
+      return q;
+    }) as QueryConfigArray<Q>;
+  }, [queries, get, set]);
 
   useApi<Q>(processedQueries, {
     persistToAtoms: true,
     scopeId: pageId,
-  })
+  });
 
   const mappedViewSettings = useViewSettings<F, Q, V>({
     viewSettings,
     pageId,
-  })
+  });
 
   // Merge custom configuration with defaults
   const mergedConfig = useMemo(() => {
@@ -100,17 +97,9 @@ export const usePageConfig = <
       form,
       mappedViewSettings,
       meta,
-      lazyLoading,
       globalConfig, // Expose global config if needed
-    }
-  }, [
-    formData,
-    form,
-    mappedViewSettings,
-    meta,
-    lazyLoading,
-    globalConfig,
-  ])
+    };
+  }, [formData, form, mappedViewSettings, meta, globalConfig]);
 
-  return mergedConfig
-}
+  return mergedConfig;
+};
