@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from "react";
 import { queriesAtom } from "@gaddario98/react-queries";
+import { useQueryClient } from "@tanstack/react-query";
 import { useStore } from "jotai";
 import { useGenerateContent } from "../hooks/useGenerateContent";
 import { usePageConfig } from "../hooks";
@@ -49,7 +50,7 @@ const PageGenerator = <
     ns,
   } = useMemo(() => selectedProps, [selectedProps]);
 
-  const config = usePageConfig<F, Q, V>({
+  const { mergedConfig, refreshQueries } = usePageConfig<F, Q, V>({
     queries,
     form,
     ns: ns ?? "",
@@ -58,14 +59,14 @@ const PageGenerator = <
     variables,
   });
 
-  const { mappedViewSettings } = config;
   const { allContents, body, footer, header } = useGenerateContent<F, Q, V>({
     contents,
     pageId: id,
     ns,
-    pageConfig: config,
+    pageConfig: mergedConfig,
   });
 
+  const { mappedViewSettings } = mergedConfig;
   const LayoutComponent = useMemo(() => {
     return mappedViewSettings.layoutComponent ?? BodyContainer;
   }, [mappedViewSettings.layoutComponent, BodyContainer]);
@@ -83,14 +84,6 @@ const PageGenerator = <
   }, [mappedViewSettings.pageContainerProps]);
 
   const layoutBody = useMemo(() => body, [body]);
-
-  const store = useStore();
-  const refreshQueries = useCallback(() => {
-    const val = store.get(queriesAtom);
-    Object.values(val).forEach((query) => {
-      query.refetch();
-    });
-  }, [store]);
 
   return (
     <PageContainerComponent id={id} key={id} {...pageContainerProps}>

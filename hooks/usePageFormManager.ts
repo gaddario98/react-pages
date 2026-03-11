@@ -38,7 +38,7 @@ export const usePageFormManager = <
   useEffect(() => {
     if (!form?.defaultValueQueryKey) {
       // setDefaultValueQuery(form?.defaultValues)
-      return;
+      return () => {};
     }
     const initialData = queryClient.getQueryData<F>(form.defaultValueQueryKey);
     if (initialData) {

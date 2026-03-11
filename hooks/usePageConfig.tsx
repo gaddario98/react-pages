@@ -1,5 +1,5 @@
-import { useMemo } from "react";
-import { useApi } from "@gaddario98/react-queries";
+import { useCallback, useMemo } from "react";
+import { useApi, useInvalidateQueries } from "@gaddario98/react-queries";
 import { usePageConfigValue } from "../config";
 import { useViewSettings } from "./useViewSettings";
 import { usePageFormManager } from "./usePageFormManager";
@@ -84,6 +84,15 @@ export const usePageConfig = <
     persistToAtoms: true,
     scopeId: pageId,
   });
+  const { invalidateQueries } = useInvalidateQueries();
+
+  const refreshQueries = useCallback(() => {
+    processedQueries
+      .filter((el) => el.type === "query")
+      .forEach(({ queryConfig }) => {
+        if (queryConfig?.queryKey) invalidateQueries([queryConfig?.queryKey]);
+      });
+  }, [processedQueries]);
 
   const mappedViewSettings = useViewSettings<F, Q, V>({
     viewSettings,
@@ -101,5 +110,5 @@ export const usePageConfig = <
     };
   }, [formData, form, mappedViewSettings, meta, globalConfig]);
 
-  return mergedConfig;
+  return { mergedConfig, refreshQueries };
 };
