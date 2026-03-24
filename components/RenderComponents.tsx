@@ -1,8 +1,8 @@
-import { Container } from "./Container"
-import { RenderComponent } from "./RenderComponent"
-import type { FieldValues } from "@gaddario98/react-form"
-import type { QueriesArray } from "@gaddario98/react-queries"
-import type { RenderComponentsProps } from "../types"
+import { Container } from "./Container";
+import { RenderComponent } from "./RenderComponent";
+import type { FieldValues } from "@gaddario98/react-form";
+import type { QueriesArray } from "@gaddario98/react-queries";
+import type { RenderComponentsProps } from "../types";
 
 export const RenderComponents = <
   F extends FieldValues,
@@ -11,22 +11,24 @@ export const RenderComponents = <
 >(
   props: RenderComponentsProps<F, Q, V>,
 ) => {
-  if (props.content.type === 'container') {
+  const renderKey = props.content.key ?? "";
+
+  if (props.content.type === "container") {
     return (
       <Container<F, Q, V>
-        key={props.key}
+        key={renderKey}
         content={props.content}
         ns={props.ns}
         pageId={props.pageId}
       />
-    )
+    );
   }
   return (
     <RenderComponent<F, Q, V>
-      key={props.key}
+      key={renderKey}
       content={props.content}
       ns={props.ns}
       pageId={props.pageId}
     />
-  )
-}
+  );
+};
