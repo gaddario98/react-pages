@@ -1,7 +1,4 @@
-import { useCallback, useMemo } from "react";
-import { queriesAtom } from "@gaddario98/react-queries";
-import { useQueryClient } from "@tanstack/react-query";
-import { useStore } from "jotai";
+import { useMemo } from "react";
 import { useGenerateContent } from "../hooks/useGenerateContent";
 import { usePageConfig } from "../hooks";
 import { usePageConfigValue } from "../config";
