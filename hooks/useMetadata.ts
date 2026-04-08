@@ -158,19 +158,21 @@ export function useMetadata<
     return result;
   }, [resolved, t, locale]);
 
+  // In SSR, effects do not run. Write into request-scoped store during render
+  // so the host can collect metadata with collectMetadataToHtml().
+  if (autoApply && typeof document === "undefined" && metadataStore) {
+    metadataStore.setMetadata(translated);
+  }
+
   // Step 4: Apply metadata
   useEffect(() => {
-    if (!autoApply) return;
+    if (!autoApply || typeof document === "undefined") return;
 
-    // If we have a request-scoped store (SSR), write to it
+    // Keep store and DOM aligned during client navigation/hydration.
     if (metadataStore) {
       metadataStore.setMetadata(translated);
     }
-
-    // On the client, also apply to DOM
-    if (typeof document !== "undefined") {
-      applyMetadataToDom(translated);
-    }
+    applyMetadataToDom(translated);
   }, [translated, autoApply, metadataStore]);
 
   return translated;

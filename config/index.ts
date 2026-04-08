@@ -115,36 +115,9 @@ let _pageConfig: PageConfigProps = {
   resetMetadata,
 };
 
-/**
- * Get or initialize the page configuration singleton
- * Uses lazy initialization to avoid module-level side effects for better tree-shaking
- */
-function initializePageConfig(): PageConfigProps {
-  _pageConfig = {
-    HeaderContainer: DefaultContainer,
-    FooterContainer: DefaultContainer,
-    BodyContainer: DefaultContainer,
-    authPageImage: "",
-    authPageProps: { id: "auth-page" },
-    isLogged: (val: PageAuthState | null) => !!val?.id && !!val.isLogged,
-    ItemsContainer: ({ children }) => children,
-    PageContainer: ({ children }) => children,
-    meta: {
-      title: "",
-      description: "",
-    },
-    // Metadata configuration
-    defaultMetadata: {},
-    setMetadata,
-    getMetadata,
-    resetMetadata,
-  };
-  return _pageConfig;
-}
-
-// Getter for pageConfig - initializes on first access
+// Getter for current pageConfig singleton
 export function getPageConfig(): PageConfigProps {
-  return initializePageConfig();
+  return _pageConfig;
 }
 
 export const {
