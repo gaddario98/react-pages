@@ -1,5 +1,5 @@
-import { useCallback, useMemo } from "react";
-import { useApi, useInvalidateQueries } from "@gaddario98/react-queries";
+import { useMemo } from "react";
+import { useApi } from "@gaddario98/react-queries";
 import { usePageConfigValue } from "../config";
 import { useViewSettings } from "./useViewSettings";
 import { usePageFormManager } from "./usePageFormManager";
@@ -65,7 +65,6 @@ export const usePageConfig = <
           ...q,
           mutationConfig,
         };
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       } else if (q.type === "query") {
         const queryConfig =
           typeof q.queryConfig === "function"
@@ -80,19 +79,10 @@ export const usePageConfig = <
     }) as QueryConfigArray<Q>;
   }, [queries, get, set]);
 
-  useApi<Q>(processedQueries, {
+  const { refreshQueries } = useApi<Q>(processedQueries, {
     persistToAtoms: true,
     scopeId: pageId,
   });
-  const { invalidateQueries } = useInvalidateQueries();
-
-  const refreshQueries = useCallback(() => {
-    processedQueries
-      .filter((el) => el.type === "query")
-      .forEach(({ queryConfig }) => {
-        if (queryConfig?.queryKey) invalidateQueries([queryConfig?.queryKey]);
-      });
-  }, [processedQueries]);
 
   const mappedViewSettings = useViewSettings<F, Q, V>({
     viewSettings,
