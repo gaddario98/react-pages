@@ -50,10 +50,29 @@ export const usePageValues = <
   );
 
   const initialized = useRef(false);
+  const prevInitialValues = useRef(initialValues);
+
   useEffect(() => {
     if (!initialized.current && initialValues) {
       setPageVariables(initialValues);
       initialized.current = true;
+      prevInitialValues.current = initialValues;
+    } else if (initialized.current && initialValues) {
+      const changes: Record<string, unknown> = {};
+      let hasChanges = false;
+      const prev = prevInitialValues.current ?? {};
+
+      Object.keys(initialValues).forEach((key) => {
+        if (!equal(initialValues[key], prev[key])) {
+          changes[key] = initialValues[key];
+          hasChanges = true;
+        }
+      });
+
+      if (hasChanges) {
+        setPageVariables((prevVars) => ({ ...prevVars, ...changes }));
+      }
+      prevInitialValues.current = initialValues;
     }
   }, [initialValues, setPageVariables]);
 
