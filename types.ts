@@ -335,7 +335,9 @@ interface PageProps<
   viewSettings?: MappedItemsFunction<F, Q, ViewSettings, V> | ViewSettings;
 
   // NEW IN 2.0: Metadata & SEO (generic over F and Q for dynamic metadata)
-  meta?: MetadataConfig<F, Q, V>;
+  meta?:
+    | MetadataConfig<F, Q, V>
+    | MappedItemsFunction<F, Q, MetadataConfig<F, Q, V>, V>;
 
   // Feature flags
   enableAuthControl?: boolean;

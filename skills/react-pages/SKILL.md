@@ -18,7 +18,7 @@ Considera i sorgenti del package la fonte dell'API effettiva. Tratta esempi più
 5. Costruisci ogni content item stateful come componente nominato a livello modulo che riceve `FunctionProps`; assegnagli una key semantica e permanente direttamente nel content item. Mantieni nell'array statico hero, azioni, informazioni e altri contenuti che devono reagire all'arrivo dei dati: il componente può gestire `undefined`, ma la struttura non deve dipendere dal fatto che la query abbia già risposto. Usa un elemento JSX solo quando richiede props extra. Nei layout virtualizzati verifica se un item invisibile occupa una riga. Leggi [lifecycle e rendering](references/rendering-lifecycle.md).
 6. Importa la costante `queries` dal modulo feature; non dichiarare endpoint, keys o request inline nella pagina e non affiancare a PageGenerator hook API che recuperano gli stessi dati. Passa `form` a `PageGenerator` solo quando deve partecipare al suo scope o layout; altrimenti rendi `FormManager` in un content component. Metti invalidation e notifiche nella `mutationConfig`. Leggi [ecosistema](references/ecosystem.md).
 7. Durante un refactor, aggiorna prima tutti i consumer verso il barrel pubblico della nuova ownership, poi elimina file, export e cartelle legacy solo dopo una ricerca globale dei riferimenti. Non conservare moduli vuoti o wrapper pass-through. Leggi [configurazioni esterne e refactor](references/refactoring-and-ownership.md).
-8. Configura metadata o integrazioni server solo se richiesto. Leggi [metadata e piattaforme](references/metadata-and-platforms.md) per SSR, Next, sitemap, robots, JSON-LD e `llms.txt`.
+8. Configura metadata solo se richiesto. Leggi [metadata e piattaforme](references/metadata-and-platforms.md).
 9. Verifica il requisito funzionale. Per query dipendenti da route/auth, testa anche la configurazione al primo render; per risposte concorrenti, verifica che una risposta vecchia non sovrascriva la route corrente. Per widget stateful, conta i mount; per paginazione dinamica, usa una request differita e asserisci `dati correnti -> pending con dati ancora visibili -> dati estesi`. Esegui lint, test mirati e build pertinenti.
 
 ## Modello di pagina raccomandato
@@ -136,7 +136,7 @@ Usa `renderInHeader` e `renderInFooter` esclusivamente per contenuti visivi dest
 
 Configura una sola volta i container, autenticazione e traduzione tramite `usePageConfigState`. Considera che `enableAuthControl` è attivo di default e una pagina non autenticata renderizza `authPageProps`.
 
-Usa `meta` per metadata statici o con una funzione che accetta `get`/`set` e ritorna la configurazione. Le vecchie logiche SSR basate su `MetadataStoreProvider` e gli evaluator per singola proprietà sono state eliminate. Per integrazioni Next.js o custom SSR, assicurati di estrarre e servire i metadati prima di idratare il ramo client `PageGenerator`.
+Usa `meta` per metadata statici o con una funzione che accetta `get`/`set` e ritorna la configurazione. Le vecchie logiche basate su `MetadataStoreProvider` e gli evaluator per singola proprietà sono state eliminate.
 
 ## Diagnosi e verifica
 
