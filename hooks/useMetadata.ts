@@ -12,8 +12,8 @@ export interface UseMetadataProps<
   V extends Record<string, unknown> = Record<string, unknown>,
 > {
   meta?:
-    | MetadataConfig<F, Q, V>
-    | MappedItemsFunction<F, Q, MetadataConfig<F, Q, V>, V>;
+  | MetadataConfig<F, Q, V>
+  | MappedItemsFunction<F, Q, MetadataConfig<F, Q, V>, V>;
   ns?: string;
   autoApply?: boolean;
   pageId: string;

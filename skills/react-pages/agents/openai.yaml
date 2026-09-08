@@ -1,0 +1,4 @@
+interface:
+  display_name: "React Pages"
+  short_description: "Build stable pages with PageGenerator"
+  default_prompt: "Use $react-pages to implement a stable PageGenerator page."
