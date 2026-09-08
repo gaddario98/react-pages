@@ -1,5 +1,5 @@
 import { atomStateGenerator } from "@gaddario98/react-state";
-import { getMetadata, resetMetadata, setMetadata } from "./metadata";
+
 import type { ContentItem, PageProps, ViewSettings } from "../types";
 import type { MetadataConfig } from "../types";
 import type { QueriesArray } from "@gaddario98/react-queries";
@@ -75,9 +75,6 @@ export interface PageConfigProps {
   };
   // Metadata configuration
   defaultMetadata: MetadataConfig;
-  setMetadata: (config: MetadataConfig) => void;
-  getMetadata: () => MetadataConfig;
-  resetMetadata: () => void;
   authValues?: PageAuthState | null;
   locale?: string;
   translateText?: (key: string, options?: PageTranslationOptions) => string;
@@ -110,9 +107,6 @@ let _pageConfig: PageConfigProps = {
   },
   // Metadata configuration
   defaultMetadata: {},
-  setMetadata,
-  getMetadata,
-  resetMetadata,
 };
 
 // Getter for current pageConfig singleton
@@ -131,20 +125,10 @@ export const {
   persist: false,
 });
 
-// Re-export metadata functions (backward compat)
-export { setMetadata, getMetadata, resetMetadata } from "./metadata";
-
 // Re-export new metadata architecture
-export { resolveMetadata } from "./resolveMetadata";
 export {
   applyMetadataToDom,
-  collectMetadataToHtml,
-  createMetadataStore,
 } from "./metadata";
-export {
-  MetadataStoreProvider,
-  useMetadataStore,
-} from "./MetadataStoreProvider";
 
 // Re-export logging utilities
 export {
@@ -158,9 +142,6 @@ export {
 export type {
   MetadataConfig,
   MetaTag,
-  MetadataProvider,
-  MetadataStore,
-  ResolvedMetadata,
   OpenGraphConfig,
   OpenGraphImage,
   OpenGraphArticle,

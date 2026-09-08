@@ -1,8 +1,7 @@
 import { useMemo } from "react";
 import { useGenerateContent } from "../hooks/useGenerateContent";
-import { usePageConfig } from "../hooks";
+import { useMetadata, usePageConfig } from "../hooks";
 import { usePageConfigValue } from "../config";
-import { MetadataManager } from "./MetadataManager";
 import type { FieldValues } from "@gaddario98/react-form";
 import type { QueriesArray } from "@gaddario98/react-queries";
 import type { PageProps, QueryPageConfigArray } from "../types";
@@ -63,6 +62,8 @@ const PageGenerator = <
     pageConfig: mergedConfig,
   });
 
+  useMetadata<F, Q, V>({ meta, ns, pageId: id });
+
   const { mappedViewSettings } = mergedConfig;
   const LayoutComponent = useMemo(() => {
     return mappedViewSettings.layoutComponent ?? BodyContainer;
@@ -84,7 +85,6 @@ const PageGenerator = <
 
   return (
     <PageContainerComponent id={id} key={id} {...pageContainerProps}>
-      <MetadataManager<F, Q, V> meta={meta} ns={ns} pageId={id} />
       <HeaderContainer<F, Q, V>
         allContents={allContents}
         handleRefresh={refreshQueries}

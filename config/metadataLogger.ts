@@ -9,14 +9,14 @@
  * @module config/metadataLogger
  */
 
-import type { ResolvedMetadata } from "../types";
+import type { MetadataConfig } from "../types";
 
 const isDev = process.env.NODE_ENV === "development";
 
 export interface MetadataLogEntry {
   pageId: string;
   action: "resolve" | "apply-dom" | "apply-store" | "translate";
-  metadata: ResolvedMetadata;
+  metadata: MetadataConfig;
   timestamp: number;
 }
 
@@ -38,7 +38,7 @@ export function setMetadataLogging(enabled: boolean): void {
 export function logMetadata(
   pageId: string,
   action: MetadataLogEntry["action"],
-  metadata: ResolvedMetadata,
+  metadata: MetadataConfig,
 ): void {
   if (!logEnabled) return;
 

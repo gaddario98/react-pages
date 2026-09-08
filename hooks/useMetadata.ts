@@ -1,56 +1,24 @@
-/**
- * useMetadata Hook
- * Evaluates dynamic metadata with query data and form values
- * Integrates i18n for metadata translation
- * Uses resolveMetadata + applyMetadataToDom for clean separation
- *
- * @module hooks/useMetadata
- */
-
 import { useEffect, useMemo } from "react";
-import { resolveMetadata } from "../config/resolveMetadata";
 import { applyMetadataToDom } from "../config/metadata";
-import { useMetadataStore } from "../config/MetadataStoreProvider";
 import { usePageConfigValue } from "../config";
 import { usePageValues } from "./usePageValues";
 import type { FieldValues } from "@gaddario98/react-form";
 import type { QueriesArray } from "@gaddario98/react-queries";
 import type { MappedItemsFunction, MetadataConfig } from "../types";
-import type { ResolvedMetadata } from "../types";
 
-/**
- * Props for useMetadata hook
- */
 export interface UseMetadataProps<
   F extends FieldValues = FieldValues,
   Q extends QueriesArray = QueriesArray,
   V extends Record<string, unknown> = Record<string, unknown>,
 > {
-  /** Base metadata configuration (static or dynamic function) */
   meta?:
     | MetadataConfig<F, Q, V>
     | MappedItemsFunction<F, Q, MetadataConfig<F, Q, V>, V>;
-
-  /** Namespace for i18n translations */
   ns?: string;
-
-  /** Whether to automatically apply metadata (default: true) */
   autoApply?: boolean;
-
   pageId: string;
 }
 
-/**
- * Hook for evaluating and managing dynamic metadata.
- *
- * Pipeline:
- * 1. Evaluate `meta` (if it's a MappedItemsFunction, call it with get/set)
- * 2. Resolve all dynamic functions via `resolveMetadata()`
- * 3. Translate strings via i18n
- * 4. Auto-apply to DOM (client) or store (SSR) via `applyMetadataToDom` / MetadataStore
- *
- * @returns Resolved and translated metadata
- */
 export function useMetadata<
   F extends FieldValues = FieldValues,
   Q extends QueriesArray = QueriesArray,
@@ -59,16 +27,15 @@ export function useMetadata<
   meta,
   autoApply = true,
   pageId,
-}: UseMetadataProps<F, Q, V>): ResolvedMetadata {
+}: UseMetadataProps<F, Q, V>): MetadataConfig<F, Q, V> {
   const { translateText, locale } = usePageConfigValue();
   const t = useMemo(
     () => translateText ?? ((key: string) => key),
     [translateText],
   );
   const { get, set } = usePageValues<F, Q, V>({ pageId });
-  const metadataStore = useMetadataStore();
 
-  // Step 1: Evaluate metadata (if function)
+  // Evaluate metadata (if function)
   const evaluatedMeta = useMemo<MetadataConfig<F, Q, V>>(() => {
     if (!meta) return {};
     if (typeof meta === "function") {
@@ -77,15 +44,9 @@ export function useMetadata<
     return meta;
   }, [meta, get, set]);
 
-  // Step 2: Resolve all dynamic evaluator functions into plain values
-  const resolved = useMemo(
-    () => resolveMetadata(evaluatedMeta, { get, set }),
-    [evaluatedMeta, get, set],
-  );
-
-  // Step 3: Translate metadata strings (i18n)
-  const translated = useMemo<ResolvedMetadata>(() => {
-    const result: ResolvedMetadata = { ...resolved };
+  // Translate metadata strings (i18n)
+  const translated = useMemo<MetadataConfig<F, Q, V>>(() => {
+    const result: MetadataConfig<F, Q, V> = { ...evaluatedMeta };
 
     // Translate basic fields
     if (result.title) {
@@ -156,39 +117,19 @@ export function useMetadata<
     result.lang = result.lang ?? locale;
 
     return result;
-  }, [resolved, t, locale]);
+  }, [evaluatedMeta, t, locale]);
 
-  // In SSR, effects do not run. Write into request-scoped store during render
-  // so the host can collect metadata with collectMetadataToHtml().
-  if (autoApply && typeof document === "undefined" && metadataStore) {
-    metadataStore.setMetadata(translated);
-  }
-
-  // Step 4: Apply metadata
+  // Apply metadata to DOM
   useEffect(() => {
     if (!autoApply || typeof document === "undefined") return;
-
-    // Keep store and DOM aligned during client navigation/hydration.
-    if (metadataStore) {
-      metadataStore.setMetadata(translated);
-    }
-    applyMetadataToDom(translated);
-  }, [translated, autoApply, metadataStore]);
+    applyMetadataToDom(translated as MetadataConfig);
+  }, [translated, autoApply]);
 
   return translated;
 }
 
-/**
- * Hook to manually apply metadata (when autoApply is false)
- * @returns Function to apply resolved metadata to the DOM
- */
 export function useApplyMetadata() {
-  const metadataStore = useMetadataStore();
-
-  return (meta: ResolvedMetadata) => {
-    if (metadataStore) {
-      metadataStore.setMetadata(meta);
-    }
+  return (meta: MetadataConfig) => {
     if (typeof document !== "undefined") {
       applyMetadataToDom(meta);
     }

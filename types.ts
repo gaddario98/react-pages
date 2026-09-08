@@ -442,12 +442,6 @@ export type {
   QueryPageConfigArray,
 };
 
-export type MetadataEvaluatorContext<
-  F extends FieldValues = FieldValues,
-  Q extends QueriesArray = QueriesArray,
-  V extends Record<string, unknown> = Record<string, unknown>,
-> = FunctionProps<F, Q, V>;
-
 export interface MetaTag {
   /** For <meta name="..." content="..." /> */
   name?: string;
@@ -500,27 +494,16 @@ export interface OpenGraphArticle {
 /**
  * Open Graph Configuration (Facebook, LinkedIn, etc.)
  */
-export interface OpenGraphConfig<
-  F extends FieldValues = FieldValues,
-  Q extends QueriesArray = QueriesArray,
-  V extends Record<string, unknown> = Record<string, unknown>,
-> {
+export interface OpenGraphConfig {
   type?: "website" | "article" | "product" | "profile";
-  title?: string | ((context: MetadataEvaluatorContext<F, Q, V>) => string);
-  description?:
-    | string
-    | ((context: MetadataEvaluatorContext<F, Q, V>) => string);
+  title?: string;
+  description?: string;
   /** Single image URL or full image config */
-  image?:
-    | string
-    | OpenGraphImage
-    | ((context: MetadataEvaluatorContext<F, Q, V>) => string | OpenGraphImage);
+  image?: string | OpenGraphImage;
   /** Multiple images for the page */
-  images?:
-    | Array<OpenGraphImage>
-    | ((context: MetadataEvaluatorContext<F, Q, V>) => Array<OpenGraphImage>);
+  images?: Array<OpenGraphImage>;
   /** Canonical URL */
-  url?: string | ((context: MetadataEvaluatorContext<F, Q, V>) => string);
+  url?: string;
   siteName?: string;
   /** Locale (e.g., "en_US", "it_IT") */
   locale?: string;
@@ -533,11 +516,7 @@ export interface OpenGraphConfig<
 /**
  * Twitter Card Configuration
  */
-export interface TwitterCardConfig<
-  F extends FieldValues = FieldValues,
-  Q extends QueriesArray = QueriesArray,
-  V extends Record<string, unknown> = Record<string, unknown>,
-> {
+export interface TwitterCardConfig {
   /** Card type */
   card?: "summary" | "summary_large_image" | "app" | "player";
   /** @username of the website */
@@ -545,15 +524,13 @@ export interface TwitterCardConfig<
   /** @username of the content creator */
   creator?: string;
   /** Title (falls back to og:title then page title) */
-  title?: string | ((context: MetadataEvaluatorContext<F, Q, V>) => string);
+  title?: string;
   /** Description (falls back to og:description then page description) */
-  description?:
-    | string
-    | ((context: MetadataEvaluatorContext<F, Q, V>) => string);
+  description?: string;
   /** Image URL (falls back to og:image) */
-  image?: string | ((context: MetadataEvaluatorContext<F, Q, V>) => string);
+  image?: string;
   /** Alt text for the image */
-  imageAlt?: string | ((context: MetadataEvaluatorContext<F, Q, V>) => string);
+  imageAlt?: string;
 }
 
 // ─── Alternates / hreflang ───────────────────────────────────
@@ -605,11 +582,7 @@ export interface IconsConfig {
 /**
  * Structured Data Configuration (schema.org JSON-LD)
  */
-export interface StructuredDataConfig<
-  F extends FieldValues = FieldValues,
-  Q extends QueriesArray = QueriesArray,
-  V extends Record<string, unknown> = Record<string, unknown>,
-> {
+export interface StructuredDataConfig {
   type:
     | "Article"
     | "Product"
@@ -619,9 +592,7 @@ export interface StructuredDataConfig<
     | "Person"
     | "WebSite"
     | "BreadcrumbList";
-  schema:
-    | Record<string, unknown>
-    | ((context: MetadataEvaluatorContext<F, Q, V>) => Record<string, unknown>);
+  schema: Record<string, unknown>;
 }
 
 // ─── AI Hints ────────────────────────────────────────────────
@@ -629,23 +600,13 @@ export interface StructuredDataConfig<
 /**
  * AI Crawler Hints (for AI search engines and LLMs)
  */
-export interface AIHintsConfig<
-  F extends FieldValues = FieldValues,
-  Q extends QueriesArray = QueriesArray,
-  V extends Record<string, unknown> = Record<string, unknown>,
-> {
+export interface AIHintsConfig {
   /** Content classification (e.g., "documentation", "tutorial", "reference") */
-  contentClassification?:
-    | string
-    | ((context: MetadataEvaluatorContext<F, Q, V>) => string);
+  contentClassification?: string;
   /** Hints for AI models (e.g., ["code-heavy", "technical"]) */
-  modelHints?:
-    | Array<string>
-    | ((context: MetadataEvaluatorContext<F, Q, V>) => Array<string>);
+  modelHints?: Array<string>;
   /** Additional context for AI understanding */
-  contextualInfo?:
-    | string
-    | ((context: MetadataEvaluatorContext<F, Q, V>) => string);
+  contextualInfo?: string;
   /** Exclude this page from AI crawler indexing */
   excludeFromIndexing?: boolean;
 }
@@ -670,86 +631,10 @@ export interface RobotsConfig {
   maxSnippet?: number;
 }
 
-// ─── Resolved Metadata (all values are plain strings/objects) ─
+// ─── MetadataConfig (Plain object) ──────────
 
 /**
- * Resolved Metadata - all dynamic functions have been evaluated.
- * This is the output of resolveMetadata() and is what gets applied to the DOM
- * or passed to framework helpers (toNextMetadata, etc.).
- */
-export interface ResolvedMetadata {
-  // Basic
-  title?: string;
-  description?: string;
-  canonical?: string;
-  lang?: string;
-  keywords?: Array<string>;
-  author?: string;
-  viewport?: string;
-  themeColor?: string;
-
-  // Open Graph
-  openGraph?: {
-    type?: "website" | "article" | "product" | "profile";
-    title?: string;
-    description?: string;
-    image?: string | OpenGraphImage;
-    images?: Array<OpenGraphImage>;
-    url?: string;
-    siteName?: string;
-    locale?: string;
-    article?: OpenGraphArticle;
-  };
-
-  // Twitter Card
-  twitter?: {
-    card?: "summary" | "summary_large_image" | "app" | "player";
-    site?: string;
-    creator?: string;
-    title?: string;
-    description?: string;
-    image?: string;
-    imageAlt?: string;
-  };
-
-  // Alternates / hreflang
-  alternates?: AlternatesConfig;
-
-  // Icons / PWA
-  icons?: IconsConfig;
-  /** Web app manifest URL */
-  manifest?: string;
-
-  // Structured Data
-  structuredData?: {
-    type: string;
-    schema: Record<string, unknown>;
-  };
-
-  // AI Hints
-  aiHints?: {
-    contentClassification?: string;
-    modelHints?: Array<string>;
-    contextualInfo?: string;
-    excludeFromIndexing?: boolean;
-  };
-
-  // Robots
-  robots?: RobotsConfig;
-
-  // Disable search engine indexing (shorthand for robots.noindex + robots.nofollow)
-  disableIndexing?: boolean;
-
-  // Custom meta tags
-  customMeta?: Array<MetaTag>;
-}
-
-// ─── MetadataConfig (input, with dynamic functions) ──────────
-
-/**
- * Complete Metadata Configuration (Generic over F and Q for dynamic metadata)
- * This is the "input" type — values can be strings or evaluator functions.
- * Use resolveMetadata() to convert this to ResolvedMetadata.
+ * Complete Metadata Configuration
  */
 export interface MetadataConfig<
   F extends FieldValues = FieldValues,
@@ -758,13 +643,11 @@ export interface MetadataConfig<
 > {
   // Basic Metadata
   /** Page title - sets document.title on web */
-  title?: string | ((context: MetadataEvaluatorContext<F, Q, V>) => string);
+  title?: string;
   /** Page description meta tag */
-  description?:
-    | string
-    | ((context: MetadataEvaluatorContext<F, Q, V>) => string);
+  description?: string;
   /** Canonical URL for the page */
-  canonical?: string | ((context: MetadataEvaluatorContext<F, Q, V>) => string);
+  canonical?: string;
   /** HTML lang attribute (e.g., "en", "it") */
   lang?: string;
   /**
@@ -772,15 +655,13 @@ export interface MetadataConfig<
    */
   documentLang?: string;
   /** Keywords for SEO */
-  keywords?:
-    | Array<string>
-    | ((context: MetadataEvaluatorContext<F, Q, V>) => Array<string>);
+  keywords?: Array<string>;
 
   // Open Graph (Social Media)
-  openGraph?: OpenGraphConfig<F, Q, V>;
+  openGraph?: OpenGraphConfig;
 
   // Twitter Card
-  twitter?: TwitterCardConfig<F, Q, V>;
+  twitter?: TwitterCardConfig;
 
   // Alternates / hreflang (i18n SEO)
   alternates?: AlternatesConfig;
@@ -791,18 +672,16 @@ export interface MetadataConfig<
   manifest?: string;
 
   // Structured Data (Search Engines)
-  structuredData?: StructuredDataConfig<F, Q, V>;
+  structuredData?: StructuredDataConfig;
 
   // AI Crawler Hints
-  aiHints?: AIHintsConfig<F, Q, V>;
+  aiHints?: AIHintsConfig;
 
   // Robots Meta Tags
   robots?: RobotsConfig;
 
   // Additional custom meta tags
-  customMeta?:
-    | Array<MetaTag>
-    | ((context: MetadataEvaluatorContext<F, Q, V>) => Array<MetaTag>);
+  customMeta?: Array<MetaTag>;
 
   // Disable search engine indexing (shorthand for robots.noindex + robots.nofollow)
   disableIndexing?: boolean;
@@ -813,31 +692,6 @@ export interface MetadataConfig<
   viewport?: string;
   /** Theme color for browser UI */
   themeColor?: string;
-}
-
-// ─── Metadata Store & Provider ───────────────────────────────
-
-/**
- * Request-scoped metadata store.
- * In SSR each request gets its own store to avoid cross-request leaks.
- * On the client, a single global store is used.
- */
-export interface MetadataStore {
-  /** Get current resolved metadata */
-  getMetadata: () => ResolvedMetadata;
-  /** Set (merge) resolved metadata into the store */
-  setMetadata: (meta: ResolvedMetadata) => void;
-  /** Reset store to empty */
-  reset: () => void;
-}
-
-export interface MetadataProvider {
-  /** Apply metadata configuration to the page */
-  setMetadata: (config: MetadataConfig) => void;
-  /** Get current metadata configuration */
-  getMetadata: () => MetadataConfig;
-  /** Reset all metadata to defaults */
-  resetMetadata: () => void;
 }
 
 // ─── LLMs.txt ────────────────────────────────────────────────
