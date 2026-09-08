@@ -44,6 +44,7 @@ export const usePageFormManager = <
     if (initialData) {
       // setDefaultValueQuery(initialData)
     }
+    // @ts-expect-error Type mismatch
     const observer = new QueryObserver<F>(queryClient, {
       queryKey: form.defaultValueQueryKey,
       enabled: true,
@@ -52,6 +53,7 @@ export const usePageFormManager = <
     });
     const unsubscribe = observer.subscribe((result) => {
       if (result.data !== undefined) {
+        // @ts-expect-error Type mismatch
         setDefaultValueQuery(result.data);
       }
     });

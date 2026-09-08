@@ -1,6 +1,6 @@
 # PageGenerator: API e runtime
 
-Questa nota descrive i sorgenti di `@gaddario98/react-pages` v3.0.2. Verifica comunque il checkout o la versione installata quando il consumer usa un fork o importa `PageGenerator` attraverso un package aggregatore.
+Questa nota descrive i sorgenti di `@gaddario98/react-pages` v3.0.3. Verifica comunque il checkout o la versione installata quando il consumer usa un fork o importa `PageGenerator` attraverso un package aggregatore.
 
 ## Contratto pubblico
 
@@ -85,8 +85,6 @@ che l'identità corrente coincida: una risposta obsoleta non deve sovrascrivere
 la pagina aperta successivamente.
 
 Gli elementi del form e i content item sono poi uniti e ordinati per `index`, con ordinamento lessicografico della key in caso di parità. Non assumere che l'ordine dell'array sia identità.
-
-
 
 ## Configurazione globale
 
