@@ -27,7 +27,7 @@ export function useMetadata<
   meta,
   autoApply = true,
   pageId,
-}: UseMetadataProps<F, Q, V>): MetadataConfig<F, Q, V> {
+}: UseMetadataProps<F, Q, V>) {
   const { translateText, locale } = usePageConfigValue();
   const t = useMemo(
     () => translateText ?? ((key: string) => key),
@@ -124,8 +124,6 @@ export function useMetadata<
     if (!autoApply || typeof document === "undefined") return;
     applyMetadataToDom(translated as MetadataConfig);
   }, [translated, autoApply]);
-
-  return translated;
 }
 
 export function useApplyMetadata() {

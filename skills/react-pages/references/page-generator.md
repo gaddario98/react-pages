@@ -86,7 +86,7 @@ la pagina aperta successivamente.
 
 Gli elementi del form e i content item sono poi uniti e ordinati per `index`, con ordinamento lessicografico della key in caso di parità. Non assumere che l'ordine dell'array sia identità.
 
-Le proprietà `lazy`, `lazyTrigger` e `lazyCondition` fanno parte dei tipi `ContentItem`, ma gli hook di rendering correnti non le leggono. Non promettere lazy loading finché l'implementazione non viene aggiunta.
+
 
 ## Configurazione globale
 

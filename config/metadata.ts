@@ -379,30 +379,7 @@ export function applyMetadataToDom(resolved: MetadataConfig): void {
     });
   }
 
-  // ── Custom meta tags ────────────────────────────────────────
-  if (resolved.customMeta?.length) {
-    resolved.customMeta.forEach((tag) => {
-      const selector = tag.id
-        ? `meta[id="${tag.id}"]`
-        : tag.name
-          ? `meta[name="${tag.name}"]`
-          : tag.property
-            ? `meta[property="${tag.property}"]`
-            : `meta[http-equiv="${tag.httpEquiv}"]`;
 
-      const attributes: Record<string, string> = tag.name
-        ? { name: tag.name }
-        : tag.property
-          ? { property: tag.property }
-          : tag.httpEquiv
-            ? { "http-equiv": tag.httpEquiv }
-            : {};
-
-      if (tag.id) attributes.id = tag.id;
-
-      updateOrCreateMeta(selector, tag.content, attributes);
-    });
-  }
 }
 
 /** Apply OG images to the DOM (supports multiple images with alt/width/height) */

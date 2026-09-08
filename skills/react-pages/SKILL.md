@@ -108,7 +108,7 @@ features/orders/
 - Non affidarti a `useMemo`, comparatori profondi o React Compiler per correggere un tipo o una key instabile. Usali solo dopo aver reso corretta l'identità React.
 - Non modificare `PAGE_ID` per resettare la UI. Resetta esplicitamente soltanto lo stato necessario.
 - Non usare `renderInHeader` o `renderInFooter` per eseguire effetti senza UI. Sono slot di presentazione, non una fase di inizializzazione.
-- Non presumere che `lazy`, `lazyTrigger` e `lazyCondition` siano attivi: sono presenti nei tipi ma il runtime corrente non li interpreta.
+
 
 ## Stato, form, query e mutation
 
@@ -136,7 +136,7 @@ Usa `renderInHeader` e `renderInFooter` esclusivamente per contenuti visivi dest
 
 Configura una sola volta i container, autenticazione e traduzione tramite `usePageConfigState`. Considera che `enableAuthControl` è attivo di default e una pagina non autenticata renderizza `authPageProps`.
 
-Usa `meta` per metadata dinamici solo quando le funzioni valutatrici dipendono davvero da `get`/`set`. Per SSR avvolgi ogni richiesta in `MetadataStoreProvider` con un nuovo store; per Next App Router risolvi i metadata nel server e convertili con `toNextMetadata`, mantenendo `PageGenerator` nel ramo client.
+Usa `meta` per metadata statici o con una funzione che accetta `get`/`set` e ritorna la configurazione. Le vecchie logiche SSR basate su `MetadataStoreProvider` e gli evaluator per singola proprietà sono state eliminate. Per integrazioni Next.js o custom SSR, assicurati di estrarre e servire i metadati prima di idratare il ramo client `PageGenerator`.
 
 ## Diagnosi e verifica
 

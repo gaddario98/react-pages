@@ -204,10 +204,7 @@ type Items<
   /** @deprecated Query dependencies for selective rendering */
   usedQueries?: string[];
 
-  // NEW IN 2.0: Lazy loading support
-  lazy?: boolean;
-  lazyTrigger?: "viewport" | "interaction" | "conditional";
-  lazyCondition?: MappedItemsFunction<F, Q, boolean, V>;
+
 };
 
 type ContainerItem<
@@ -236,10 +233,7 @@ type ContainerItem<
   /** @deprecated Query dependencies for selective rendering */
   usedQueries?: string[];
 
-  // NEW IN 2.0: Lazy loading support
-  lazy?: boolean;
-  lazyTrigger?: "viewport" | "interaction" | "conditional";
-  lazyCondition?: MappedItemsFunction<F, Q, boolean, V>;
+
 };
 
 type ContentItem<
@@ -404,16 +398,7 @@ export interface DependencyGraph {
   getAffectedComponents: (changedKeys: Array<string>) => Array<string>;
 }
 
-/**
- * Memoization Cache Types
- * For tracking memoized computations and their cache hits
- */
-export interface MemoizationCacheStats {
-  hits: number;
-  misses: number;
-  size: number;
-  maxSize: number;
-}
+
 
 export interface RenderComponentsProps<
   F extends FieldValues = FieldValues,
@@ -442,18 +427,7 @@ export type {
   QueryPageConfigArray,
 };
 
-export interface MetaTag {
-  /** For <meta name="..." content="..." /> */
-  name?: string;
-  /** For <meta property="og:..." content="..." /> */
-  property?: string;
-  /** For <meta http-equiv="..." content="..." /> */
-  httpEquiv?: string;
-  /** Meta tag content */
-  content: string;
-  /** Unique identifier for updating existing tags */
-  id?: string;
-}
+
 
 // ─── Open Graph ──────────────────────────────────────────────
 
@@ -680,8 +654,7 @@ export interface MetadataConfig<
   // Robots Meta Tags
   robots?: RobotsConfig;
 
-  // Additional custom meta tags
-  customMeta?: Array<MetaTag>;
+
 
   // Disable search engine indexing (shorthand for robots.noindex + robots.nofollow)
   disableIndexing?: boolean;
@@ -694,28 +667,3 @@ export interface MetadataConfig<
   themeColor?: string;
 }
 
-// ─── LLMs.txt ────────────────────────────────────────────────
-
-/**
- * Entry for the llms.txt file
- */
-export interface LlmsTxtEntry {
-  /** URL of the page */
-  url: string;
-  /** Short title / label for this page */
-  title: string;
-  /** Brief description for the LLM */
-  description?: string;
-}
-
-/**
- * Configuration for llms.txt generation
- */
-export interface LlmsTxtConfig {
-  /** Site title / name shown at the top of llms.txt */
-  siteName: string;
-  /** Brief description of the site */
-  siteDescription?: string;
-  /** Curated list of pages to expose in llms.txt */
-  entries: Array<LlmsTxtEntry>;
-}

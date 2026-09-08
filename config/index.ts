@@ -90,9 +90,7 @@ const DefaultContainer = <
   return children;
 };
 
-// Lazy initialization to avoid side effects at module load time
-// This ensures tree-shaking works correctly by deferring singleton creation
-let _pageConfig: PageConfigProps = {
+const _pageConfig: PageConfigProps = {
   HeaderContainer: DefaultContainer,
   FooterContainer: DefaultContainer,
   BodyContainer: DefaultContainer,
@@ -141,7 +139,7 @@ export {
 // Re-export types
 export type {
   MetadataConfig,
-  MetaTag,
+
   OpenGraphConfig,
   OpenGraphImage,
   OpenGraphArticle,
@@ -152,6 +150,5 @@ export type {
   StructuredDataConfig,
   AIHintsConfig,
   RobotsConfig,
-  LlmsTxtConfig,
-  LlmsTxtEntry,
+
 } from "../types";
