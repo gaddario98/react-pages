@@ -68,7 +68,9 @@ npm install @gaddario98/react-pages
 ### Peer Dependencies
 
 ```bash
-npm install react@^19.2.0 react-dom@^19.2.0
+npm install react@^19.2.0
+# Only if using for the web:
+npm install react-dom@^19.2.0
 ```
 
 > **Note**: Form management (`@gaddario98/react-form`) and query/mutation handling (`@gaddario98/react-queries`) are internal dependencies — you do not need to install them separately. `@tanstack/react-query` is bundled transitively.
@@ -164,9 +166,6 @@ export function GlobalProvider({ children }: { children: React.ReactNode }) {
 | `authPageProps`   | `PageProps`                                | Fallback page when not authenticated  |
 | `authPageImage`   | `string`                                   | Image URL for the fallback auth page  |
 | `defaultMetadata` | `MetadataConfig`                           | Default SEO metadata                  |
-| `setMetadata`     | `(config: MetadataConfig) => void`         | Updates current SEO metadata          |
-| `getMetadata`     | `() => MetadataConfig`                     | Retrieves current SEO metadata        |
-| `resetMetadata`   | `() => void`                               | Resets metadata to defaults           |
 | `meta`            | `{ title?: string; description?: string }` | Basic fallback metadata               |
 | `translateText`   | `(key, options) => string`                 | Pluggable i18n function               |
 | `locale`          | `string`                                   | Active locale                         |
