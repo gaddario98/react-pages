@@ -102,7 +102,6 @@ export const usePageValues = <
     dataRef.current = {
       state: nextState,
     };
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (internalTrigger) {
       setTrigger((v) => v + 1);
     }
@@ -144,7 +143,6 @@ export const usePageValues = <
 
       return subscriptions.current.get(keyMap);
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [pageId, trigger, getApiValues, getFormValues],
   ) as GetFunction<F, Q, V>;
 

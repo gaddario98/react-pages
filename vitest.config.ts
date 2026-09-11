@@ -6,11 +6,8 @@ import { resolve } from 'path';
 export default defineConfig({
   plugins: [
     react({
-      jsxRuntime: 'automatic',
-      babel: {
-        plugins: ['babel-plugin-react-compiler'],
-      },
-    }) as any,
+      jsxRuntime: 'automatic', compiler: true
+    }),
   ],
   test: {
     environment: 'jsdom',

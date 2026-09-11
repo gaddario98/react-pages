@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { useGenerateContent } from "../hooks/useGenerateContent";
-import { useMetadata, usePageConfig } from "../hooks";
+import { useMetadata } from "../hooks/useMetadata";
+import { usePageConfig } from "../hooks/usePageConfig";
 import { usePageConfigValue } from "../config";
 import type { FieldValues } from "@gaddario98/react-form";
 import type { QueriesArray } from "@gaddario98/react-queries";
