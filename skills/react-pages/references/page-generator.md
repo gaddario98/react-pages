@@ -11,6 +11,7 @@ Questa nota descrive i sorgenti di `@gaddario98/react-pages` v3.0.3. Verifica co
 - `queries`: tupla tipizzata di query e mutation compatibili con `@gaddario98/react-queries`.
 - `form`: configurazione di `@gaddario98/react-form`.
 - `variables`: stato page-scoped `V`.
+- `isActive`: booleano opzionale (default `true`). Controlla l'attivazione della pagina e l'applicazione dei suoi metadati al `<head>`. Indispensabile quando più pagine rimangono montate contemporaneamente (es. tab o keep-alive navigation): impostando `isActive: activeTab === id`, i metadati vengono applicati quando la pagina diventa attiva e rimossi/puliti quando viene nascosta.
 - `viewSettings`, `meta`, `ns`, `enableAuthControl`.
 
 Ogni `ContentItem` è `custom` oppure `container`. Un custom riceve un elemento JSX o una funzione `(FunctionProps) => JSX.Element`. Può avere `key`, `index`, `hidden`, `renderInHeader` e `renderInFooter`. Un container ricorre su `items` e può sostituire l'`ItemsContainer` per il gruppo.

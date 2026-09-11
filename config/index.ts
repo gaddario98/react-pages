@@ -126,6 +126,7 @@ export const {
 // Re-export new metadata architecture
 export {
   applyMetadataToDom,
+  cleanupMetadata,
 } from "./metadata";
 
 // Re-export logging utilities

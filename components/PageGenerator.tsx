@@ -10,12 +10,14 @@ const PageGenerator = <
   F extends FieldValues = FieldValues,
   Q extends QueriesArray = QueriesArray,
   V extends Record<string, unknown> = Record<string, unknown>,
->({
-  enableAuthControl = true,
-  meta,
-  variables,
-  ...props
-}: PageProps<F, Q, V>) => {
+>(rawProps: PageProps<F, Q, V>) => {
+  const {
+    enableAuthControl = true,
+    meta,
+    variables,
+    isActive = true,
+  } = rawProps;
+
   const {
     BodyContainer,
     FooterContainer,
@@ -34,8 +36,8 @@ const PageGenerator = <
   const selectedProps = useMemo(() => {
     return isUnlogged
       ? (authPageProps as unknown as PageProps<F, Q, V>)
-      : props;
-  }, [isUnlogged, authPageProps, props]);
+      : rawProps;
+  }, [isUnlogged, authPageProps, rawProps]);
 
   const {
     contents = [],
@@ -44,6 +46,8 @@ const PageGenerator = <
     id = "default-page-id",
     viewSettings,
     ns,
+    meta: selectedMeta,
+    isActive: selectedIsActive,
   } = useMemo(() => selectedProps, [selectedProps]);
 
   const { mergedConfig, refreshQueries } = usePageConfig<F, Q, V>({
@@ -62,7 +66,15 @@ const PageGenerator = <
     pageConfig: mergedConfig,
   });
 
-  useMetadata<F, Q, V>({ meta, ns, pageId: id });
+  const activeMeta = selectedMeta ?? meta;
+  const activeIsActive = selectedIsActive ?? isActive;
+
+  useMetadata<F, Q, V>({
+    meta: activeMeta,
+    ns,
+    pageId: id,
+    isActive: activeIsActive,
+  });
 
   const { mappedViewSettings } = mergedConfig;
   const LayoutComponent = useMemo(() => {

@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from "react";
-import { applyMetadataToDom } from "../config/metadata";
+import { applyMetadataToDom, cleanupMetadata } from "../config/metadata";
 import { usePageConfigValue } from "../config";
 import { usePageValues } from "./usePageValues";
 import type { FieldValues } from "@gaddario98/react-form";
@@ -17,6 +17,7 @@ export interface UseMetadataProps<
   ns?: string;
   autoApply?: boolean;
   pageId: string;
+  isActive?: boolean;
 }
 
 export function useMetadata<
@@ -27,22 +28,25 @@ export function useMetadata<
   meta,
   autoApply = true,
   pageId,
+  isActive = true,
 }: UseMetadataProps<F, Q, V>) {
-  const { translateText, locale } = usePageConfigValue();
+  const { defaultMetadata, translateText, locale } = usePageConfigValue();
   const t = useMemo(
     () => translateText ?? ((key: string) => key),
     [translateText],
   );
   const { get, set } = usePageValues<F, Q, V>({ pageId });
 
-  // Evaluate metadata (if function)
+  // Evaluate metadata (merging defaultMetadata and page meta)
   const evaluatedMeta = useMemo<MetadataConfig<F, Q, V>>(() => {
-    if (!meta) return {};
-    if (typeof meta === "function") {
-      return meta({ get, set });
-    }
-    return meta;
-  }, [meta, get, set]);
+    const base = (defaultMetadata ?? {}) as MetadataConfig<F, Q, V>;
+    const pageMeta = !meta
+      ? {}
+      : typeof meta === "function"
+        ? meta({ get, set })
+        : meta;
+    return { ...base, ...pageMeta };
+  }, [meta, defaultMetadata, get, set]);
 
   // Translate metadata strings (i18n)
   const translated = useMemo<MetadataConfig<F, Q, V>>(() => {
@@ -121,9 +125,13 @@ export function useMetadata<
 
   // Apply metadata to DOM
   useEffect(() => {
-    if (!autoApply || typeof document === "undefined") return;
-    applyMetadataToDom(translated as MetadataConfig);
-  }, [translated, autoApply]);
+    if (!autoApply || !isActive || typeof document === "undefined") return;
+    applyMetadataToDom(translated as MetadataConfig, pageId);
+
+    return () => {
+      cleanupMetadata(pageId);
+    };
+  }, [translated, autoApply, isActive, pageId]);
 }
 
 export function useApplyMetadata() {

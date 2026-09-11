@@ -151,6 +151,51 @@ Regole:
 5. Non usare `index` come sostituto della key; dopo l'ordinamento è solo posizione di layout.
 6. Per una pagina detail, mantieni statico l'array dei content item e lascia che il componente legga dati query eventualmente `undefined`. Se serve, usa una factory `hidden` reattiva; non costruire l'intero body soltanto dopo l'arrivo dei dati.
 
+## Pagine in cache, Tab e Keep-Alive: ciclo di vita con `isActive`
+
+Nelle interfacce a schede (Tab views), layout persistenti (Ionic `IonRouterOutlet`, navigazione multi-tab, o router keep-alive), più istanze di `PageGenerator` restano **montate contemporaneamente** per preservare lo scroll, il form state o le query senza rifare il fetch.
+
+### Il problema del remount mancato
+Se una pagina resta montata mentre l'utente visualizza un'altra scheda, passare tra una pagina e l'altra non genera eventi di mount o unmount. Di conseguenza:
+- I metadati nel `<head>` rimarrebbero fissati sull'ultima pagina montata o visitata.
+- Rientrare in una pagina precedentemente montata non ne aggiornerebbe i metadati se ci si affidasse al solo ciclo di vita React mount/unmount.
+
+### Soluzione con `isActive`
+Passa la prop `isActive` derivata dal tab corrente a ciascun `PageGenerator`:
+
+```tsx
+function TabContainer() {
+  const [currentTab, setCurrentTab] = useState<"uno" | "due">("uno");
+
+  return (
+    <>
+      <div style={{ display: currentTab === "uno" ? "block" : "none" }}>
+        <PageGenerator
+          id="pagina-uno"
+          isActive={currentTab === "uno"}
+          meta={{ title: "Pagina Uno", description: "Descrizione uno" }}
+          contents={unoContents}
+        />
+      </div>
+
+      <div style={{ display: currentTab === "due" ? "block" : "none" }}>
+        <PageGenerator
+          id="pagina-due"
+          isActive={currentTab === "due"}
+          meta={{ title: "Pagina Due", description: "Descrizione due" }}
+          contents={dueContents}
+        />
+      </div>
+    </>
+  );
+}
+```
+
+Quando `currentTab` passa da `"due"` a `"uno"`:
+1. `PageGenerator` di "due" riceve `isActive: false` e pulisce i propri tag specifici.
+2. `PageGenerator` di "uno" riceve `isActive: true` e riapplica immediatamente i propri metadati, rimuovendo tag orfani lasciati da "due" (es. openGraph o twitter specifici).
+3. Nessun componente o stato locale viene smontato, preservando completamente la reattività e le performance.
+
 ## Layout virtualizzati
 
 In un layout virtualizzato, i content item possono diventare direttamente i dati della lista. Un item `hidden`, un fragment vuoto o un componente che restituisce `null` può quindi continuare a occupare padding, span o altezza nel wrapper esterno, anche se non disegna contenuto.

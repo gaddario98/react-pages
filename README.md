@@ -297,6 +297,98 @@ The `meta` prop accepts a rich `MetadataConfig` object. All values can be static
 />
 ```
 
+#### Multi-Tab, Cached Pages & Keep-Alive Support (`isActive`)
+
+When using tabbed navigation, stacked routers (e.g., Ionic `IonRouterOutlet`), or keep-alive layouts, multiple `PageGenerator` instances stay mounted in memory at the same time to preserve component state, form inputs, and scroll position.
+
+By default, `isActive` is `true`. When multiple pages remain mounted simultaneously, pass `isActive={currentTab === pageId}` so that `PageGenerator` can manage the document `<head>` dynamically:
+
+- **When active (`isActive: true`)**: The page automatically syncs its metadata to `document.head`, and cleans up any tags left behind by the previously active page.
+- **When deactivated (`isActive: false`)**: The page cleans up its metadata tags from `document.head`.
+- **Switching back and forth**: Returning to an already-mounted page immediately restores its metadata without needing to remount the component or re-run queries.
+
+```tsx
+import { useState } from "react";
+import { PageGenerator } from "@gaddario98/react-pages";
+
+export function TabbedDashboard() {
+  const [activeTab, setActiveTab] = useState<"overview" | "analytics">("overview");
+
+  return (
+    <div>
+      <nav>
+        <button onClick={() => setActiveTab("overview")}>Overview</button>
+        <button onClick={() => setActiveTab("analytics")}>Analytics</button>
+      </nav>
+
+      {/* Both pages stay mounted; only the active one controls document.head */}
+      <div style={{ display: activeTab === "overview" ? "block" : "none" }}>
+        <PageGenerator
+          id="overview-page"
+          isActive={activeTab === "overview"}
+          meta={{
+            title: "Overview Dashboard",
+            description: "Summary of your operations",
+          }}
+          contents={overviewContents}
+        />
+      </div>
+
+      <div style={{ display: activeTab === "analytics" ? "block" : "none" }}>
+        <PageGenerator
+          id="analytics-page"
+          isActive={activeTab === "analytics"}
+          meta={{
+            title: "Detailed Analytics",
+            description: "Deep dive into performance metrics",
+          }}
+          contents={analyticsContents}
+        />
+      </div>
+    </div>
+  );
+}
+```
+
+#### Differential DOM Updates & Automatic Tag Cleanup
+
+`PageGenerator` tags all managed DOM elements with `data-react-pages="meta"` and `data-page-id`.
+
+When transitioning between pages (or toggling `isActive`), the library performs a **differential cleanup**:
+- Tags defined by the new page are updated or added.
+- Any managed tags present in the previous page that are not specified by the new page (such as page-specific `og:image`, `twitter:*`, `keywords`, `canonical`, `robots`, or `structuredData`) are **automatically removed** from `<head>`, preventing obsolete tags from leaking into subsequent pages.
+- When the page is unmounted, all of its managed tags are cleaned up.
+
+#### Global Defaults Fallback
+
+If a page configuration omits specific fields (e.g., `themeColor` or `robots`), they will automatically fallback to the `defaultMetadata` configured globally in `usePageConfigState`:
+
+```tsx
+setPageConfig((prev) => ({
+  ...prev,
+  defaultMetadata: {
+    title: "Default App Name",
+    description: "Global fallback description",
+    themeColor: "#0284c7",
+    robots: { noindex: false },
+  },
+}));
+```
+
+#### Imperative Metadata Cleanup (`cleanupMetadata`)
+
+You can also programmatically remove managed metadata tags from the DOM at any time using `cleanupMetadata`:
+
+```tsx
+import { cleanupMetadata } from "@gaddario98/react-pages";
+
+// Remove all tags managed by react-pages
+cleanupMetadata();
+
+// Or target tags belonging to a specific pageId
+cleanupMetadata("overview-page");
+```
+
 ---
 
 ### Form Management
@@ -530,6 +622,7 @@ The library tracks which data keys each component reads via the `get()` function
 | `variables`         | `V`                                   | —       | Page-scoped state variables, accessible via `get("state", ...)` |
 | `viewSettings`      | `ViewSettings \| MappedItemsFunction` | `{}`    | Layout and behavior settings                                    |
 | `meta`              | `MetadataConfig<F, Q, V>`             | —       | SEO and metadata configuration                                  |
+| `isActive`          | `boolean`                             | `true`  | Controls whether the page is active and syncs metadata to `<head>`. Set to `false` for background/cached tabs |
 | `ns`                | `string`                              | —       | i18n namespace                                                  |
 | `enableAuthControl` | `boolean`                             | `true`  | Whether to check authentication before rendering                |
 
@@ -662,6 +755,28 @@ The library tracks which data keys each component reads via the `get()` function
   customMeta?: Array<MetaTag> | ((context: FunctionProps) => Array<MetaTag>),
 }
 ```
+
+#### `useMetadata` Hook & Cleanup Utilities
+
+For custom page wrappers or fine-grained programmatic control:
+
+```tsx
+import { useMetadata, cleanupMetadata } from "@gaddario98/react-pages";
+
+// Hook invoked internally by PageGenerator
+useMetadata({
+  meta: myMetadataConfig,
+  isActive: true,        // controls whether to apply metadata (default: true)
+  ns: "my-namespace",    // optional i18n namespace
+  pageId: "my-page-id",  // optional page identifier (used in data-page-id)
+  autoApply: true,       // whether to write directly to DOM (default: true)
+});
+
+// Imperatively remove tags managed by react-pages
+cleanupMetadata();            // removes all managed tags
+cleanupMetadata("my-page-id"); // removes tags for a specific pageId
+```
+
 
 ### Form Configuration
 

@@ -136,7 +136,7 @@ Usa `renderInHeader` e `renderInFooter` esclusivamente per contenuti visivi dest
 
 Configura una sola volta i container, autenticazione e traduzione tramite `usePageConfigState`. Considera che `enableAuthControl` è attivo di default e una pagina non autenticata renderizza `authPageProps`.
 
-Usa `meta` per metadata statici o con una funzione che accetta `get`/`set` e ritorna la configurazione. Le vecchie logiche basate su `MetadataStoreProvider` e gli evaluator per singola proprietà sono state eliminate.
+Usa `meta` per metadata statici o con una funzione che accetta `get`/`set` e ritorna la configurazione. Se l'applicazione usa navigazione a tab o pagine mantenute montate in cache, passa la prop `isActive` a `PageGenerator` per attivare e disattivare l'applicazione dei metadati nel `<head>` senza smontare la pagina. Per la rimozione manuale o controllata dei metadati usa l'utility `cleanupMetadata`.
 
 ## Diagnosi e verifica
 
@@ -166,5 +166,6 @@ Prima di consegnare, verifica:
 - transizioni di paginazione dinamica senza svuotare la sorgente visiva durante il pending;
 - risposte obsolete incapaci di sovrascrivere lo stato di una route successiva;
 - item invisibili senza righe o spazi vuoti residui nei layout virtualizzati;
+- propagazione di `isActive` e corretta applicazione/pulizia dei metadati nel passaggio tra schede o route in cache;
 - consumer aggiornati prima di eliminare barrel, wrapper e cartelle legacy;
 - lint, test mirati e build pertinenti senza mascherare errori preesistenti.

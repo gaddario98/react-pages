@@ -341,6 +341,9 @@ interface PageProps<
 
   // Feature flags
   enableAuthControl?: boolean;
+
+  // Active state (for tabs, keep-alive and cached views)
+  isActive?: boolean;
 }
 
 type ViewSettings = {

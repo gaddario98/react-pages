@@ -7,6 +7,8 @@ import type {
 // ─── Platform detection ──────────────────────────────────────
 
 const isWeb = typeof document !== "undefined";
+const initialDocumentTitle = isWeb ? document.title : "";
+let currentAppliedPageId: string | null = null;
 
 // ─── DOM helpers ─────────────────────────────────────────────
 
@@ -18,10 +20,13 @@ function updateOrCreateMeta(
   let element = document.querySelector(selector);
   if (!element) {
     element = document.createElement("meta");
+    element.setAttribute("data-react-pages", "meta");
     Object.entries(attributes).forEach(([key, value]) => {
       element?.setAttribute(key, value);
     });
     document.head.appendChild(element);
+  } else {
+    element.setAttribute("data-react-pages", "meta");
   }
   element.setAttribute("content", content);
 }
@@ -33,11 +38,21 @@ function updateOrCreateLink(
   let element = document.querySelector(selector);
   if (!element) {
     element = document.createElement("link");
+    element.setAttribute("data-react-pages", "meta");
     document.head.appendChild(element);
+  } else {
+    element.setAttribute("data-react-pages", "meta");
   }
   Object.entries(attributes).forEach(([key, value]) => {
     element.setAttribute(key, value);
   });
+}
+
+function removeManagedElement(selector: string): void {
+  const element = document.querySelector(selector);
+  if (element) {
+    element.remove();
+  }
 }
 
 // ─── applyMetadataToDom ─────────────────────────────────────
@@ -46,12 +61,21 @@ function updateOrCreateLink(
  * Apply resolved metadata to the document `<head>`.
  * Client-only: this function does nothing if `document` is not available.
  */
-export function applyMetadataToDom(resolved: MetadataConfig): void {
+export function applyMetadataToDom(
+  resolved: MetadataConfig,
+  pageId?: string,
+): void {
   if (!isWeb) return;
+
+  if (pageId) {
+    currentAppliedPageId = pageId;
+  }
 
   // ── Title ───────────────────────────────────────────────────
   if (resolved.title) {
     document.title = resolved.title;
+  } else if (initialDocumentTitle) {
+    document.title = initialDocumentTitle;
   }
 
   // ── Standard meta tags ──────────────────────────────────────
@@ -59,18 +83,24 @@ export function applyMetadataToDom(resolved: MetadataConfig): void {
     updateOrCreateMeta('meta[name="description"]', resolved.description, {
       name: "description",
     });
+  } else {
+    removeManagedElement('meta[name="description"][data-react-pages="meta"]');
   }
 
   if (resolved.keywords?.length) {
     updateOrCreateMeta('meta[name="keywords"]', resolved.keywords.join(", "), {
       name: "keywords",
     });
+  } else {
+    removeManagedElement('meta[name="keywords"][data-react-pages="meta"]');
   }
 
   if (resolved.author) {
     updateOrCreateMeta('meta[name="author"]', resolved.author, {
       name: "author",
     });
+  } else {
+    removeManagedElement('meta[name="author"][data-react-pages="meta"]');
   }
 
   if (resolved.viewport) {
@@ -83,6 +113,8 @@ export function applyMetadataToDom(resolved: MetadataConfig): void {
     updateOrCreateMeta('meta[name="theme-color"]', resolved.themeColor, {
       name: "theme-color",
     });
+  } else {
+    removeManagedElement('meta[name="theme-color"][data-react-pages="meta"]');
   }
 
   // ── Canonical ───────────────────────────────────────────────
@@ -91,6 +123,8 @@ export function applyMetadataToDom(resolved: MetadataConfig): void {
       rel: "canonical",
       href: resolved.canonical,
     });
+  } else {
+    removeManagedElement('link[rel="canonical"][data-react-pages="meta"]');
   }
 
   // ── Language ────────────────────────────────────────────────
@@ -99,6 +133,13 @@ export function applyMetadataToDom(resolved: MetadataConfig): void {
   }
 
   // ── Open Graph ──────────────────────────────────────────────
+  // Remove existing managed OG tags to prevent stale tags from previous pages
+  document
+    .querySelectorAll(
+      'meta[property^="og:"][data-react-pages="meta"], meta[property^="article:"][data-react-pages="meta"]',
+    )
+    .forEach((el) => el.remove());
+
   if (resolved.openGraph) {
     const og = resolved.openGraph;
 
@@ -194,6 +235,11 @@ export function applyMetadataToDom(resolved: MetadataConfig): void {
   }
 
   // ── Twitter Card ────────────────────────────────────────────
+  // Remove existing managed Twitter tags to prevent stale tags from previous pages
+  document
+    .querySelectorAll('meta[name^="twitter:"][data-react-pages="meta"]')
+    .forEach((el) => el.remove());
+
   if (resolved.twitter) {
     const tw = resolved.twitter;
     if (tw.card) {
@@ -255,6 +301,7 @@ export function applyMetadataToDom(resolved: MetadataConfig): void {
         link.rel = "alternate";
         link.hreflang = locale;
         link.href = url;
+        link.setAttribute("data-react-pages", "meta");
         document.head.appendChild(link);
       });
     }
@@ -284,6 +331,10 @@ export function applyMetadataToDom(resolved: MetadataConfig): void {
         });
       });
     }
+  } else {
+    document
+      .querySelectorAll('link[rel="alternate"][data-react-pages="meta"]')
+      .forEach((el) => el.remove());
   }
 
   // ── Icons ───────────────────────────────────────────────────
@@ -304,11 +355,13 @@ export function applyMetadataToDom(resolved: MetadataConfig): void {
       rel: "manifest",
       href: resolved.manifest,
     });
+  } else {
+    removeManagedElement('link[rel="manifest"][data-react-pages="meta"]');
   }
 
   // ── Structured data JSON-LD ─────────────────────────────────
+  const schemaScriptId = "react-pages-schema-org";
   if (resolved.structuredData) {
-    const schemaScriptId = "react-pages-schema-org";
     let scriptElement = document.querySelector(
       `script[id="${schemaScriptId}"]`,
     ) as HTMLScriptElement;
@@ -318,7 +371,10 @@ export function applyMetadataToDom(resolved: MetadataConfig): void {
       scriptElement = document.createElement("script");
       scriptElement.type = "application/ld+json";
       scriptElement.id = schemaScriptId;
+      scriptElement.setAttribute("data-react-pages", "meta");
       document.head.appendChild(scriptElement);
+    } else {
+      scriptElement.setAttribute("data-react-pages", "meta");
     }
 
     scriptElement.textContent = JSON.stringify({
@@ -326,9 +382,15 @@ export function applyMetadataToDom(resolved: MetadataConfig): void {
       "@type": resolved.structuredData.type,
       ...resolved.structuredData.schema,
     });
+  } else {
+    removeManagedElement(`script[id="${schemaScriptId}"]`);
   }
 
   // ── AI crawler hints ────────────────────────────────────────
+  document
+    .querySelectorAll('meta[name^="ai-"][data-react-pages="meta"]')
+    .forEach((el) => el.remove());
+
   if (resolved.aiHints) {
     const hints = resolved.aiHints;
     if (hints.contentClassification) {
@@ -377,9 +439,9 @@ export function applyMetadataToDom(resolved: MetadataConfig): void {
     updateOrCreateMeta('meta[name="robots"]', robotsValue, {
       name: "robots",
     });
+  } else {
+    removeManagedElement('meta[name="robots"][data-react-pages="meta"]');
   }
-
-
 }
 
 /** Apply OG images to the DOM (supports multiple images with alt/width/height) */
@@ -395,30 +457,35 @@ function applyOgImages(images: Array<OpenGraphImage>): void {
     const ogImg = document.createElement("meta");
     ogImg.setAttribute("property", "og:image");
     ogImg.setAttribute("content", img.url);
+    ogImg.setAttribute("data-react-pages", "meta");
     document.head.appendChild(ogImg);
 
     if (img.alt) {
       const altMeta = document.createElement("meta");
       altMeta.setAttribute("property", "og:image:alt");
       altMeta.setAttribute("content", img.alt);
+      altMeta.setAttribute("data-react-pages", "meta");
       document.head.appendChild(altMeta);
     }
     if (img.width) {
       const wMeta = document.createElement("meta");
       wMeta.setAttribute("property", "og:image:width");
       wMeta.setAttribute("content", String(img.width));
+      wMeta.setAttribute("data-react-pages", "meta");
       document.head.appendChild(wMeta);
     }
     if (img.height) {
       const hMeta = document.createElement("meta");
       hMeta.setAttribute("property", "og:image:height");
       hMeta.setAttribute("content", String(img.height));
+      hMeta.setAttribute("data-react-pages", "meta");
       document.head.appendChild(hMeta);
     }
     if (img.type) {
       const tMeta = document.createElement("meta");
       tMeta.setAttribute("property", "og:image:type");
       tMeta.setAttribute("content", img.type);
+      tMeta.setAttribute("data-react-pages", "meta");
       document.head.appendChild(tMeta);
     }
   });
@@ -445,9 +512,26 @@ function applyIcons(
     const link = document.createElement("link");
     link.rel = rel;
     link.href = icon.url;
+    link.setAttribute("data-react-pages", "meta");
     if (icon.type) link.type = icon.type;
     if (icon.sizes) link.setAttribute("sizes", icon.sizes);
     if (icon.color) link.setAttribute("color", icon.color);
     document.head.appendChild(link);
   });
 }
+
+/** Clean up all metadata managed by react-pages and restore initial document title */
+export function cleanupMetadata(pageId?: string): void {
+  if (!isWeb) return;
+  if (pageId && currentAppliedPageId && currentAppliedPageId !== pageId) {
+    return;
+  }
+  if (initialDocumentTitle) {
+    document.title = initialDocumentTitle;
+  }
+  document
+    .querySelectorAll('[data-react-pages="meta"]')
+    .forEach((el) => el.remove());
+  currentAppliedPageId = null;
+}
+
