@@ -12,8 +12,8 @@ Considera i sorgenti del package la fonte dell'API effettiva. Tratta esempi più
 ## Procedura
 
 1. Individua l'import usato dal consumer e verifica la versione installata, gli export disponibili e l'eventuale fork locale prima di modificare codice. Per opzioni avanzate di query, controlla anche come l'adapter installato inoltra davvero la configurazione: una proprietà presente nei tipi può essere annidata, ignorata o gestita diversamente dal runtime. Leggi [riferimento API e runtime](references/page-generator.md) quando devi modellare la pagina o verificare un comportamento.
-2. Modella la feature o subfeature per responsabilità di dominio. Se espone una pagina, separa almeno `page`, `queries`, `variables` e l'eventuale `form`; usa `content` soltanto quando contiene UI o comportamento reale. Leggi [struttura feature](references/feature-structure.md) e passa i tre contratti come generici di `PageGenerator`.
-3. Deriva auth, parametri route, lingua, breakpoint e altri input esterni nel componente padre che renderizza `PageGenerator` o il wrapper applicativo equivalente, per esempio `PageGeneratorWithHeader`. Passali direttamente in `variables`, `queries` o `form.defaultValues`, stabilizzando gli oggetti non primitivi. Devono essere corretti già al primo render, prima della configurazione delle query. Non creare content `Session`, `Route` o `Sync` che copiano questi valori con `useEffect`, e non nasconderli in header/footer. Leggi [configurazioni esterne e refactor](references/refactoring-and-ownership.md).
+2. Modella la feature o subfeature per responsabilità di dominio. Se espone una pagina, separa almeno `page`, `queries`, `variables` e l'eventuale `form`; usa `contents` soltanto quando contiene UI o comportamento reale. Leggi [struttura feature](references/feature-structure.md) e passa i tre contratti come generici di `PageGenerator`.
+3. Deriva auth, parametri route, lingua, breakpoint e altri input esterni nel componente padre che renderizza `PageGenerator`. Passali direttamente in `variables`, `queries` o `form.defaultValues`, stabilizzando gli oggetti non primitivi. Devono essere corretti già al primo render, prima della configurazione delle query. Non creare content `Session`, `Route` o `Sync` che copiano questi valori con `useEffect`, e non nasconderli in header/footer. Leggi [configurazioni esterne e refactor](references/refactoring-and-ownership.md).
 4. Metti lo stato condiviso e page-scoped in `PageGenerator.variables`; leggilo e aggiornalo con i `get` e `set` ricevuti nelle props del content component. Usa `usePageValues({ pageId: PAGE_ID })` solo quando non puoi passare tali props senza prop drilling o accoppiamenti non ragionevoli. Conserva nel widget lo stato che non serve al resto della pagina, come sorting, focus e paginazione della tabella. Non duplicare i dati query salvo un fallback documentato di continuità visiva quando l'adapter svuota i dati durante un cambio di query key.
 5. Costruisci ogni content item stateful come componente nominato a livello modulo che riceve `FunctionProps`; assegnagli una key semantica e permanente direttamente nel content item. Mantieni nell'array statico hero, azioni, informazioni e altri contenuti che devono reagire all'arrivo dei dati: il componente può gestire `undefined`, ma la struttura non deve dipendere dal fatto che la query abbia già risposto. Usa un elemento JSX solo quando richiede props extra. Nei layout virtualizzati verifica se un item invisibile occupa una riga. Leggi [lifecycle e rendering](references/rendering-lifecycle.md).
 6. Importa la costante `queries` dal modulo feature; non dichiarare endpoint, keys o request inline nella pagina e non affiancare a PageGenerator hook API che recuperano gli stessi dati. Passa `form` a `PageGenerator` solo quando deve partecipare al suo scope o layout; altrimenti rendi `FormManager` in un content component. Metti invalidation e notifiche nella `mutationConfig`. Leggi [ecosistema](references/ecosystem.md).
@@ -83,7 +83,7 @@ Mantieni questi moduli accanto a `page.tsx` (o nei relativi sottofolder se il re
 
 ```text
 features/orders/
-├── content.tsx
+├── contents.tsx
 ├── form.ts
 ├── queries.ts
 ├── variables.ts
@@ -94,7 +94,7 @@ features/orders/
 - In `form.ts`, dichiara un'interfaccia che estende `FieldValues` e una costante form completa. Passa la stessa costante a `FormManager`; passa `form` a `PageGenerator` soltanto quando è indispensabile alla sua orchestrazione.
 - In `queries.ts`, mantieni in quest'ordine: tupla `QueryDefinition`, endpoint path, keys e costante `queries`. Costruisci `queries` unendo esclusivamente i tre elementi precedenti e tipizzala rispetto a `PageProps`.
 - In `variables.ts`, dichiara un'interfaccia per le variabili page-scoped e la costante `variables` completa con i valori iniziali. Non dichiarare queste variabili inline in `page.tsx`.
-- In `content.tsx`, dichiara componenti nominati e la configurazione `contents`; ometti il file se la pagina non ha content reali oltre a form/header generati.
+- In `contents.tsx`, dichiara componenti nominati e la configurazione `contents`; ometti il file se la pagina non ha content reali oltre a form/header generati.
 - In `page.tsx`, importa contratti e costanti statiche; deriva qui soltanto la configurazione che dipende da hook esterni e passala direttamente a `PageGenerator`.
 - In `index.ts`, esporta l'API pubblica necessaria ai consumer senza reimportare il barrel dall'interno della feature.
 
@@ -108,7 +108,6 @@ features/orders/
 - Non affidarti a `useMemo`, comparatori profondi o React Compiler per correggere un tipo o una key instabile. Usali solo dopo aver reso corretta l'identità React.
 - Non modificare `PAGE_ID` per resettare la UI. Resetta esplicitamente soltanto lo stato necessario.
 - Non usare `renderInHeader` o `renderInFooter` per eseguire effetti senza UI. Sono slot di presentazione, non una fase di inizializzazione.
-
 
 ## Stato, form, query e mutation
 

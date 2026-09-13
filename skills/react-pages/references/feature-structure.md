@@ -8,16 +8,18 @@ responsabilità.
 
 ## Indice
 
-- [form.ts](#formts)
-- [queries.ts](#queriests)
-- [variables.ts](#variablests)
-- [content.tsx](#contenttsx)
-- [page.tsx](#pagetsx)
-- [index.ts](#indexts)
+- [Struttura della feature PageGenerator](#struttura-della-feature-pagegenerator)
+  - [Indice](#indice)
+  - [form.ts](#formts)
+  - [queries.ts](#queriests)
+  - [variables.ts](#variablests)
+  - [contents.tsx](#contentstsx)
+  - [page.tsx](#pagetsx)
+  - [index.ts](#indexts)
 
 ```text
 features/orders/
-├── content.tsx
+├── contents.tsx
 ├── form.ts
 ├── queries.ts
 ├── variables.ts
@@ -148,7 +150,7 @@ export const orderVariables: OrderVariables = {
 
 Mantieni qui soltanto stato condiviso da content item della pagina. Non inserire sorting, focus o altri dettagli posseduti dal widget.
 
-## content.tsx
+## contents.tsx
 
 Definisci qui i componenti nominati che ricevono `FunctionProps` e la
 configurazione `contents`. Mantieni la struttura dei content che reagiscono ai
@@ -158,7 +160,7 @@ loading o `undefined`.
 Non creare content invisibili per copiare auth, route, locale o altri hook
 esterni nelle variables. Non usare `renderInHeader`/`renderInFooter` per
 nascondere inizializzatori. Se la pagina è composta soltanto dal form integrato
-o dall'header generato, ometti `content.tsx` invece di mantenere un array vuoto.
+o dall'header generato, ometti `contents.tsx` invece di mantenere un array vuoto.
 
 ## page.tsx
 
