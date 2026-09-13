@@ -54,6 +54,16 @@ un secondo passaggio dopo il mount.
 
 Ogni chiamata `get` registra la path letta e il hook forza un update solo quando cambia una delle path sottoscritte. `get` supporta path con punti e indici (`rows[0].name`). I tipi pubblici offrono path tipizzate per query/mutation/form e chiavi top-level per `Variables`.
 
+Sfrutta al massimo la granularità di `get` mappando solo il campo foglia che serve:
+- per le mutation: leggi direttamente il metodo o flag necessario (es. `get('mutation', 'sendDoctorAbsenceNotification.mutateAsync')` o `get('mutation', 'sendPatientDataReminder.isPending', false)`), anziché prelevare l'intero oggetto mutation;
+- per lo stato/variables: richiedi direttamente la path specifica (es. `get('state', 'filters.user.id', '')` invece di estrarre tutto l'oggetto `filters`);
+- per le query: richiedi direttamente i dati o i flag operativi (es. `get('query', 'orders.data', [])`).
+Estrarre l'intero oggetto invalida il vantaggio della sottoscrizione mirata: qualsiasi mutazione interna o variazione di stato dell'oggetto provocherà un re-render del componente anche se il dato usato non è cambiato.
+
+Quando passi dati o funzioni di query e mutation a componenti figli, inoltra solo le proprietà necessarie a quel componente (es. `isPending`, `mutateAsync`, `data`) e mai l'intero oggetto.
+
+Tutte le query e mutation devono essere dichiarate nella prop `queries` di `PageGenerator`: non usare mai hook per le API (`useQuery`, `useMutation`, `useApi`, ecc.) all'interno dei content component.
+
 `set('form')` restituisce il setter del form. `set('state')` restituisce un setter top-level che fa `{ ...prev, [key]: value }`.
 
 Nel runtime v3.0.2 descritto qui, `usePageValues` scrive `initialValues` soltanto

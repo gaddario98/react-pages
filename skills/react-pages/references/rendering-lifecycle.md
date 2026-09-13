@@ -58,15 +58,20 @@ function ResultsContent({
   get,
   set,
 }: FunctionProps<FormValues, Queries, Variables>) {
+  // Sottoscrivi esclusivamente le proprietà foglia necessarie con get:
   const rows = get("query", "rows.data", []);
-  const search = get("state", "search", "");
+  const deleteOrder = get("mutation", "deleteOrder.mutateAsync");
+  const isDeleting = get("mutation", "deleteOrder.isPending", false);
+  const search = get("state", "filters.search", "");
   const setState = set("state");
 
   return (
     <DataTable
       data={filterRows(rows, search)}
       globalFilterValue={search}
-      onGlobalFilterChange={(value) => setState("search", value)}
+      onGlobalFilterChange={(value) => setState("filters", { search: value })}
+      // Inoltra ai sotto-componenti solo le proprietà necessarie, mai l'intero oggetto mutation:
+      actions={<RowActions onDelete={deleteOrder} isDeleting={isDeleting} />}
     />
   );
 }
@@ -76,7 +81,7 @@ const contents = [
 ];
 ```
 
-`ResultsContent` mantiene la propria reference perché è dichiarato a livello modulo. Usa `useMemo`/`useCallback` per configurazioni o callback non primitive, senza trasformare il content component in una closure.
+`ResultsContent` mantiene la propria reference perché è dichiarato a livello modulo. Tutte le query e mutation devono provenire da `PageGenerator` ed essere lette tramite `get`, senza chiamare hook API (`useQuery`, `useMutation`, `useApi`) all'interno dei componenti. Sfrutta al massimo la granularità di `get` estraendo solo il metodo o flag che serve (`.mutateAsync`, `.isPending`, path puntate di stato): estrarre l'intero oggetto provoca re-render non necessari a ogni transizione interna. Quando passi queste funzioni o flag a componenti figli, inoltra solo le proprietà strettamente necessarie. Usa `useMemo`/`useCallback` per configurazioni o callback non primitive, senza trasformare il content component in una closure.
 
 ### Elemento JSX con usePageValues
 

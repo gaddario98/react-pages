@@ -6,8 +6,10 @@
 
 - Monta `QueriesProvider` con il `QueryClient` configurato prima delle pagine che usano `PageGenerator`.
 - Configura endpoint, request function, auth, headers, `QueryClient`, persistenza e notifiche con `useApiConfigState`.
+- Tutte le query e mutation della pagina devono essere mappate esclusivamente da `PageGenerator` nella tupla `queries` e passate ai content tramite la prop `get`: **non usare mai hook per le API** (`useApi`, `useQuery`, `useMutation`, ecc.) nei content o nei loro componenti discendenti.
 - `PageGenerator` chiama `useApi(processedQueries, { scopeId: pageId, persistToAtoms: true })`; una query o mutation con lo stesso key in pagine diverse resta separata dal `pageId`.
-- `useApiValues` sottoscrive path granulari di query/mutation. Leggi soltanto le path necessarie in ciascun content item.
+- `useApiValues` e `get` sottoscrivono path granulari di query e mutation. Sfrutta al massimo la prop `get` mappando solo il campo foglia che serve (es. `get('mutation', 'sendDoctorAbsenceNotification.mutateAsync')` o `get('mutation', 'sendPatientDataReminder.isPending', false)`): non estrarre l'intero oggetto mutation `get('mutation', 'sendDoctorAbsenceNotification')`, altrimenti ogni transizione interna (idle, pending, success, timestamp) scatenerà il re-render dell'intero componente.
+- Quando passi proprietà di query o mutation a componenti figli o presentazionali, passa solo le singole proprietà necessarie al componente (es. `isPending`, `mutateAsync`, `data`), mai l'intero oggetto query o mutation.
 - Metti `queryKeyToInvalidate` e `notification.success/error` nella `mutationConfig`. `useMultipleMutation` invalida, mostra la notifica e poi propaga il risultato o l'errore di `mutateAsync`.
 - Configura una query dipendente come `queryConfig: ({ get }) => ({ enabled, queryKey, ... })`; non introdurre stato locale duplicato per calcolare la request. Le dipendenze esterne usate da `get("variables", ...)` devono essere già presenti nelle props di `PageGenerator` al primo render.
 - Assegna a `PageGenerator` la proprietà del flusso dati configurato in `queries`. Non affiancare `useApi`, `fetch`, un query hook applicativo o un hook `get/set` per recuperare e riscrivere gli stessi dati.

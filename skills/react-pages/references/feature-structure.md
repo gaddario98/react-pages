@@ -13,13 +13,16 @@ responsabilità.
   - [form.ts](#formts)
   - [queries.ts](#queriests)
   - [variables.ts](#variablests)
-  - [contents.tsx](#contentstsx)
+  - [contents.tsx o cartella contents/](#contentstsx-o-cartella-contents)
   - [page.tsx](#pagetsx)
   - [index.ts](#indexts)
 
 ```text
 features/orders/
-├── contents.tsx
+├── contents.tsx (o cartella contents/)
+│   ├── orders-table.tsx
+│   ├── order-dialog.tsx
+│   └── index.ts
 ├── form.ts
 ├── queries.ts
 ├── variables.ts
@@ -74,6 +77,8 @@ Non usare `PageGenerator.form` per un dialog o una form autosufficiente che `For
 ## queries.ts
 
 Mantieni l'ordine: contratto tuple, endpoint, keys, configurazione `queries`. Non mescolare request, endpoint o query key in `page.tsx`.
+
+Tutte le query e mutation della pagina devono essere definite qui e mappate in `PageGenerator`: **non usare mai hook per le API** (`useApi`, `useQuery`, `useMutation`, o hook custom generati) all'interno dei content o dei loro componenti figli.
 
 ```tsx
 import type { PageProps } from "@gaddario98/react-pages";
@@ -150,17 +155,93 @@ export const orderVariables: OrderVariables = {
 
 Mantieni qui soltanto stato condiviso da content item della pagina. Non inserire sorting, focus o altri dettagli posseduti dal widget.
 
-## contents.tsx
+## contents.tsx o cartella contents/
 
 Definisci qui i componenti nominati che ricevono `FunctionProps` e la
 configurazione `contents`. Mantieni la struttura dei content che reagiscono ai
 dati query anche prima che i dati esistano; lascia che ogni componente gestisca
 loading o `undefined`.
 
+### 1. Mapping di query e mutation tramite `get`
+Tutte le query e mutation devono provenire da `PageGenerator` ed essere lette tramite la prop `get`: non usare hook API all'interno dei content.
+
+### 2. Sfruttamento massimale della prop `get` (granularità)
+La prop `get` registra le path sottoscritte. Sottoscrivi **esclusivamente il campo foglia che serve**:
+- Invece di prelevare l'intera mutation:
+  ```tsx
+  // DA EVITARE: sottoscrive l'intero oggetto mutation, re-render a ogni cambiamento di stato interno
+  const mutation = get('mutation', 'sendDoctorAbsenceNotification');
+  ```
+- Prendi direttamente il singolo metodo o flag:
+  ```tsx
+  // CORRETTO: sottoscrive solo il metodo o solo lo stato booleano
+  const sendNotification = get('mutation', 'sendDoctorAbsenceNotification.mutateAsync');
+  const isPending = get('mutation', 'sendPatientDataReminder.isPending', false);
+  ```
+- Lo stesso vale per lo stato annidato:
+  ```tsx
+  // CORRETTO: legge solo il campo id, evitando re-render se cambiano altri campi di filters
+  const userId = get('state', 'filters.user.id', '');
+  ```
+
+### 3. Passaggio delle sole proprietà necessarie ai sotto-componenti
+Quando un content component passa dati o handler a sotto-componenti o componenti presentazionali, **passa solo le proprietà strettamente necessarie**, mai l'intero oggetto query o mutation:
+
+```tsx
+// CORRETTO: passa solo il dato e i flag specifici
+<OrderActions
+  onDelete={deleteOrder}
+  isDeleting={isDeleting}
+/>
+
+// DA EVITARE: passare l'intero oggetto mutation
+<OrderActions mutation={deleteMutation} />
+```
+
+### 4. Separazione in cartella `contents/` quando `contents.tsx` cresce
+Se `contents.tsx` diventa troppo grande o include diversi componenti complessi (tabelle, modali, pannelli laterali), separa i singoli content in file dedicati all'interno di una cartella `contents/`:
+
+```text
+features/orders/contents/
+├── orders-table.tsx
+├── order-actions.tsx
+├── order-dialog.tsx
+└── index.ts
+```
+
+In `contents/index.ts` importa i componenti e assembla l'array `contents`:
+
+```tsx
+// features/orders/contents/index.ts
+import type { ContentItemsType } from "@gaddario98/react-pages";
+import { OrdersTableContent } from "./orders-table";
+import { OrderDialogContent } from "./order-dialog";
+import type { OrderFormValues } from "../form";
+import type { OrdersQueries } from "../queries";
+import type { OrderVariables } from "../variables";
+
+export const contents: ContentItemsType<
+  OrderFormValues,
+  OrdersQueries,
+  OrderVariables
+> = [
+  {
+    type: "custom",
+    key: "orders-table",
+    component: OrdersTableContent,
+  },
+  {
+    type: "custom",
+    key: "order-dialog",
+    component: OrderDialogContent,
+  },
+];
+```
+
 Non creare content invisibili per copiare auth, route, locale o altri hook
 esterni nelle variables. Non usare `renderInHeader`/`renderInFooter` per
 nascondere inizializzatori. Se la pagina è composta soltanto dal form integrato
-o dall'header generato, ometti `contents.tsx` invece di mantenere un array vuoto.
+o dall'header generato, ometti `contents.tsx` o la cartella `contents/` invece di mantenere un array vuoto.
 
 ## page.tsx
 

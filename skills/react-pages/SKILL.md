@@ -12,11 +12,11 @@ Considera i sorgenti del package la fonte dell'API effettiva. Tratta esempi più
 ## Procedura
 
 1. Individua l'import usato dal consumer e verifica la versione installata, gli export disponibili e l'eventuale fork locale prima di modificare codice. Per opzioni avanzate di query, controlla anche come l'adapter installato inoltra davvero la configurazione: una proprietà presente nei tipi può essere annidata, ignorata o gestita diversamente dal runtime. Leggi [riferimento API e runtime](references/page-generator.md) quando devi modellare la pagina o verificare un comportamento.
-2. Modella la feature o subfeature per responsabilità di dominio. Se espone una pagina, separa almeno `page`, `queries`, `variables` e l'eventuale `form`; usa `contents` soltanto quando contiene UI o comportamento reale. Leggi [struttura feature](references/feature-structure.md) e passa i tre contratti come generici di `PageGenerator`.
+2. Modella la feature o subfeature per responsabilità di dominio. Se espone una pagina, separa almeno `page`, `queries`, `variables` e l'eventuale `form`; usa `contents.tsx` soltanto quando contiene UI o comportamento reale. Se `contents.tsx` diventa troppo grande, separa i content e organizzali in una cartella `contents/`. Leggi [struttura feature](references/feature-structure.md) e passa i tre contratti come generici di `PageGenerator`.
 3. Deriva auth, parametri route, lingua, breakpoint e altri input esterni nel componente padre che renderizza `PageGenerator`. Passali direttamente in `variables`, `queries` o `form.defaultValues`, stabilizzando gli oggetti non primitivi. Devono essere corretti già al primo render, prima della configurazione delle query. Non creare content `Session`, `Route` o `Sync` che copiano questi valori con `useEffect`, e non nasconderli in header/footer. Leggi [configurazioni esterne e refactor](references/refactoring-and-ownership.md).
-4. Metti lo stato condiviso e page-scoped in `PageGenerator.variables`; leggilo e aggiornalo con i `get` e `set` ricevuti nelle props del content component. Usa `usePageValues({ pageId: PAGE_ID })` solo quando non puoi passare tali props senza prop drilling o accoppiamenti non ragionevoli. Conserva nel widget lo stato che non serve al resto della pagina, come sorting, focus e paginazione della tabella. Non duplicare i dati query salvo un fallback documentato di continuità visiva quando l'adapter svuota i dati durante un cambio di query key.
+4. Metti lo stato condiviso e page-scoped in `PageGenerator.variables`; leggilo e aggiornalo con i `get` e `set` ricevuti nelle props del content component. Sfrutta al massimo la prop `get` mappando solo il campo che serve (es. `get('state', 'filters.user.id', '')` anziché estrarre l'intero oggetto di stato) per registrare sottoscrizioni granulari ed evitare re-render non necessari. Usa `usePageValues({ pageId: PAGE_ID })` solo quando non puoi passare tali props senza prop drilling o accoppiamenti non ragionevoli. Conserva nel widget lo stato che non serve al resto della pagina, come sorting, focus e paginazione della tabella. Non duplicare i dati query salvo un fallback documentato di continuità visiva quando l'adapter svuota i dati durante un cambio di query key.
 5. Costruisci ogni content item stateful come componente nominato a livello modulo che riceve `FunctionProps`; assegnagli una key semantica e permanente direttamente nel content item. Mantieni nell'array statico hero, azioni, informazioni e altri contenuti che devono reagire all'arrivo dei dati: il componente può gestire `undefined`, ma la struttura non deve dipendere dal fatto che la query abbia già risposto. Usa un elemento JSX solo quando richiede props extra. Nei layout virtualizzati verifica se un item invisibile occupa una riga. Leggi [lifecycle e rendering](references/rendering-lifecycle.md).
-6. Importa la costante `queries` dal modulo feature; non dichiarare endpoint, keys o request inline nella pagina e non affiancare a PageGenerator hook API che recuperano gli stessi dati. Passa `form` a `PageGenerator` solo quando deve partecipare al suo scope o layout; altrimenti rendi `FormManager` in un content component. Metti invalidation e notifiche nella `mutationConfig`. Leggi [ecosistema](references/ecosystem.md).
+6. Importa la costante `queries` dal modulo feature. Tutte le query e mutation devono essere mappate esclusivamente da `PageGenerator` e passate ai content tramite `get`: non usare hook per le API (`useApi`, `useQuery`, `useMutation`, ecc.) nei content o nei componenti discendenti. Sfrutta al massimo la prop `get` mappando solo il campo che serve (es. `get('mutation', 'sendDoctorAbsenceNotification.mutateAsync')` o `get('mutation', 'sendPatientDataReminder.isPending', false)` anziché estrarre l'intero oggetto mutation). Quando passi oggetti query e mutation tra componenti, passa solo le singole proprietà che servono a quel componente e non tutto l'oggetto. Passa `form` a `PageGenerator` solo quando deve partecipare al suo scope o layout; altrimenti rendi `FormManager` in un content component. Metti invalidation e notifiche nella `mutationConfig`. Leggi [ecosistema](references/ecosystem.md).
 7. Durante un refactor, aggiorna prima tutti i consumer verso il barrel pubblico della nuova ownership, poi elimina file, export e cartelle legacy solo dopo una ricerca globale dei riferimenti. Non conservare moduli vuoti o wrapper pass-through. Leggi [configurazioni esterne e refactor](references/refactoring-and-ownership.md).
 8. Configura metadata solo se richiesto. Leggi [metadata e piattaforme](references/metadata-and-platforms.md).
 9. Verifica il requisito funzionale. Per query dipendenti da route/auth, testa anche la configurazione al primo render; per risposte concorrenti, verifica che una risposta vecchia non sovrascriva la route corrente. Per widget stateful, conta i mount; per paginazione dinamica, usa una request differita e asserisci `dati correnti -> pending con dati ancora visibili -> dati estesi`. Esegui lint, test mirati e build pertinenti.
@@ -83,7 +83,10 @@ Mantieni questi moduli accanto a `page.tsx` (o nei relativi sottofolder se il re
 
 ```text
 features/orders/
-├── contents.tsx
+├── contents.tsx (oppure cartella contents/)
+│   ├── orders-table.tsx
+│   ├── order-dialog.tsx
+│   └── index.ts
 ├── form.ts
 ├── queries.ts
 ├── variables.ts
@@ -92,9 +95,9 @@ features/orders/
 ```
 
 - In `form.ts`, dichiara un'interfaccia che estende `FieldValues` e una costante form completa. Passa la stessa costante a `FormManager`; passa `form` a `PageGenerator` soltanto quando è indispensabile alla sua orchestrazione.
-- In `queries.ts`, mantieni in quest'ordine: tupla `QueryDefinition`, endpoint path, keys e costante `queries`. Costruisci `queries` unendo esclusivamente i tre elementi precedenti e tipizzala rispetto a `PageProps`.
+- In `queries.ts`, mantieni in quest'ordine: tupla `QueryDefinition`, endpoint path, keys e costante `queries`. Mappa qui tutte le query e mutation che alimentano la pagina: PageGenerator le inietterà nei content tramite `get` (non usare hook API nei componenti).
 - In `variables.ts`, dichiara un'interfaccia per le variabili page-scoped e la costante `variables` completa con i valori iniziali. Non dichiarare queste variabili inline in `page.tsx`.
-- In `contents.tsx`, dichiara componenti nominati e la configurazione `contents`; ometti il file se la pagina non ha content reali oltre a form/header generati.
+- In `contents.tsx`, dichiara componenti nominati e la configurazione `contents`; se `contents.tsx` è troppo grande o include più content complessi, separa i singoli content e organizzali all'interno di una cartella `contents/` esponendo la configurazione da `contents/index.ts`. Ometti il modulo se la pagina non ha content reali oltre a form/header generati.
 - In `page.tsx`, importa contratti e costanti statiche; deriva qui soltanto la configurazione che dipende da hook esterni e passala direttamente a `PageGenerator`.
 - In `index.ts`, esporta l'API pubblica necessaria ai consumer senza reimportare il barrel dall'interno della feature.
 
@@ -125,7 +128,18 @@ Mantieni il confine di responsabilità seguente:
 
 Passa sempre a `PageGenerator` le `variables` corrette per il render corrente. La riconciliazione dopo il mount varia tra versioni e wrapper: controlla il runtime installato. Se non supporta aggiornamenti dinamici delle props, non compensare con un content invisibile; aggiorna o correggi il runtime, oppure implementa una migrazione esplicita e documentata in un componente con responsabilità reale. Il setter di stato sostituisce superficialmente una chiave top-level; aggiorna oggetti annidati in modo immutabile.
 
-Leggi query e mutation con il `get` ricevuto nelle props: `get('query' | 'mutation', path, fallback)`. Leggi e scrivi il form con `get('form', path, fallback)` e `set('form')`; non aggiungere ref imperativi o `onValuesChange` soltanto per esporre il setter del form al page component.
+Leggi query e mutation con il `get` ricevuto nelle props: `get('query' | 'mutation', path, fallback)`. Tutte le query e mutation devono essere mappate esclusivamente da `PageGenerator` e mai da hook per le API (`useQuery`, `useMutation`, `useApi`, ecc.) invocati nei content o nei loro componenti figli. Sfrutta al massimo la granularità di `get` richiedendo solo la proprietà che serve:
+
+- per le mutation: leggi direttamente il metodo o flag necessario (es. `get('mutation', 'sendDoctorAbsenceNotification.mutateAsync')` o `get('mutation', 'sendPatientDataReminder.isPending', false)`), senza mai estrarre l'intero oggetto mutation;
+- per le query: leggi direttamente i dati o lo stato specifico (es. `get('query', 'orders.data', [])`, `get('query', 'orders.isFetching', false)`);
+- per lo stato/variables: richiedi direttamente la path puntata (es. `get('state', 'filters.user.id', '')` invece di estrarre tutto l'oggetto `filters`).
+  Estrarre l'intero oggetto invalida il tracciamento delle dipendenze di `get` e causa ri-render a ogni minima variazione di qualsiasi campo dell'oggetto.
+
+Quando passi dati o handler di query e mutation a componenti figli o presentazionali, passa solo le singole proprietà necessarie al componente (es. `mutateAsync`, `isPending`, `data`), mai l'intero oggetto query o mutation.
+
+Se `contents.tsx` diventa troppo grande o gestisce molteplici content complessi, separa i componenti e la relativa configurazione in una cartella `contents/` (es. `contents/orders-table.tsx`, `contents/order-dialog.tsx`, `contents/index.ts`).
+
+Leggi e scrivi il form con `get('form', path, fallback)` e `set('form')`; non aggiungere ref imperativi o `onValuesChange` soltanto per esporre il setter del form al page component.
 
 Mantieni le configurazioni non primitive stabili con `useMemo` e gli handler condivisi con `useCallback` quando catturano valori. Includi dipendenze complete. Non memoizzare primitivi banali o nascondere dipendenze necessarie.
 
@@ -154,6 +168,10 @@ Prima di consegnare, verifica:
 - componenti stateful con tipo stabile e key esplicite;
 - moduli `form`, `queries` e `variables` completi, senza config inline in `page.tsx`;
 - form gestito da `FormManager` salvo una motivazione concreta per `PageGenerator.form`;
+- tutte le query e mutation mappate da `PageGenerator` e passate ai content tramite `get`, senza alcun hook per le API nei componenti;
+- prop `get` sfruttata alla massima granularità mappando solo il campo foglia che serve (`.mutateAsync`, `.isPending`, path puntate di stato o query);
+- passaggio ai componenti figli delle sole proprietà necessarie di query e mutation anziché dell'intero oggetto;
+- `contents.tsx` suddiviso in una cartella `contents/` se il file è troppo grande o include più content complessi;
 - auth, route, locale e altri input esterni iniettati dal componente che monta `PageGenerator`, corretti al primo render;
 - nessun content invisibile usato per inizializzare `variables`, query o default form;
 - `get` e `set` ricevuti nelle props per default, con `usePageValues` limitato ai casi necessari;
