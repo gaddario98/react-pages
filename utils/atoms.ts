@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from "react";
 import { atom, useAtom, useAtomValue, useSetAtom } from "jotai";
 import { selectAtom } from "jotai/utils";
+import { deepMerge } from "./optimization";
 
 export interface PageVariablesOptions {
   pageId: string;
@@ -49,10 +50,10 @@ export const useSetVariablesState = <V extends Record<string, unknown> = Record<
           {}
         return {
           ...prev,
-          [pageId]: {
-            ...(prevEntry as unknown as V),
-            ...(val as unknown as Partial<V>),
-          } as unknown as V,
+          [pageId]: deepMerge(
+            prevEntry as Record<string, unknown>,
+            val as Record<string, unknown>,
+          ) as V,
         }
       })
     },
@@ -60,7 +61,13 @@ export const useSetVariablesState = <V extends Record<string, unknown> = Record<
   )
 }
 
-export const pageVariablesSettingsAtom = atom<Record<string, { initialized: boolean }>>({})
+type PageVariablesSettings<V extends Record<string, unknown> = Record<string, unknown>> = { prevInitialValues: V, initialized: boolean }
+
+export const pageVariablesSettingsAtom = atom<Record<string, PageVariablesSettings>>({})
+const pageVariablesSettingsDefaultValues = {
+  initialized: false,
+  prevInitialValues: {} as PageVariablesSettings
+}
 export const createPageVariablesSettingsSelector = (
   pageId: string,
 ) =>
@@ -68,18 +75,19 @@ export const createPageVariablesSettingsSelector = (
     pageVariablesSettingsAtom,
     (values) => {
       const entry = values[pageId]
-      return entry ?? { initialized: false }
+      return entry ?? pageVariablesSettingsDefaultValues
     },
     (a, b) =>
       a === b || (Object.entries(a) === Object.entries(b)),
   )
-export const usePageVariablesSettings = (pageId: string) => {
-  const [values, set] = useAtom<Record<string, { initialized: boolean }>>(pageVariablesSettingsAtom)
 
-  const setPageValues = useCallback((val: { initialized: boolean }) => set((prev) => {
+export const usePageVariablesSettings = <V extends Record<string, unknown> = Record<string, unknown>>(pageId: string) => {
+  const [values, set] = useAtom<Record<string, PageVariablesSettings>>(pageVariablesSettingsAtom)
+
+  const setPageValues = useCallback((val: PageVariablesSettings<V>) => set((prev) => {
     const prevEntry =
       (prev[pageId]) ??
-      { initialized: false }
+      pageVariablesSettingsDefaultValues
     return {
       ...prev,
       [pageId]: {
@@ -90,9 +98,7 @@ export const usePageVariablesSettings = (pageId: string) => {
   }), [set])
 
   const pageValues = useMemo(() => values[pageId] ??
-    { initialized: false }, [values])
+    pageVariablesSettingsDefaultValues, [values])
 
-  return [pageValues, setPageValues] as [{ initialized: boolean }, (val: {
-    initialized: boolean;
-  }) => void]
+  return [pageValues, setPageValues] as [PageVariablesSettings<V>, (val: Partial<PageVariablesSettings<V>>) => void]
 }

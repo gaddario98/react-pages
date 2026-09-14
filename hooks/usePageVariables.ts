@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import equal from "fast-deep-equal";
-import { getValueAtPath, usePageVariablesSettings, useSetVariablesState, useVariablesValue } from "../utils";
+import { getNestedChanges, getValueAtPath, usePageVariablesSettings, useSetVariablesState, useVariablesValue } from "../utils";
 
 export interface UsePageVariablesProps<V extends Record<string, unknown> = Record<string, unknown>> {
     scopeId?: string;
@@ -8,41 +8,31 @@ export interface UsePageVariablesProps<V extends Record<string, unknown> = Recor
 }
 
 export const usePageVariables = <V extends Record<string, unknown> = Record<string, unknown>>({
-    scopeId = '', variables
+    scopeId = '', variables = {} as V
 }: UsePageVariablesProps<V>) => {
     const currentValues = useVariablesValue<V>(scopeId);
     const setVariableState = useSetVariablesState<V>(scopeId);
-    const [{ initialized }, setSettings] = usePageVariablesSettings(scopeId)
+    const setVariablesRef = useRef(setVariableState)
+    const [{ initialized, prevInitialValues }, setSettings] = usePageVariablesSettings(scopeId)
 
     const subscriptions = useRef(new Map<string, unknown>());
     const [trigger, setTrigger] = useState(0);
 
-
-    const prevInitialValues = useRef(variables);
-
     useEffect(() => {
-        if (!initialized && variables) {
-            setVariableState(variables);
-            setSettings({ initialized: true })
-            prevInitialValues.current = variables;
-        } else if (initialized && variables) {
-            const changes: Record<string, unknown> = {};
-            let hasChanges = false;
-            const prev = prevInitialValues.current ?? {};
-
-            Object.keys(variables).forEach((key) => {
-                if (!equal(variables[key], prev[key])) {
-                    changes[key] = variables[key];
-                    hasChanges = true;
-                }
-            });
-
+        if (!initialized && !!Object.values(variables)?.length) {
+            setVariablesRef.current(variables);
+            setSettings({ initialized: true, prevInitialValues: variables });
+        } else if (initialized && !!Object.values(variables)?.length) {
+            const { changes, hasChanges } = getNestedChanges(
+                variables as Record<string, unknown>,
+                prevInitialValues,
+            );
             if (hasChanges) {
-                setVariableState(changes as V);
+                setVariablesRef.current(changes as V);
+                setSettings({ prevInitialValues: variables });
             }
-            prevInitialValues.current = variables;
         }
-    }, [variables, setVariableState]);
+    }, [variables]);
     // Ref to hold the latest values without causing re-renders itself
     const valuesRef = useRef<V>(currentValues);
 
@@ -83,9 +73,9 @@ export const usePageVariables = <V extends Record<string, unknown> = Record<stri
             field: keyof V,
             value: V[keyof V],
         ) => {
-            setVariableState({ [field]: value } as Partial<V>);
+            setVariablesRef.current({ [field]: value } as Partial<V>);
         },
-        [setVariableState],
+        [],
     );
 
     return { get, set };
