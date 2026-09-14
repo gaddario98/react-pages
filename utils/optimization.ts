@@ -14,3 +14,18 @@ import equal from 'fast-deep-equal';
 export function deepEqual(objA: any, objB: any): boolean {
   return equal(objA, objB);
 }
+
+export const getValueAtPath = (obj: unknown, path: string): unknown => {
+  if (!path) return undefined;
+  const normalized = path.replace(/\[(\d+)\]/g, ".$1");
+  const parts = normalized.split(".").filter(Boolean);
+  let current: unknown = obj;
+
+  for (const part of parts) {
+    if (current == null) return undefined;
+    if (typeof current !== "object") return undefined;
+    current = (current as Record<string, unknown>)[part];
+  }
+
+  return current;
+};

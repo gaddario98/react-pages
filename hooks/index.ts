@@ -5,4 +5,5 @@ export * from "./useViewSettings";
 export * from "./useFormData";
 export * from "./useMetadata";
 export * from "./usePageValues";
+export * from "./usePageVariables";
 export * from "./usePageUtiles";

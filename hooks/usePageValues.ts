@@ -1,34 +1,20 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import equal from "fast-deep-equal";
+import { useCallback, useRef } from "react";
 import { useFormValues } from "@gaddario98/react-form";
-import { useAtom } from "jotai";
 import { useApiValues } from "@gaddario98/react-queries";
-import { pageVariablesAtomFamily } from "../utils";
 import type { FieldValues } from "@gaddario98/react-form";
 import type { QueriesArray } from "@gaddario98/react-queries";
 import type { GetFunction, SetFunction } from "../types";
 import type { DeepKeys } from "@tanstack/react-form";
+import { usePageVariables } from "./usePageVariables";
 
-const getValueAtPath = (obj: unknown, path: string): unknown => {
-  if (!path) return undefined;
-  const normalized = path.replace(/\[(\d+)\]/g, ".$1");
-  const parts = normalized.split(".").filter(Boolean);
-  let current: unknown = obj;
-
-  for (const part of parts) {
-    if (current == null) return undefined;
-    if (typeof current !== "object") return undefined;
-    current = (current as Record<string, unknown>)[part];
-  }
-
-  return current;
-};
-
-interface UsePageValuesProps<
+export interface UsePageValuesProps<
   V extends Record<string, unknown> = Record<string, unknown>,
 > {
   pageId: string;
   initialValues?: V;
+  trackOldValues?: boolean;
+  resetOnMount?: boolean;
+  resetOnUnmount?: boolean;
 }
 
 export const usePageValues = <
@@ -37,76 +23,18 @@ export const usePageValues = <
   V extends Record<string, unknown> = Record<string, unknown>,
 >({
   pageId,
-  initialValues,
-}: UsePageValuesProps) => {
+  initialValues = {} as V,
+}: UsePageValuesProps<V>) => {
+
   const { get: getApiValues } = useApiValues<Q>({ scopeId: pageId });
   const { get: getFormValues, set: setFormValues } = useFormValues<F>({
     formId: pageId,
   });
-  const subscriptions = useRef(new Map<string, unknown>());
-  const [trigger, setTrigger] = useState(0);
-  const [pageVariables, setPageVariables] = useAtom(
-    pageVariablesAtomFamily(pageId),
-  );
-
-  const initialized = useRef(false);
-  const prevInitialValues = useRef(initialValues);
-
-  useEffect(() => {
-    if (!initialized.current && initialValues) {
-      setPageVariables(initialValues);
-      initialized.current = true;
-      prevInitialValues.current = initialValues;
-    } else if (initialized.current && initialValues) {
-      const changes: Record<string, unknown> = {};
-      let hasChanges = false;
-      const prev = prevInitialValues.current ?? {};
-
-      Object.keys(initialValues).forEach((key) => {
-        if (!equal(initialValues[key], prev[key])) {
-          changes[key] = initialValues[key];
-          hasChanges = true;
-        }
-      });
-
-      if (hasChanges) {
-        setPageVariables((prevVars) => ({ ...prevVars, ...changes }));
-      }
-      prevInitialValues.current = initialValues;
-    }
-  }, [initialValues, setPageVariables]);
-
-  const dataRef = useRef({
-    state:
-      !initialized.current && initialValues
-        ? ({ ...initialValues, ...pageVariables } as Record<string, unknown>)
-        : pageVariables,
+  const { get: getPageVariables, set: setPageVariables } = usePageVariables<V>({
+    scopeId: pageId,
+    variables: initialValues
   });
-
-  // Sync dataRef with latest values
-  useEffect(() => {
-    const nextState =
-      !initialized.current && initialValues
-        ? ({ ...initialValues, ...pageVariables } as Record<string, unknown>)
-        : pageVariables;
-
-    let internalTrigger = false;
-    subscriptions.current.forEach((_, key) => {
-      const [type, keyPath] = key.split(":");
-      if (type === "state") {
-        const newValue = getValueAtPath(nextState, keyPath);
-        const oldValue = getValueAtPath(dataRef.current.state, keyPath);
-        internalTrigger = internalTrigger || !equal(newValue, oldValue);
-      }
-    });
-    dataRef.current = {
-      state: nextState,
-    };
-    if (internalTrigger) {
-      setTrigger((v) => v + 1);
-    }
-  }, [pageVariables, initialValues]);
-
+  const subscriptions = useRef(new Map<string, unknown>());
   // get che legge dallo store e registra le dipendenze
   const get = useCallback(
     <Ty extends "mutation" | "query" | "form" | "state">(
@@ -134,8 +62,7 @@ export const usePageValues = <
         }
         case "state": {
           const value =
-            getValueAtPath(dataRef.current["state"], String(key)) ??
-            defaultValue;
+            getPageVariables(key, defaultValue as V[keyof V])
           subscriptions.current.set(keyMap, value);
           break;
         }
@@ -143,7 +70,7 @@ export const usePageValues = <
 
       return subscriptions.current.get(keyMap);
     },
-    [pageId, trigger, getApiValues, getFormValues],
+    [pageId, getApiValues, getFormValues, getPageVariables],
   ) as GetFunction<F, Q, V>;
 
   // set stabile
@@ -152,9 +79,8 @@ export const usePageValues = <
       if (type === "form") {
         return setFormValues;
       }
-      return (key: string, value: unknown) => {
-        setPageVariables((prev) => ({ ...prev, [key]: value }));
-      };
+      return setPageVariables
+
     },
     [setPageVariables, setFormValues],
   ) as SetFunction<F, V>;
