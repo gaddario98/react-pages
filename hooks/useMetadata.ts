@@ -12,12 +12,13 @@ export interface UseMetadataProps<
   V extends Record<string, unknown> = Record<string, unknown>,
 > {
   meta?:
-  | MetadataConfig<F, Q, V>
-  | MappedItemsFunction<F, Q, MetadataConfig<F, Q, V>, V>;
+  | MetadataConfig
+  | MappedItemsFunction<F, Q, MetadataConfig, V>;
   ns?: string;
   autoApply?: boolean;
   pageId: string;
   isActive?: boolean;
+  initialValues?: V;
 }
 
 export function useMetadata<
@@ -29,17 +30,18 @@ export function useMetadata<
   autoApply = true,
   pageId,
   isActive = true,
+  initialValues,
 }: UseMetadataProps<F, Q, V>) {
   const { defaultMetadata, translateText, locale } = usePageConfigValue();
   const t = useMemo(
     () => translateText ?? ((key: string) => key),
     [translateText],
   );
-  const { get, set } = usePageValues<F, Q, V>({ pageId });
+  const { get, set } = usePageValues<F, Q, V>({ pageId, initialValues });
 
   // Evaluate metadata (merging defaultMetadata and page meta)
-  const evaluatedMeta = useMemo<MetadataConfig<F, Q, V>>(() => {
-    const base = (defaultMetadata ?? {}) as MetadataConfig<F, Q, V>;
+  const evaluatedMeta = useMemo<MetadataConfig>(() => {
+    const base = (defaultMetadata ?? {}) as MetadataConfig;
     const pageMeta = !meta
       ? {}
       : typeof meta === "function"
@@ -49,8 +51,8 @@ export function useMetadata<
   }, [meta, defaultMetadata, get, set]);
 
   // Translate metadata strings (i18n)
-  const translated = useMemo<MetadataConfig<F, Q, V>>(() => {
-    const result: MetadataConfig<F, Q, V> = { ...evaluatedMeta };
+  const translated = useMemo<MetadataConfig>(() => {
+    const result: MetadataConfig = { ...evaluatedMeta };
 
     // Translate basic fields
     if (result.title) {
@@ -66,7 +68,7 @@ export function useMetadata<
       });
     }
     if (result.keywords) {
-      result.keywords = result.keywords.map((kw) =>
+      result.keywords = result.keywords.map((kw: string) =>
         t(kw, { ns: "meta", defaultValue: kw }),
       );
     }

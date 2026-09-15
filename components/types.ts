@@ -10,6 +10,7 @@ export interface Props<
   content: ContentItem<F, Q, V>
   ns: string
   pageId: string
+  initialValues?: V
 }
 
 export interface ContentProps<

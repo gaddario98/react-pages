@@ -19,6 +19,7 @@ export interface UsePageFormManagerProps<
   form?: FormPageProps<F, Q, V>;
   pageId: string;
   ns?: string;
+  initialValues?: V;
 }
 
 export const usePageFormManager = <
@@ -29,6 +30,7 @@ export const usePageFormManager = <
   form,
   pageId,
   ns,
+  initialValues,
 }: UsePageFormManagerProps<F, Q, V>) => {
   const { queryClient } = useApiConfigValue();
   const [defaultValueQuery, setDefaultValueQuery] = useState<F | undefined>(
@@ -71,6 +73,7 @@ export const usePageFormManager = <
   const { mappedFormData, formSubmit } = useFormData<F, Q, V>({
     form,
     pageId,
+    initialValues,
   });
 
   // Call useFormManager hook at top level (maintains hook order)

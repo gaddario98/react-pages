@@ -41,13 +41,13 @@ type QueryValue<
   K extends QueryCompositeKey<Q>,
 > = K extends `${infer Top}.${infer Sub}`
   ? Top extends QueryTopKey<Q>
-    ? Sub extends QuerySubKey<Q, Top>
-      ? MultipleQueryResponse<Q>[Top][Sub]
-      : never
-    : never
+  ? Sub extends QuerySubKey<Q, Top>
+  ? MultipleQueryResponse<Q>[Top][Sub]
+  : never
+  : never
   : K extends QueryTopKey<Q>
-    ? MultipleQueryResponse<Q>[K]
-    : never;
+  ? MultipleQueryResponse<Q>[K]
+  : never;
 
 type MutationTopKey<Q extends QueriesArray> = StringKey<AllMutation<Q>>;
 type MutationSubKey<
@@ -62,13 +62,13 @@ type MutationValue<
   K extends MutationCompositeKey<Q>,
 > = K extends `${infer Top}.${infer Sub}`
   ? Top extends MutationTopKey<Q>
-    ? Sub extends MutationSubKey<Q, Top>
-      ? AllMutation<Q>[Top][Sub]
-      : never
-    : never
+  ? Sub extends MutationSubKey<Q, Top>
+  ? AllMutation<Q>[Top][Sub]
+  : never
+  : never
   : K extends MutationTopKey<Q>
-    ? AllMutation<Q>[K]
-    : never;
+  ? AllMutation<Q>[K]
+  : never;
 
 export type GetFunction<
   F extends FieldValues,
@@ -184,8 +184,8 @@ type Items<
 > = {
   type: "custom";
   component:
-    | React.JSX.Element
-    | ((props: FunctionProps<F, Q, V>) => React.JSX.Element);
+  | React.JSX.Element
+  | ((props: FunctionProps<F, Q, V>) => React.JSX.Element);
 
   // Layout & positioning
   index?: number;
@@ -288,34 +288,34 @@ type SingleQueryConfig<
   V extends Record<string, unknown> = Record<string, unknown>,
 > =
   Q extends QueryDefinition<infer K, infer T, infer P, infer R, infer C>
-    ? T extends "mutation"
-      ? {
-          type: "mutation";
-          mutationConfig:
-            | (<Qa extends QueriesArray>(
-                props: FunctionProps<F, Qa, V>,
-              ) => MutationConfig<P, R, C>)
-            | MutationConfig<P, R, C>;
-          key: K;
-        }
-      : {
-          type: "query";
-          queryConfig?:
-            | (<Qa extends QueriesArray>(
-                props: FunctionProps<F, Qa, V>,
-              ) => Omit<QueryProps<K, R>, "keyToMap">)
-            | Omit<QueryProps<K, R>, "keyToMap">;
-          key: K;
-        }
-    : never;
+  ? T extends "mutation"
+  ? {
+    type: "mutation";
+    mutationConfig:
+    | (<Qa extends QueriesArray>(
+      props: FunctionProps<F, Qa, V>,
+    ) => MutationConfig<P, R, C>)
+    | MutationConfig<P, R, C>;
+    key: K;
+  }
+  : {
+    type: "query";
+    queryConfig?:
+    | (<Qa extends QueriesArray>(
+      props: FunctionProps<F, Qa, V>,
+    ) => Omit<QueryProps<K, R>, "keyToMap">)
+    | Omit<QueryProps<K, R>, "keyToMap">;
+    key: K;
+  }
+  : never;
 
 type QueryPageConfigArray<
   F extends FieldValues,
   Q extends QueriesArray,
   V extends Record<string, unknown> = Record<string, unknown>,
 > = {
-  [I in keyof Q]: SingleQueryConfig<F, QueryAtIndex<Q, I>, V>;
-};
+    [I in keyof Q]: SingleQueryConfig<F, QueryAtIndex<Q, I>, V>;
+  };
 interface PageProps<
   F extends FieldValues = FieldValues,
   Q extends QueriesArray = QueriesArray,
@@ -336,8 +336,8 @@ interface PageProps<
 
   // NEW IN 2.0: Metadata & SEO (generic over F and Q for dynamic metadata)
   meta?:
-    | MetadataConfig<F, Q, V>
-    | MappedItemsFunction<F, Q, MetadataConfig<F, Q, V>, V>;
+  | MetadataConfig
+  | MappedItemsFunction<F, Q, MetadataConfig, V>;
 
   // Feature flags
   enableAuthControl?: boolean;
@@ -414,6 +414,7 @@ export interface RenderComponentsProps<
   ns: string;
   pageId: string;
   key: string;
+  initialValues?: V;
 }
 
 // Backward compatibility: PageMetadataProps is now MetadataConfig
@@ -563,14 +564,14 @@ export interface IconsConfig {
  */
 export interface StructuredDataConfig {
   type:
-    | "Article"
-    | "Product"
-    | "WebPage"
-    | "FAQPage"
-    | "Organization"
-    | "Person"
-    | "WebSite"
-    | "BreadcrumbList";
+  | "Article"
+  | "Product"
+  | "WebPage"
+  | "FAQPage"
+  | "Organization"
+  | "Person"
+  | "WebSite"
+  | "BreadcrumbList";
   schema: Record<string, unknown>;
 }
 
@@ -615,11 +616,7 @@ export interface RobotsConfig {
 /**
  * Complete Metadata Configuration
  */
-export interface MetadataConfig<
-  F extends FieldValues = FieldValues,
-  Q extends QueriesArray = QueriesArray,
-  V extends Record<string, unknown> = Record<string, unknown>,
-> {
+export interface MetadataConfig {
   // Basic Metadata
   /** Page title - sets document.title on web */
   title?: string;

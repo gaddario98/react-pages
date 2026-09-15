@@ -14,6 +14,7 @@ export interface GenerateContentProps<
   ns?: string;
   contents: ContentItemsType<F, Q, V>;
   pageConfig: ReturnType<typeof usePageConfig<F, Q, V>>["mergedConfig"];
+  initialValues?: V;
 }
 
 export const useGenerateContent = <
@@ -25,6 +26,7 @@ export const useGenerateContent = <
   ns = "",
   contents = [],
   pageConfig,
+  initialValues,
 }: GenerateContentProps<F, Q, V>) => {
   const { formData } = useMemo(() => pageConfig, [pageConfig]);
   const { allContents, components } = useGenerateContentRender<F, Q, V>({
@@ -32,6 +34,7 @@ export const useGenerateContent = <
     pageId,
     contents,
     ns,
+    initialValues,
   });
   const body = useMemo(
     () =>

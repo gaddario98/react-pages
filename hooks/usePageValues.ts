@@ -12,9 +12,6 @@ export interface UsePageValuesProps<
 > {
   pageId: string;
   initialValues?: V;
-  trackOldValues?: boolean;
-  resetOnMount?: boolean;
-  resetOnUnmount?: boolean;
 }
 
 export const usePageValues = <

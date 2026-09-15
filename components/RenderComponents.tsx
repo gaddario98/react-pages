@@ -16,6 +16,7 @@ export interface PageContentItemProps<
   item: ContentItem<F, Q, V>;
   pageId: string;
   ns: string;
+  initialValues?: V;
 }
 
 const PageContentItemInner = <
@@ -26,8 +27,9 @@ const PageContentItemInner = <
   item,
   pageId,
   ns,
+  initialValues,
 }: PageContentItemProps<F, Q, V>) => {
-  const { get, set } = usePageValues<F, Q, V>({ pageId });
+  const { get, set } = usePageValues<F, Q, V>({ pageId, initialValues });
 
   const isHidden = useMemo(() => {
     if (typeof item.hidden === "function") {
@@ -44,6 +46,7 @@ const PageContentItemInner = <
       ns={ns}
       pageId={pageId}
       key={item.key ?? ""}
+      initialValues={initialValues}
     />
   );
 };
@@ -60,9 +63,10 @@ const ContainerImpl = <
   content,
   ns,
   pageId,
+  initialValues,
 }: ItemContainerProps<F, Q, V>) => {
   const { ItemsContainer } = usePageConfigValue();
-  const { get, set } = usePageValues<F, Q, V>({ pageId });
+  const { get, set } = usePageValues<F, Q, V>({ pageId, initialValues });
 
   const items = useMemo(() => {
     if (typeof content.items === "function") {
@@ -93,9 +97,10 @@ const ContainerImpl = <
           ns={ns}
           pageId={pageId}
           key={key}
+          initialValues={initialValues}
         />
       )),
-    [sortedItems, ns, pageId],
+    [sortedItems, ns, pageId, initialValues],
   );
 
   if (!CustomContainer) {
@@ -124,6 +129,7 @@ export const RenderComponents = <
         content={props.content}
         ns={props.ns}
         pageId={props.pageId}
+        initialValues={props.initialValues}
       />
     );
   }
@@ -133,6 +139,7 @@ export const RenderComponents = <
       content={props.content}
       ns={props.ns}
       pageId={props.pageId}
+      initialValues={props.initialValues}
     />
   );
 };

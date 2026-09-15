@@ -13,6 +13,7 @@ import type {
   QueryPageConfigArray,
   ViewSettings,
 } from "../types";
+import { useSetInitialVariables } from "./usePageVariables";
 
 const EMPTY_ARRAY: [] = [];
 
@@ -26,7 +27,7 @@ export const usePageConfig = <
   ns,
   viewSettings = {},
   meta,
-  variables,
+  variables = {} as V,
   pageId,
 }: {
   queries: QueryPageConfigArray<F, Q, V>;
@@ -34,10 +35,11 @@ export const usePageConfig = <
   ns: string;
   viewSettings?: MappedItemsFunction<F, Q, ViewSettings, V> | ViewSettings;
   // Metadata and lazy loading configuration
-  meta?: MetadataConfig<F, Q>;
+  meta?: MetadataConfig;
   variables?: V;
   pageId: string;
 }) => {
+  useSetInitialVariables<V>({ variables, scopeId: pageId })
   // Use global config usage if needed, but per-page config is primary
   const globalConfig = usePageConfigValue();
 
@@ -46,6 +48,7 @@ export const usePageConfig = <
     form,
     pageId,
     ns,
+    initialValues: variables,
   });
   const { get, set } = usePageValues<F, Q, V>({
     pageId,
@@ -87,6 +90,7 @@ export const usePageConfig = <
   const mappedViewSettings = useViewSettings<F, Q, V>({
     viewSettings,
     pageId,
+    initialValues: variables,
   });
 
   // Merge custom configuration with defaults

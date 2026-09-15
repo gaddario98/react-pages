@@ -23,8 +23,16 @@ export function useFormData<
   F extends FieldValues,
   Q extends QueriesArray,
   V extends Record<string, unknown> = Record<string, unknown>,
->({ form, pageId }: { form?: FormPageProps<F, Q, V>; pageId: string }) {
-  const { get, set } = usePageValues<F, Q, V>({ pageId });
+>({
+  form,
+  pageId,
+  initialValues,
+}: {
+  form?: FormPageProps<F, Q, V>;
+  pageId: string;
+  initialValues?: V;
+}) {
+  const { get, set } = usePageValues<F, Q, V>({ pageId, initialValues });
 
   const hiddenMapped = useCallback(() => {
     const isHidden = form?.hidden;

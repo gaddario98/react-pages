@@ -21,11 +21,13 @@ export function useViewSettings<
 >({
   viewSettings = {},
   pageId,
+  initialValues,
 }: {
   viewSettings?: MappedItemsFunction<F, Q, ViewSettings, V> | ViewSettings
   pageId: string
+  initialValues?: V
 }) {
-  const { get, set } = usePageValues<F, Q, V>({ pageId })
+  const { get, set } = usePageValues<F, Q, V>({ pageId, initialValues })
   if (typeof viewSettings === 'function') {
     return viewSettings({
       get,

@@ -49,7 +49,10 @@ const PageGenerator = <
     ns,
     meta: selectedMeta,
     isActive: selectedIsActive,
+    variables: selectedVariables,
   } = useMemo(() => selectedProps, [selectedProps]);
+
+  const activeVariables = selectedVariables ?? variables;
 
   const { mergedConfig, refreshQueries } = usePageConfig<F, Q, V>({
     queries,
@@ -57,7 +60,7 @@ const PageGenerator = <
     ns: ns ?? "",
     viewSettings,
     pageId: id,
-    variables,
+    variables: activeVariables,
   });
 
   const { allContents, body, footer, header } = useGenerateContent<F, Q, V>({
@@ -65,6 +68,7 @@ const PageGenerator = <
     pageId: id,
     ns,
     pageConfig: mergedConfig,
+    initialValues: activeVariables,
   });
 
   const activeMeta = selectedMeta ?? meta;
@@ -75,6 +79,7 @@ const PageGenerator = <
     ns,
     pageId: id,
     isActive: activeIsActive,
+    initialValues: activeVariables,
   });
 
   const { mappedViewSettings } = mergedConfig;

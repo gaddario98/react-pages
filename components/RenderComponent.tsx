@@ -7,17 +7,19 @@ import type { FunctionProps } from '../types'
 import type { ContentProps } from './types'
 
 const ComponentFunctionMap = <
-  F extends FieldValues ,
+  F extends FieldValues,
   Q extends QueriesArray,
   V extends Record<string, unknown> = Record<string, unknown>,
 >({
   Component,
   pageId,
+  initialValues,
 }: {
   Component: (props: FunctionProps<F, Q, V>) => React.JSX.Element
   pageId: string
+  initialValues?: V
 }) => {
-  const { get, set } = usePageValues<F, Q, V>({ pageId })
+  const { get, set } = usePageValues<F, Q, V>({ pageId, initialValues })
 
   return <Component get={get} set={set} />
 }
@@ -30,10 +32,17 @@ const RenderComponentImpl = <
 >({
   content,
   pageId,
+  initialValues,
 }: ContentProps<F, Q, V>) => {
   const { component: Component } = content
   if (typeof Component === 'function') {
-    return <ComponentFunctionMap<F, Q, V> Component={Component} pageId={pageId} />
+    return (
+      <ComponentFunctionMap<F, Q, V>
+        Component={Component}
+        pageId={pageId}
+        initialValues={initialValues}
+      />
+    )
   } else {
     return Component
   }

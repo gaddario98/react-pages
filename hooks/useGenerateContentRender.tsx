@@ -27,6 +27,7 @@ export interface GenerateContentRenderProps<
     formValues: F;
     setValue: SetValueFunction<F>;
   };
+  initialValues?: V;
 }
 export interface Elements {
   index: number;
@@ -54,8 +55,9 @@ export const useGenerateContentRender = <
   ns = "",
   contents = [],
   formData,
+  initialValues,
 }: GenerateContentRenderProps<F, Q, V>) => {
-  const { get, set } = usePageValues<F, Q, V>({ pageId });
+  const { get, set } = usePageValues<F, Q, V>({ pageId, initialValues });
 
   const contentsWithQueriesDeps = useMemo(() => {
     if (typeof contents === "function") {
@@ -85,6 +87,7 @@ export const useGenerateContentRender = <
               ns={ns}
               pageId={pageId}
               key={stableKey}
+              initialValues={initialValues}
             />
           ),
           index: content.index ?? index,
@@ -93,7 +96,7 @@ export const useGenerateContentRender = <
           key: stableKey,
         };
       }),
-    [contentsWithQueriesDeps, ns, pageId],
+    [contentsWithQueriesDeps, ns, pageId, initialValues],
   );
 
   // Merge and sort - only when either array changes
