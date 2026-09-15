@@ -52,6 +52,7 @@ export const usePageConfig = <
   });
   const { get, set } = usePageValues<F, Q, V>({
     pageId,
+    formId: form?.id ?? pageId,
     initialValues: variables,
   });
 

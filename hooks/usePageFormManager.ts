@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import { useApiConfigValue } from "@gaddario98/react-queries";
 import { useFormManager } from "@gaddario98/react-form";
 import { useFormData } from "./useFormData";
 import type {
@@ -8,8 +7,7 @@ import type {
   Submit,
 } from "@gaddario98/react-form";
 import type { FormPageProps } from "../types";
-import type { QueriesArray } from "@gaddario98/react-queries";
-import { QueryObserver } from "@tanstack/react-query";
+import { type QueriesArray, QueryObserver, useApiConfigValue } from "@gaddario98/react-queries";
 
 export interface UsePageFormManagerProps<
   F extends FieldValues,
@@ -33,59 +31,77 @@ export const usePageFormManager = <
   initialValues,
 }: UsePageFormManagerProps<F, Q, V>) => {
   const { queryClient } = useApiConfigValue();
-  const [defaultValueQuery, setDefaultValueQuery] = useState<F | undefined>(
-    form?.defaultValues,
+  const [defaultValueMapped, setDefaultValueMapped] = useState<F | undefined>(
+    () => {
+      if (form?.defaultValueQueryKey) {
+        const initialData = queryClient.getQueryData<F>(
+          form.defaultValueQueryKey,
+        );
+        if (initialData !== undefined) {
+          return (
+            form?.defaultValueQueryMap?.(initialData) ?? initialData
+          );
+        }
+      }
+      return form?.defaultValues;
+    },
   );
 
   useEffect(() => {
     if (!form?.defaultValueQueryKey) {
-      // setDefaultValueQuery(form?.defaultValues)
+      if (form?.defaultValues !== undefined) {
+        setDefaultValueMapped(form.defaultValues);
+      }
       return () => { };
     }
     const initialData = queryClient.getQueryData<F>(form.defaultValueQueryKey);
-    if (initialData) {
-      // setDefaultValueQuery(initialData)
+    if (initialData !== undefined) {
+      setDefaultValueMapped(
+        form?.defaultValueQueryMap?.(initialData) ?? initialData,
+      );
     }
     const observer = new QueryObserver<F>(queryClient, {
       queryKey: form.defaultValueQueryKey,
       enabled: true,
       notifyOnChangeProps: ["data"],
       refetchOnWindowFocus: false,
+      staleTime: 0,
     });
     const unsubscribe = observer.subscribe((result) => {
       if (result.data !== undefined) {
-        setDefaultValueQuery(result.data);
+        setDefaultValueMapped(
+          form?.defaultValueQueryMap?.(result.data) ?? (result.data as F),
+        );
       }
     });
     return () => unsubscribe();
-  }, [form?.defaultValueQueryKey, form?.defaultValues, queryClient]);
+  }, [
+    form?.defaultValueQueryKey,
+    form?.defaultValues,
+    queryClient,
+    form?.defaultValueQueryMap,
+  ]);
 
-  const defaultValues = useMemo(
-    () =>
-      ({
-        ...(form?.defaultValueQueryMap?.(defaultValueQuery) ??
-          defaultValueQuery ??
-          {}),
-      }) as F,
-    [defaultValueQuery, form],
-  );
+  const formId = form?.id ?? pageId;
 
   const { mappedFormData, formSubmit } = useFormData<F, Q, V>({
     form,
     pageId,
     initialValues,
+    formId,
   });
 
   // Call useFormManager hook at top level (maintains hook order)
   const rawFormData = useFormManager({
     ...form,
+    id: formId,
     data: mappedFormData,
     ns,
     submit: formSubmit,
     formOptions: {
-      defaultValues: defaultValues,
+      defaultValues: defaultValueMapped ?? form?.defaultValues,
       ...(form?.formSettings ?? {}),
-      formId: pageId,
+      formId,
     },
   });
 

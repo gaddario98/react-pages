@@ -27,12 +27,19 @@ export function useFormData<
   form,
   pageId,
   initialValues,
+  formId,
 }: {
   form?: FormPageProps<F, Q, V>;
   pageId: string;
   initialValues?: V;
+  formId?: string;
 }) {
-  const { get, set } = usePageValues<F, Q, V>({ pageId, initialValues });
+  const effectiveFormId = formId ?? form?.id ?? pageId;
+  const { get, set } = usePageValues<F, Q, V>({
+    pageId,
+    formId: effectiveFormId,
+    initialValues,
+  });
 
   const hiddenMapped = useCallback(() => {
     const isHidden = form?.hidden;

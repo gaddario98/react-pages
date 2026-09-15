@@ -11,6 +11,7 @@ export interface UsePageValuesProps<
   V extends Record<string, unknown> = Record<string, unknown>,
 > {
   pageId: string;
+  formId?: string;
   initialValues?: V;
 }
 
@@ -20,12 +21,13 @@ export const usePageValues = <
   V extends Record<string, unknown> = Record<string, unknown>,
 >({
   pageId,
+  formId,
   initialValues = {} as V,
 }: UsePageValuesProps<V>) => {
-
+  const effectiveFormId = formId ?? pageId;
   const { get: getApiValues } = useApiValues<Q>({ scopeId: pageId });
   const { get: getFormValues, set: setFormValues } = useFormValues<F>({
-    formId: pageId,
+    formId: effectiveFormId,
   });
   const { get: getPageVariables, set: setPageVariables } = usePageVariables<V>({
     scopeId: pageId,
