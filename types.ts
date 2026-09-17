@@ -165,6 +165,8 @@ export type FunctionProps<
    * - set('state') returns state setter
    */
   set: SetFunction<F, V>;
+
+  refreshAllQueries: () => void
 };
 
 type MappedItemsFunction<

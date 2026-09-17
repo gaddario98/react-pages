@@ -25,7 +25,7 @@ export const usePageValues = <
   initialValues = {} as V,
 }: UsePageValuesProps<V>) => {
   const effectiveFormId = formId ?? pageId;
-  const { get: getApiValues } = useApiValues<Q>({ scopeId: pageId });
+  const { get: getApiValues, refreshAll } = useApiValues<Q>({ scopeId: pageId });
   const { get: getFormValues, set: setFormValues } = useFormValues<F>({
     formId: effectiveFormId,
   });
@@ -84,5 +84,5 @@ export const usePageValues = <
     [setPageVariables, setFormValues],
   ) as SetFunction<F, V>;
 
-  return { get, set };
+  return { get, set, refreshAllQueries: refreshAll };
 };
