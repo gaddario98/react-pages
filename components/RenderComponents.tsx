@@ -29,14 +29,14 @@ const PageContentItemInner = <
   ns,
   initialValues,
 }: PageContentItemProps<F, Q, V>) => {
-  const { get, set } = usePageValues<F, Q, V>({ pageId, initialValues });
+  const { get, set, refreshAllQueries } = usePageValues<F, Q, V>({ pageId, initialValues });
 
   const isHidden = useMemo(() => {
     if (typeof item.hidden === "function") {
-      return item.hidden({ get, set });
+      return item.hidden({ get, set, refreshAllQueries });
     }
     return !!item.hidden;
-  }, [get, item, set]);
+  }, [get, item, set, refreshAllQueries]);
 
   if (isHidden) return null;
 
@@ -66,14 +66,14 @@ const ContainerImpl = <
   initialValues,
 }: ItemContainerProps<F, Q, V>) => {
   const { ItemsContainer } = usePageConfigValue();
-  const { get, set } = usePageValues<F, Q, V>({ pageId, initialValues });
+  const { get, set, refreshAllQueries } = usePageValues<F, Q, V>({ pageId, initialValues });
 
   const items = useMemo(() => {
     if (typeof content.items === "function") {
-      return content.items({ get, set });
+      return content.items({ get, set, refreshAllQueries });
     }
     return Array.isArray(content.items) ? content.items : [];
-  }, [content.items, get, set]);
+  }, [content.items, get, set, refreshAllQueries]);
 
   const sortedItems = useMemo(() => {
     return items

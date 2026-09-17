@@ -35,7 +35,7 @@ export function useFormData<
   formId?: string;
 }) {
   const effectiveFormId = formId ?? form?.id ?? pageId;
-  const { get, set } = usePageValues<F, Q, V>({
+  const { get, set, refreshAllQueries } = usePageValues<F, Q, V>({
     pageId,
     formId: effectiveFormId,
     initialValues,
@@ -48,11 +48,12 @@ export function useFormData<
       return isHidden({
         get,
         set,
+        refreshAllQueries,
       });
     } else {
       return !!isHidden;
     }
-  }, [form?.hidden, get, set]);
+  }, [form?.hidden, get, set, refreshAllQueries]);
 
   const mappedFormData = useMemo((): Array<FormManagerConfig<F>> => {
     if (!form?.data || hiddenMapped()) return [];
@@ -60,22 +61,22 @@ export function useFormData<
     return form.data
       .map((el) => {
         if (typeof el === "function") {
-          return el({ get, set });
+          return el({ get, set, refreshAllQueries });
         }
         return el;
       })
       .filter((el) => !!el)
       .map((el, i) => ({ ...el, key: el.key ?? `${i}` }));
-  }, [form, get, hiddenMapped, set]);
+  }, [form, get, hiddenMapped, set, refreshAllQueries]);
 
   const formSubmit = useMemo((): Array<Submit<F>> => {
     if (!form?.submit || hiddenMapped()) return [];
 
     const submitFn = form.submit;
     return (
-      typeof submitFn === "function" ? submitFn({ get, set }) : submitFn
+      typeof submitFn === "function" ? submitFn({ get, set, refreshAllQueries }) : submitFn
     ).map((el, i) => ({ ...el, key: el.key ?? `${i}` }));
-  }, [form, hiddenMapped, get, set]);
+  }, [form, hiddenMapped, get, set, refreshAllQueries]);
 
   return {
     mappedFormData,

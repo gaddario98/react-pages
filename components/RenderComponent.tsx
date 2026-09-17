@@ -19,9 +19,9 @@ const ComponentFunctionMap = <
   pageId: string
   initialValues?: V
 }) => {
-  const { get, set } = usePageValues<F, Q, V>({ pageId, initialValues })
+  const { get, set, refreshAllQueries } = usePageValues<F, Q, V>({ pageId, initialValues })
 
-  return <Component get={get} set={set} />
+  return <Component get={get} set={set} refreshAllQueries={refreshAllQueries} />
 }
 
 // Internal component implementation

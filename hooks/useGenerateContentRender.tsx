@@ -57,14 +57,14 @@ export const useGenerateContentRender = <
   formData,
   initialValues,
 }: GenerateContentRenderProps<F, Q, V>) => {
-  const { get, set } = usePageValues<F, Q, V>({ pageId, initialValues });
+  const { get, set, refreshAllQueries } = usePageValues<F, Q, V>({ pageId, initialValues });
 
   const contentsWithQueriesDeps = useMemo(() => {
     if (typeof contents === "function") {
-      return contents({ get, set });
+      return contents({ get, set, refreshAllQueries });
     }
     return Array.isArray(contents) ? contents : [];
-  }, [contents, get, set]);
+  }, [contents, get, set, refreshAllQueries]);
 
   // Memoize form elements separately - only recalculate when formData.elements changes
   const formElementsWithKey = useMemo(() => {

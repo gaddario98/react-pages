@@ -37,7 +37,7 @@ export function useMetadata<
     () => translateText ?? ((key: string) => key),
     [translateText],
   );
-  const { get, set } = usePageValues<F, Q, V>({ pageId, initialValues });
+  const { get, set, refreshAllQueries } = usePageValues<F, Q, V>({ pageId, initialValues });
 
   // Evaluate metadata (merging defaultMetadata and page meta)
   const evaluatedMeta = useMemo<MetadataConfig>(() => {
@@ -45,10 +45,10 @@ export function useMetadata<
     const pageMeta = !meta
       ? {}
       : typeof meta === "function"
-        ? meta({ get, set })
+        ? meta({ get, set, refreshAllQueries })
         : meta;
     return { ...base, ...pageMeta };
-  }, [meta, defaultMetadata, get, set]);
+  }, [meta, defaultMetadata, get, set, refreshAllQueries]);
 
   // Translate metadata strings (i18n)
   const translated = useMemo<MetadataConfig>(() => {

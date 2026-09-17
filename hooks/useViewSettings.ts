@@ -27,11 +27,12 @@ export function useViewSettings<
   pageId: string
   initialValues?: V
 }) {
-  const { get, set } = usePageValues<F, Q, V>({ pageId, initialValues })
+  const { get, set, refreshAllQueries } = usePageValues<F, Q, V>({ pageId, initialValues })
   if (typeof viewSettings === 'function') {
     return viewSettings({
       get,
       set,
+      refreshAllQueries,
     })
   } else {
     return viewSettings

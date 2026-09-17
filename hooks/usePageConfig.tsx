@@ -50,7 +50,7 @@ export const usePageConfig = <
     ns,
     initialValues: variables,
   });
-  const { get, set } = usePageValues<F, Q, V>({
+  const { get, set, refreshAllQueries } = usePageValues<F, Q, V>({
     pageId,
     formId: form?.id ?? pageId,
     initialValues: variables,
@@ -63,7 +63,7 @@ export const usePageConfig = <
       if (q.type === "mutation") {
         const mutationConfig =
           typeof q.mutationConfig === "function"
-            ? q.mutationConfig<Q>({ get, set })
+            ? q.mutationConfig<Q>({ get, set, refreshAllQueries })
             : q.mutationConfig;
         return {
           ...q,
@@ -72,7 +72,7 @@ export const usePageConfig = <
       } else if (q.type === "query") {
         const queryConfig =
           typeof q.queryConfig === "function"
-            ? q.queryConfig<Q>({ get, set })
+            ? q.queryConfig<Q>({ get, set, refreshAllQueries })
             : q.queryConfig;
         return {
           ...q,
@@ -81,7 +81,7 @@ export const usePageConfig = <
       }
       return q;
     }) as QueryConfigArray<Q>;
-  }, [queries, get, set]);
+  }, [queries, get, set, refreshAllQueries]);
 
   const { refreshQueries } = useApi<Q>(processedQueries, {
     persistToAtoms: true,
