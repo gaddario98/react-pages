@@ -157,7 +157,7 @@ Mantieni qui soltanto stato condiviso da content item della pagina. Non inserire
 
 ## contents.tsx o cartella contents/
 
-Definisci qui i componenti nominati che ricevono `FunctionProps` e la
+Definisci qui i componenti nominati che ricevono `FunctionProps` (con `get`, `set` e `refreshAllQueries`) e la
 configurazione `contents`. Mantieni la struttura dei content che reagiscono ai
 dati query anche prima che i dati esistano; lascia che ogni componente gestisca
 loading o `undefined`.
@@ -198,7 +198,10 @@ Quando un content component passa dati o handler a sotto-componenti o componenti
 <OrderActions mutation={deleteMutation} />
 ```
 
-### 4. Separazione in cartella `contents/` quando `contents.tsx` cresce
+### 4. Ricaricamento delle query con `refreshAllQueries`
+Per triggerare manualmente il ricaricamento di tutte le query della pagina (ad es. bottone di refresh della tabella, swipe-to-refresh o azione di sincronizzazione manuale), usa `refreshAllQueries()` fornito direttamente in `FunctionProps` o restituito da `usePageValues`. La funzione richiama il `refetch` su tutte le query attive nello scope della pagina.
+
+### 5. Separazione in cartella `contents/` quando `contents.tsx` cresce
 Se `contents.tsx` diventa troppo grande o include diversi componenti complessi (tabelle, modali, pannelli laterali), separa i singoli content in file dedicati all'interno di una cartella `contents/`:
 
 ```text

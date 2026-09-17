@@ -7,7 +7,7 @@ Questa nota descrive i sorgenti di `@gaddario98/react-pages` v3.0.3. Verifica co
 `PageGenerator<F, Q, V>` accetta `PageProps<F, Q, V>`:
 
 - `id`: obbligatorio, scope di query, form e page variables; il layout lo usa anche come key.
-- `contents`: array di `ContentItem` oppure funzione `({ get, set }) => ContentItem[]`.
+- `contents`: array di `ContentItem` oppure funzione `({ get, set, refreshAllQueries }) => ContentItem[]`.
 - `queries`: tupla tipizzata di query e mutation compatibili con `@gaddario98/react-queries`.
 - `form`: configurazione di `@gaddario98/react-form`.
 - `variables`: stato page-scoped `V`.
@@ -34,7 +34,7 @@ PageGenerator
            -> RenderComponents
               -> RenderComponent
                  -> ComponentFunctionMap
-                    -> <Component get={get} set={set} />
+                    -> <Component get={get} set={set} refreshAllQueries={refreshAllQueries} />
 ```
 
 `PageGenerator` distribuisce gli elementi nei container header, body e footer. Il `PageContainerComponent` e il layout ricevono `key={id}`. Cambiare `id` quindi rimonta il loro sottoalbero oltre a cambiare gli scope.
@@ -52,6 +52,11 @@ un secondo passaggio dopo il mount.
 - `form`: `useFormValues({ formId: pageId })`;
 - `state`: una atom Jotai per `pageId`.
 
+Restituisce `{ get, set, refreshAllQueries }`:
+- `get`: legge valori da query, mutation, form e state registrando dipendenze granulari;
+- `set`: setter per `'form'` (restituisce `setValue`) o per `'state'` (setter top-level che fa `{ ...prev, [key]: value }`);
+- `refreshAllQueries`: funzione `() => void` che effettua il `refetch` di tutte le query attive registrate nello scope di pagina (`pageId`), utile per bottoni di refresh o sincronizzazioni manuali.
+
 Ogni chiamata `get` registra la path letta e il hook forza un update solo quando cambia una delle path sottoscritte. `get` supporta path con punti e indici (`rows[0].name`). I tipi pubblici offrono path tipizzate per query/mutation/form e chiavi top-level per `Variables`.
 
 Sfrutta al massimo la granularità di `get` mappando solo il campo foglia che serve:
@@ -64,7 +69,7 @@ Quando passi dati o funzioni di query e mutation a componenti figli, inoltra sol
 
 Tutte le query e mutation devono essere dichiarate nella prop `queries` di `PageGenerator`: non usare mai hook per le API (`useQuery`, `useMutation`, `useApi`, ecc.) all'interno dei content component.
 
-`set('form')` restituisce il setter del form. `set('state')` restituisce un setter top-level che fa `{ ...prev, [key]: value }`.
+`set('form')` restituisce il setter del form. `set('state')` restituisce un setter top-level che fa `{ ...prev, [key]: value }`. `refreshAllQueries()` invoca il refetch di tutte le query della pagina.
 
 Nel runtime v3.0.2 descritto qui, `usePageValues` scrive `initialValues` soltanto
 alla prima inizializzazione: modificare `variables` dopo il mount non resetta
@@ -75,11 +80,11 @@ esterni corretti. Se il consumer richiede aggiornamenti dinamici non supportati
 dal runtime installato, correggi o aggiorna il runtime anziché aggiungere un
 content sincronizzatore invisibile.
 
-Preferisci i `get` e `set` che `RenderComponent` passa direttamente a un `component` funzione. `usePageValues` duplica quell'accesso e va usato soltanto da un componente JSX estratto che non può ricevere `FunctionProps` senza prop drilling o accoppiamento sproporzionato.
+Preferisci i `get`, `set` e `refreshAllQueries` che `RenderComponent` passa direttamente a un `component` funzione (`FunctionProps`). `usePageValues` duplica quell'accesso e va usato soltanto da un componente JSX estratto che non può ricevere `FunctionProps` senza prop drilling o accoppiamento sproporzionato.
 
 ## Query, form e configurazioni dinamiche
 
-Prima di chiamare `useApi`, `usePageConfig` valuta `queryConfig` e `mutationConfig` funzione con `{ get, set }`. `usePageFormManager` valuta `form.data`, `form.submit` e `form.hidden` con lo stesso contratto e registra il form con `id/formId = pageId`.
+Prima di chiamare `useApi`, `usePageConfig` valuta `queryConfig` e `mutationConfig` funzione con `{ get, set, refreshAllQueries }`. `usePageFormManager` valuta `form.data`, `form.submit` e `form.hidden` con lo stesso contratto e registra il form con `id/formId = pageId`.
 
 Auth, parametri route, locale, timezone, breakpoint ed entitlement sono input
 del componente che monta PageGenerator. Derivali lì e passali direttamente in
@@ -101,4 +106,4 @@ Gli elementi del form e i content item sono poi uniti e ordinati per `index`, co
 
 `usePageConfigState` configura container, autenticazione, metadata di default e `translateText`. I default restituiscono semplicemente i figli. L'autenticazione è abilitata per default: se `isLogged(authValues)` è falso, la configurazione contenuto/form/query selezionata è `authPageProps`.
 
-`viewSettings` può essere un oggetto o una funzione di `{ get, set }` e può sostituire i container page/body, ricevendo `allContents`, `handleRefresh`, `viewSettings` e `pageId`.
+`viewSettings` può essere un oggetto o una funzione di `{ get, set, refreshAllQueries }` e può sostituire i container page/body, ricevendo `allContents`, `handleRefresh`, `viewSettings` e `pageId`.

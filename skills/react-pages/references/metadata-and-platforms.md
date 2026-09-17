@@ -4,7 +4,7 @@
 
 `PageGenerator` invoca internamente `useMetadata`, che orchestra il ciclo di vita dei tag nel `<head>`:
 
-1. **Risoluzione della configurazione**: valuta `meta` (può essere un oggetto statico o una funzione `({ get, set }) => MetadataConfig`).
+1. **Risoluzione della configurazione**: valuta `meta` (può essere un oggetto statico o una funzione `({ get, set, refreshAllQueries }) => MetadataConfig`).
 2. **Fallback globale**: se la configurazione della pagina omette specifici campi, questi vengono fusi a partire da `defaultMetadata` registrato globalmente in `usePageConfigState`.
 3. **Traduzione e localizzazione**: traduce i campi supportati tramite `translateText` e il namespace `ns`, completando `lang` dal `locale` globale.
 4. **Controllo di attivazione (`isActive`)**: verifica il flag booleano `isActive` (default `true`). Se `isActive === false`, i metadati della pagina non vengono applicati al DOM e i tag precedentemente associati a quella pagina vengono rimossi.
@@ -74,7 +74,7 @@ Ogni pagina erediterà questi valori se non esplicitamente sovrascritti nel suo 
 
 ## Best Practice e Vincoli
 
-- `MetadataConfig` supporta base SEO, Open Graph, Twitter, canonical/alternates, icons/manifest, JSON-LD, robots, custom meta e hint AI. Usa valori dinamici tramite la funzione `meta({ get, set })` solo quando dipendono da query, form o page state.
+- `MetadataConfig` supporta base SEO, Open Graph, Twitter, canonical/alternates, icons/manifest, JSON-LD, robots, custom meta e hint AI. Usa valori dinamici tramite la funzione `meta({ get, set, refreshAllQueries })` solo quando dipendono da query, form o page state.
 - Fornisci URL assoluti agli Open Graph image URL. Non usare gli hint `ai-*` come sostituto di contenuto accessibile.
 - In ambienti SSR o React Native, le funzioni di manipolazione del DOM (`applyMetadataToDom`, `cleanupMetadata`) sono no-op sicuri (`typeof document === 'undefined'`).
 

@@ -11,8 +11,8 @@
 - `useApiValues` e `get` sottoscrivono path granulari di query e mutation. Sfrutta al massimo la prop `get` mappando solo il campo foglia che serve (es. `get('mutation', 'sendDoctorAbsenceNotification.mutateAsync')` o `get('mutation', 'sendPatientDataReminder.isPending', false)`): non estrarre l'intero oggetto mutation `get('mutation', 'sendDoctorAbsenceNotification')`, altrimenti ogni transizione interna (idle, pending, success, timestamp) scatenerà il re-render dell'intero componente.
 - Quando passi proprietà di query o mutation a componenti figli o presentazionali, passa solo le singole proprietà necessarie al componente (es. `isPending`, `mutateAsync`, `data`), mai l'intero oggetto query o mutation.
 - Metti `queryKeyToInvalidate` e `notification.success/error` nella `mutationConfig`. `useMultipleMutation` invalida, mostra la notifica e poi propaga il risultato o l'errore di `mutateAsync`.
-- Configura una query dipendente come `queryConfig: ({ get }) => ({ enabled, queryKey, ... })`; non introdurre stato locale duplicato per calcolare la request. Le dipendenze esterne usate da `get("variables", ...)` devono essere già presenti nelle props di `PageGenerator` al primo render.
-- Assegna a `PageGenerator` la proprietà del flusso dati configurato in `queries`. Non affiancare `useApi`, `fetch`, un query hook applicativo o un hook `get/set` per recuperare e riscrivere gli stessi dati.
+- Configura una query dipendente come `queryConfig: ({ get, set, refreshAllQueries }) => ({ enabled, queryKey, ... })`; non introdurre stato locale duplicato per calcolare la request. Le dipendenze esterne usate da `get("variables", ...)` devono essere già presenti nelle props di `PageGenerator` al primo render.
+- Assegna a `PageGenerator` la proprietà del flusso dati configurato in `queries`. Non affiancare `useApi`, `fetch`, un query hook applicativo o un hook `get/set` per recuperare e riscrivere gli stessi dati. Per eseguire un refresh completo di tutte le query della pagina a seguito di un'azione o richiesta manuale, usa la funzione `refreshAllQueries()` fornita in `FunctionProps` o da `usePageValues`.
 - Quando l'identità della route cambia mentre una request è in corso, collega la risposta alla chiave route che l'ha generata e impedisci a una risposta obsoleta di sovrascrivere la pagina più recente.
 - Ricorda che `persistQueries` nel config API decide se l'atom delle query usa storage o memoria. Evita di usare dati persistiti per informazioni sensibili senza una decisione esplicita.
 
@@ -31,7 +31,7 @@ Lo snapshot non sostituisce la cache server e non va usato come seconda sorgente
 ## @gaddario98/react-form
 
 - `usePageFormManager` crea il form con `id` e `formId` uguali al `pageId` solo quando usi `PageGenerator.form`; mantieni questo percorso per form realmente integrate nella pagina, non come default.
-- `form.data` può contenere config di field o factory che riceve `get/set`; `form.submit` può essere un array o una factory page-aware.
+- `form.data` può contenere config di field o factory che riceve `{ get, set, refreshAllQueries }`; `form.submit` può essere un array o una factory page-aware.
 - Prediligi un `FormManager` in un content component per form autosufficienti. Usa `set('form')` per aprire, impostare o resettare campi solo quando il form è intenzionalmente integrato in `PageGenerator.form` e condiviso con altri content item.
 - Mantieni `onValuesChange` per un effetto reale del form, non per trasferire il setter al componente pagina.
 - Se i valori iniziali dipendono da sessione, route o altri hook esterni, calcola `form.defaultValues` nel componente pagina e passali direttamente a `PageGenerator`. Verifica sul runtime installato se gli aggiornamenti successivi vengono riconciliati; non simulare questa riconciliazione con un content invisibile.

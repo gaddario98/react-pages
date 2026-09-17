@@ -16,7 +16,7 @@
 Il rendering di un custom function content finisce in `RenderComponent`:
 
 ```tsx
-return <Component get={get} set={set} />;
+return <Component get={get} set={set} refreshAllQueries={refreshAllQueries} />;
 ```
 
 Per React una nuova funzione passata come `Component` è un tipo differente. Perciò questo anti-pattern rimonta i discendenti a ogni render del page component:
@@ -49,7 +49,7 @@ function BadPage() {
 
 ### Funzione nominata a livello modulo
 
-È il default per contenuti stateful o che reagiscono a filtri e query. Il renderer passa direttamente `get` e `set`; evita quindi un hook aggiuntivo.
+È il default per contenuti stateful o che reagiscono a filtri e query. Il renderer passa direttamente `get`, `set` e `refreshAllQueries`; evita quindi un hook aggiuntivo.
 
 ```tsx
 const PAGE_ID = "example-page";
@@ -57,6 +57,7 @@ const PAGE_ID = "example-page";
 function ResultsContent({
   get,
   set,
+  refreshAllQueries,
 }: FunctionProps<FormValues, Queries, Variables>) {
   // Sottoscrivi esclusivamente le proprietà foglia necessarie con get:
   const rows = get("query", "rows.data", []);
@@ -89,7 +90,7 @@ Usalo solo quando un componente estratto richiede props aggiuntive non disponibi
 
 ```tsx
 function FormDialogContent({ title }: { title: string }) {
-  const { get, set } = usePageValues<FormValues, Queries, Variables>({
+  const { get, set, refreshAllQueries } = usePageValues<FormValues, Queries, Variables>({
     pageId: PAGE_ID,
   });
   const open = get("form", "isOpen", false);
@@ -228,7 +229,7 @@ Per migrare una pagina legacy senza introdurre remount o doppie sorgenti dati:
 2. assegna un `PAGE_ID` stabile e key semantiche ai content item;
 3. sposta in `Variables` soltanto lo stato condiviso tra più content item;
 4. inietta route, sessione e altre dipendenze esterne dal componente che renderizza `PageGenerator`;
-5. fai leggere query e variables tramite `FunctionProps`; usa `usePageValues` solo per il caso eccezionale documentato in [Pattern sicuri](#elemento-jsx-con-usepagevalues);
+5. fai leggere query, variables e azioni tramite `FunctionProps` (con `get`, `set` e `refreshAllQueries`); usa `usePageValues` solo per il caso eccezionale documentato in [Pattern sicuri](#elemento-jsx-con-usepagevalues);
 6. elimina wrapper e sincronizzatori rimasti vuoti solo dopo aver aggiornato import, barrel e route;
 7. verifica con un test che una normale interazione aggiorni i dati senza rimontare il widget stateful.
 

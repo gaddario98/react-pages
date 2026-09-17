@@ -28,6 +28,7 @@ Anti-pattern:
 function OrdersSessionSync({
   get,
   set,
+  refreshAllQueries,
 }: FunctionProps<Form, Queries, Variables>) {
   const authId = useAuthValue()?.id ?? "";
   const { customerId = "" } = useRouteParams();
@@ -73,10 +74,10 @@ export function OrdersPage() {
 
 Applica lo stesso criterio a lingua, timezone, feature flag, breakpoint,
 entitlement, categorie derivate e fallback serializzati nella route. Mantieni
-query key ed endpoint in `queries.ts`; una factory `queryConfig: ({ get }) =>`
+query key ed endpoint in `queries.ts`; una factory `queryConfig: ({ get, set, refreshAllQueries }) =>`
 può leggerli dalle variables già disponibili al primo render.
 
-Non creare un hook parallelo per recuperare `get` e `set` soltanto per
+Non creare un hook parallelo per recuperare `get`, `set` o `refreshAllQueries` soltanto per
 aggirare questa composizione. I content funzione ricevono già `FunctionProps`.
 Non affiancare inoltre `useApi`, React Query o fetch manuali per gli stessi dati
 gestiti dalla tupla `queries`: produrresti cache, loading ed error state doppi.

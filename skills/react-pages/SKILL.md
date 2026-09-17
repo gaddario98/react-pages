@@ -14,7 +14,7 @@ Considera i sorgenti del package la fonte dell'API effettiva. Tratta esempi più
 1. Individua l'import usato dal consumer e verifica la versione installata, gli export disponibili e l'eventuale fork locale prima di modificare codice. Per opzioni avanzate di query, controlla anche come l'adapter installato inoltra davvero la configurazione: una proprietà presente nei tipi può essere annidata, ignorata o gestita diversamente dal runtime. Leggi [riferimento API e runtime](references/page-generator.md) quando devi modellare la pagina o verificare un comportamento.
 2. Modella la feature o subfeature per responsabilità di dominio. Se espone una pagina, separa almeno `page`, `queries`, `variables` e l'eventuale `form`; usa `contents.tsx` soltanto quando contiene UI o comportamento reale. Se `contents.tsx` diventa troppo grande, separa i content e organizzali in una cartella `contents/`. Leggi [struttura feature](references/feature-structure.md) e passa i tre contratti come generici di `PageGenerator`.
 3. Deriva auth, parametri route, lingua, breakpoint e altri input esterni nel componente padre che renderizza `PageGenerator`. Passali direttamente in `variables`, `queries` o `form.defaultValues`, stabilizzando gli oggetti non primitivi. Devono essere corretti già al primo render, prima della configurazione delle query. Non creare content `Session`, `Route` o `Sync` che copiano questi valori con `useEffect`, e non nasconderli in header/footer. Leggi [configurazioni esterne e refactor](references/refactoring-and-ownership.md).
-4. Metti lo stato condiviso e page-scoped in `PageGenerator.variables`; leggilo e aggiornalo con i `get` e `set` ricevuti nelle props del content component. Sfrutta al massimo la prop `get` mappando solo il campo che serve (es. `get('state', 'filters.user.id', '')` anziché estrarre l'intero oggetto di stato) per registrare sottoscrizioni granulari ed evitare re-render non necessari. Usa `usePageValues({ pageId: PAGE_ID })` solo quando non puoi passare tali props senza prop drilling o accoppiamenti non ragionevoli. Conserva nel widget lo stato che non serve al resto della pagina, come sorting, focus e paginazione della tabella. Non duplicare i dati query salvo un fallback documentato di continuità visiva quando l'adapter svuota i dati durante un cambio di query key.
+4. Metti lo stato condiviso e page-scoped in `PageGenerator.variables`; leggilo e aggiornalo con i `get`, `set` e ricarica le query con `refreshAllQueries` ricevuti nelle props del content component (`FunctionProps`). Sfrutta al massimo la prop `get` mappando solo il campo che serve (es. `get('state', 'filters.user.id', '')` anziché estrarre l'intero oggetto di stato) per registrare sottoscrizioni granulari ed evitare re-render non necessari. Usa `usePageValues({ pageId: PAGE_ID })` solo quando non puoi passare tali props senza prop drilling o accoppiamenti non ragionevoli. Conserva nel widget lo stato che non serve al resto della pagina, come sorting, focus e paginazione della tabella. Non duplicare i dati query salvo un fallback documentato di continuità visiva quando l'adapter svuota i dati durante un cambio di query key.
 5. Costruisci ogni content item stateful come componente nominato a livello modulo che riceve `FunctionProps`; assegnagli una key semantica e permanente direttamente nel content item. Mantieni nell'array statico hero, azioni, informazioni e altri contenuti che devono reagire all'arrivo dei dati: il componente può gestire `undefined`, ma la struttura non deve dipendere dal fatto che la query abbia già risposto. Usa un elemento JSX solo quando richiede props extra. Nei layout virtualizzati verifica se un item invisibile occupa una riga. Leggi [lifecycle e rendering](references/rendering-lifecycle.md).
 6. Importa la costante `queries` dal modulo feature. Tutte le query e mutation devono essere mappate esclusivamente da `PageGenerator` e passate ai content tramite `get`: non usare hook per le API (`useApi`, `useQuery`, `useMutation`, ecc.) nei content o nei componenti discendenti. Sfrutta al massimo la prop `get` mappando solo il campo che serve (es. `get('mutation', 'sendDoctorAbsenceNotification.mutateAsync')` o `get('mutation', 'sendPatientDataReminder.isPending', false)` anziché estrarre l'intero oggetto mutation). Quando passi oggetti query e mutation tra componenti, passa solo le singole proprietà che servono a quel componente e non tutto l'oggetto. Passa `form` a `PageGenerator` solo quando deve partecipare al suo scope o layout; altrimenti rendi `FormManager` in un content component. Metti invalidation e notifiche nella `mutationConfig`. Leggi [ecosistema](references/ecosystem.md).
 7. Durante un refactor, aggiorna prima tutti i consumer verso il barrel pubblico della nuova ownership, poi elimina file, export e cartelle legacy solo dopo una ricerca globale dei riferimenti. Non conservare moduli vuoti o wrapper pass-through. Leggi [configurazioni esterne e refactor](references/refactoring-and-ownership.md).
@@ -23,7 +23,7 @@ Considera i sorgenti del package la fonte dell'API effettiva. Tratta esempi più
 
 ## Modello di pagina raccomandato
 
-Usa componenti estratti per i content item che leggono dati, modificano variabili o ospitano stato locale. Ricevi `get` e `set` direttamente nelle props del componente; non ricreare la funzione-componente nel componente pagina. Mantieni il componente pagina come composizione di contratti feature già definiti.
+Usa componenti estratti per i content item che leggono dati, modificano variabili o ospitano stato locale. Ricevi `get`, `set` e `refreshAllQueries` direttamente nelle props del componente (`FunctionProps`); non ricreare la funzione-componente nel componente pagina. Mantieni il componente pagina come composizione di contratti feature già definiti.
 
 ```tsx
 const PAGE_ID = "orders-page";
@@ -35,6 +35,7 @@ const PAGE_ID = "orders-page";
 function OrdersTableContent({
   get,
   set,
+  refreshAllQueries,
 }: FunctionProps<OrderFormValues, OrdersQueries, OrderVariables>) {
   const orders = get("query", "orders.data", []);
   const search = get("state", "search", "");
@@ -46,6 +47,7 @@ function OrdersTableContent({
       data={filterOrders(orders, search, selectedCustomerIds)}
       globalFilterValue={search}
       onGlobalFilterChange={(value) => setState("search", value)}
+      onRefresh={refreshAllQueries}
     />
   );
 }
@@ -103,8 +105,8 @@ features/orders/
 
 ## Regole non negoziabili di rendering
 
-- Usa `component: NamedFunctionContent` come default per tabelle, form, dialog, popover, editor e contenuti che cambiano spesso. Dichiara la funzione a livello modulo, falla accettare `FunctionProps` e non farle catturare stato o setter locali del componente pagina.
-- Usa `component: <NamedContent />` solo quando il componente richiede props aggiuntive non disponibili in `FunctionProps`. In quel caso usa `usePageValues` soltanto nel componente estratto che ne ha realmente bisogno.
+- Usa `component: NamedFunctionContent` come default per tabelle, form, dialog, popover, editor e contenuti che cambiano spesso. Dichiara la funzione a livello modulo, falla accettare `FunctionProps` (con `get`, `set` e `refreshAllQueries`) e non farle catturare stato o setter locali del componente pagina.
+- Usa `component: <NamedContent />` solo quando il componente richiede props aggiuntive non disponibili in `FunctionProps`. In quel caso usa `usePageValues` (che restituisce `{ get, set, refreshAllQueries }`) soltanto nel componente estratto che ne ha realmente bisogno.
 - Non usare `component: ({ get }) => ...` dentro il componente pagina quando può essere ricreato. Il renderer finale esegue `<Component />`; una nuova funzione è quindi un nuovo tipo React e rimonta i discendenti.
 - Assegna sempre `key` a un content item stateful. Descrivi il ruolo (`orders-table`), non la posizione (`content-2`) né valori volatili (`orders-table-${search}`).
 - Mantieni le key dei fratelli indipendenti da inserimenti condizionali. Nei container normali preferisci `hidden` con key esplicita per non spostare i fratelli; ricorda che il content item nascosto stesso viene smontato. Nei container virtualizzati ometti invece l'item se `hidden`/`null` resta nella sorgente e produce una riga vuota, preservando key stabili per gli altri item.
@@ -124,6 +126,7 @@ Mantieni il confine di responsabilità seguente:
 | Sorting, paginazione, focus, righe espanse locali              | Widget che li possiede                                                   |
 | Snapshot visivo durante cambio key non trattenuto dall'adapter | `Variables`, partizionato per filtro e aggiornato solo con dati definiti |
 | Request, invalidation e feedback dell'operazione               | `queries[].queryConfig` / `mutationConfig`                               |
+| Refresh imperativo di tutte le query di pagina                 | `refreshAllQueries()` da `FunctionProps` o `usePageValues`               |
 | Conferma utente e orchestrazione transitoria                   | Handler UI stabile (`useCallback` se necessario)                         |
 
 Passa sempre a `PageGenerator` le `variables` corrette per il render corrente. La riconciliazione dopo il mount varia tra versioni e wrapper: controlla il runtime installato. Se non supporta aggiornamenti dinamici delle props, non compensare con un content invisibile; aggiorna o correggi il runtime, oppure implementa una migrazione esplicita e documentata in un componente con responsabilità reale. Il setter di stato sostituisce superficialmente una chiave top-level; aggiorna oggetti annidati in modo immutabile.
@@ -137,6 +140,8 @@ Leggi query e mutation con il `get` ricevuto nelle props: `get('query' | 'mutati
 
 Quando passi dati o handler di query e mutation a componenti figli o presentazionali, passa solo le singole proprietà necessarie al componente (es. `mutateAsync`, `isPending`, `data`), mai l'intero oggetto query o mutation.
 
+Per ricaricare o sincronizzare manualmente tutte le query attive della pagina (es. pulsanti "Aggiorna", swipe-to-refresh o callback post-azione), usa `refreshAllQueries()` fornito direttamente in `FunctionProps` o restituito da `usePageValues`. La funzione esegue il `refetch` di tutte le query registrate nello scope di pagina (`pageId`) tramite `useApiValues`.
+
 Se `contents.tsx` diventa troppo grande o gestisce molteplici content complessi, separa i componenti e la relativa configurazione in una cartella `contents/` (es. `contents/orders-table.tsx`, `contents/order-dialog.tsx`, `contents/index.ts`).
 
 Leggi e scrivi il form con `get('form', path, fallback)` e `set('form')`; non aggiungere ref imperativi o `onValuesChange` soltanto per esporre il setter del form al page component.
@@ -149,7 +154,7 @@ Usa `renderInHeader` e `renderInFooter` esclusivamente per contenuti visivi dest
 
 Configura una sola volta i container, autenticazione e traduzione tramite `usePageConfigState`. Considera che `enableAuthControl` è attivo di default e una pagina non autenticata renderizza `authPageProps`.
 
-Usa `meta` per metadata statici o con una funzione che accetta `get`/`set` e ritorna la configurazione. Se l'applicazione usa navigazione a tab o pagine mantenute montate in cache, passa la prop `isActive` a `PageGenerator` per attivare e disattivare l'applicazione dei metadati nel `<head>` senza smontare la pagina. Per la rimozione manuale o controllata dei metadati usa l'utility `cleanupMetadata`.
+Usa `meta` per metadata statici o con una funzione che accetta `{ get, set, refreshAllQueries }` e ritorna la configurazione. Se l'applicazione usa navigazione a tab o pagine mantenute montate in cache, passa la prop `isActive` a `PageGenerator` per attivare e disattivare l'applicazione dei metadati nel `<head>` senza smontare la pagina. Per la rimozione manuale o controllata dei metadati usa l'utility `cleanupMetadata`.
 
 ## Diagnosi e verifica
 
@@ -174,7 +179,7 @@ Prima di consegnare, verifica:
 - `contents.tsx` suddiviso in una cartella `contents/` se il file è troppo grande o include più content complessi;
 - auth, route, locale e altri input esterni iniettati dal componente che monta `PageGenerator`, corretti al primo render;
 - nessun content invisibile usato per inizializzare `variables`, query o default form;
-- `get` e `set` ricevuti nelle props per default, con `usePageValues` limitato ai casi necessari;
+- `get`, `set` e `refreshAllQueries` ricevuti nelle props per default, con `usePageValues` limitato ai casi necessari;
 - `PAGE_ID` condiviso tra generatore e gli eventuali `usePageValues`;
 - stato page-scoped in `variables`, stato locale nel widget;
 - config e handler stabili senza dipendere dal React Compiler;
