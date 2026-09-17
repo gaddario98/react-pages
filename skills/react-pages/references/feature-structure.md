@@ -133,7 +133,7 @@ export const ordersQueries: NonNullable<
 ];
 ```
 
-Usa endpoint come path tuple (`['api', 'orders']`) oppure factory che restituiscono la tuple. Tieni le keys separate dagli endpoint: una query key identifica cache e invalidation, non la URL. Conserva notification e invalidation nella `mutationConfig` corrispondente.
+Usa endpoint come path tuple (`['api', 'orders']`) oppure factory che restituiscono la tuple. Tieni le keys separate dagli endpoint: una query key identifica cache e invalidation, non la URL. Conserva notification e invalidation nella `mutationConfig` corrispondente: tutte le mutation devono invalidare le key delle query che utilizzano i dati che la mutation ha cambiato (tramite `queryKeyToInvalidate`).
 
 ## variables.ts
 

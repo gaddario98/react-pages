@@ -84,7 +84,7 @@ Preferisci i `get`, `set` e `refreshAllQueries` che `RenderComponent` passa dire
 
 ## Query, form e configurazioni dinamiche
 
-Prima di chiamare `useApi`, `usePageConfig` valuta `queryConfig` e `mutationConfig` funzione con `{ get, set, refreshAllQueries }`. `usePageFormManager` valuta `form.data`, `form.submit` e `form.hidden` con lo stesso contratto e registra il form con `id/formId = pageId`.
+Prima di chiamare `useApi`, `usePageConfig` valuta `queryConfig` e `mutationConfig` funzione con `{ get, set, refreshAllQueries }`. Tutte le mutation devono invalidare le key delle query che utilizzano i dati che la mutation ha cambiato (tramite `queryKeyToInvalidate` in `mutationConfig`). `usePageFormManager` valuta `form.data`, `form.submit` e `form.hidden` con lo stesso contratto e registra il form con `id/formId = pageId`.
 
 Auth, parametri route, locale, timezone, breakpoint ed entitlement sono input
 del componente che monta PageGenerator. Derivali lì e passali direttamente in
