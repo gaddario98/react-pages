@@ -9,6 +9,7 @@ import type {
   QueryAtIndex,
   QueryDefinition,
   QueryProps,
+  WebSocketDefinition,
 } from "@gaddario98/react-queries";
 import type {
   FieldValues,
@@ -283,10 +284,11 @@ type FormPageProps<
    PAGE PROPS & VIEW SETTINGS
 ====================================================== */
 
-type SingleQueryConfig<
+type SinglePageQueryConfig<
   F extends FieldValues,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   Q extends QueryDefinition<any, any, any, any, any>,
+  AllQueries extends QueriesArray,
   V extends Record<string, unknown> = Record<string, unknown>,
 > =
   Q extends QueryDefinition<infer K, infer T, infer P, infer R, infer C>
@@ -294,30 +296,26 @@ type SingleQueryConfig<
   ? {
     type: "mutation";
     mutationConfig:
-    | (<Qa extends QueriesArray>(
-      props: FunctionProps<F, Qa, V>,
-    ) => MutationConfig<P, R, C>)
+    | ((props: FunctionProps<F, AllQueries, V>) => MutationConfig<P, R, C>)
     | MutationConfig<P, R, C>;
     key: K;
   }
-  : {
+  : T extends "query"
+  ? {
     type: "query";
     queryConfig?:
-    | (<Qa extends QueriesArray>(
-      props: FunctionProps<F, Qa, V>,
-    ) => Omit<QueryProps<K, R>, "keyToMap">)
+    | ((props: FunctionProps<F, AllQueries, V>) => Omit<QueryProps<K, R>, "keyToMap">)
     | Omit<QueryProps<K, R>, "keyToMap">;
     key: K;
   }
+  : WebSocketDefinition<K>
   : never;
 
 type QueryPageConfigArray<
   F extends FieldValues,
   Q extends QueriesArray,
   V extends Record<string, unknown> = Record<string, unknown>,
-> = {
-    [I in keyof Q]: SingleQueryConfig<F, QueryAtIndex<Q, I>, V>;
-  };
+> = Array<SinglePageQueryConfig<F, Q[number], Q, V>>;
 interface PageProps<
   F extends FieldValues = FieldValues,
   Q extends QueriesArray = QueriesArray,
@@ -432,6 +430,7 @@ export type {
   FormPageProps,
   PageProps,
   ViewSettings,
+  SinglePageQueryConfig,
   QueryPageConfigArray,
 };
 

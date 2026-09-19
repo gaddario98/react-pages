@@ -30,7 +30,7 @@ export const usePageConfig = <
   variables = {} as V,
   pageId,
 }: {
-  queries: QueryPageConfigArray<F, Q, V>;
+  queries?: QueryPageConfigArray<F, Q, V>;
   form?: FormPageProps<F, Q, V>;
   ns: string;
   viewSettings?: MappedItemsFunction<F, Q, ViewSettings, V> | ViewSettings;
@@ -50,7 +50,7 @@ export const usePageConfig = <
     ns,
     initialValues: variables,
   });
-  const { get, set, refreshAllQueries } = usePageValues<F, Q, V>({
+  const pageValues = usePageValues<F, Q, V>({
     pageId,
     formId: form?.id ?? pageId,
     initialValues: variables,
@@ -59,11 +59,12 @@ export const usePageConfig = <
   // 2. Query Generation
 
   const processedQueries = useMemo((): QueryConfigArray<Q> => {
+
     return queries.map((q) => {
       if (q.type === "mutation") {
         const mutationConfig =
           typeof q.mutationConfig === "function"
-            ? q.mutationConfig<Q>({ get, set, refreshAllQueries })
+            ? q.mutationConfig(pageValues)
             : q.mutationConfig;
         return {
           ...q,
@@ -72,7 +73,7 @@ export const usePageConfig = <
       } else if (q.type === "query") {
         const queryConfig =
           typeof q.queryConfig === "function"
-            ? q.queryConfig<Q>({ get, set, refreshAllQueries })
+            ? q.queryConfig(pageValues)
             : q.queryConfig;
         return {
           ...q,
@@ -81,7 +82,7 @@ export const usePageConfig = <
       }
       return q;
     }) as QueryConfigArray<Q>;
-  }, [queries, get, set, refreshAllQueries]);
+  }, [queries, pageValues]);
 
   const { refreshQueries } = useApi<Q>(processedQueries, {
     persistToAtoms: true,
