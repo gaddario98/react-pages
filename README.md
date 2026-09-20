@@ -2,40 +2,65 @@
 
 A performance-optimized React component library for building dynamic pages that work across web (React DOM) and React Native. It integrates form management, query handling, SEO metadata, and content rendering behind a single unified `PageProps` interface.
 
-**Version**: v3.0.2
+**Version**: v3.0.3
 
 ---
 
 ## Table of Contents
 
-- [Overview](#overview)
-- [Installation](#installation)
-- [Quick Start](#quick-start)
-- [Global Configuration](#global-configuration)
-- [Architecture](#architecture)
-  - [PageGenerator](#pagegenerator)
-  - [Content Items & Layout](#content-items--layout)
-  - [MetadataManager](#metadatamanager)
-  - [Cross-Platform Containers](#cross-platform-containers)
-  - [RenderComponents](#rendercomponents)
-- [Features](#features)
-  - [SEO & Metadata](#seo--metadata)
-  - [Form Management](#form-management)
-  - [Query & Mutation Management](#query--mutation-management)
-  - [Authentication & Access Control](#authentication--access-control)
-  - [Internationalization](#internationalization)
-  - [Performance Optimization](#performance-optimization)
-- [API Reference](#api-reference)
-  - [PageGenerator Props](#pagegenerator-props)
-  - [Content Item Types](#content-item-types)
-  - [`get` / `set` Interface](#get--set-interface)
-  - [Metadata Configuration](#metadata-configuration)
-  - [Form Configuration](#form-configuration)
-  - [Query Configuration](#query-configuration)
-- [Advanced Patterns](#advanced-patterns)
-- [TypeScript Support](#typescript-support)
-- [React Native & Ionic Integration](#react-native--ionic-integration)
-- [Troubleshooting](#troubleshooting)
+- [@gaddario98/react-pages](#gaddario98react-pages)
+  - [Table of Contents](#table-of-contents)
+  - [Overview](#overview)
+  - [Installation](#installation)
+    - [Peer Dependencies](#peer-dependencies)
+  - [Quick Start](#quick-start)
+  - [Global Configuration](#global-configuration)
+  - [Architecture](#architecture)
+    - [PageGenerator](#pagegenerator)
+    - [Content Items \& Layout](#content-items--layout)
+    - [MetadataManager](#metadatamanager)
+    - [Cross-Platform Containers](#cross-platform-containers)
+    - [RenderComponents](#rendercomponents)
+  - [Features](#features)
+    - [SEO \& Metadata](#seo--metadata)
+      - [Multi-Tab, Cached Pages \& Keep-Alive Support (`isActive`)](#multi-tab-cached-pages--keep-alive-support-isactive)
+      - [Differential DOM Updates \& Automatic Tag Cleanup](#differential-dom-updates--automatic-tag-cleanup)
+      - [Global Defaults Fallback](#global-defaults-fallback)
+      - [Imperative Metadata Cleanup (`cleanupMetadata`)](#imperative-metadata-cleanup-cleanupmetadata)
+    - [Form Management](#form-management)
+    - [Query \& Mutation Management](#query--mutation-management)
+    - [Authentication \& Access Control](#authentication--access-control)
+    - [Internationalization](#internationalization)
+    - [Performance Optimization](#performance-optimization)
+    - [Bundle Size (All Tree-Shakeable)](#bundle-size-all-tree-shakeable)
+  - [API Reference](#api-reference)
+    - [PageGenerator Props](#pagegenerator-props)
+    - [Content Item Types](#content-item-types)
+      - [`type: "custom"`](#type-custom)
+      - [`type: "container"`](#type-container)
+    - [`get` / `set` Interface](#get--set-interface)
+    - [Metadata Configuration](#metadata-configuration)
+      - [`useMetadata` Hook \& Cleanup Utilities](#usemetadata-hook--cleanup-utilities)
+    - [Form Configuration](#form-configuration)
+    - [Query Configuration](#query-configuration)
+  - [Advanced Patterns](#advanced-patterns)
+    - [Dependent Queries](#dependent-queries)
+    - [Dynamic Content Driven by Query State](#dynamic-content-driven-by-query-state)
+    - [Form-Driven Dynamic Content](#form-driven-dynamic-content)
+  - [TypeScript Support](#typescript-support)
+  - [React Native \& Ionic Integration](#react-native--ionic-integration)
+    - [React Native Setup](#react-native-setup)
+    - [Ionic Integration](#ionic-integration)
+    - [Compatibility Summary](#compatibility-summary)
+  - [Troubleshooting](#troubleshooting)
+    - [Form Not Submitting](#form-not-submitting)
+    - [Queries Not Loading](#queries-not-loading)
+    - [Metadata Not Appearing](#metadata-not-appearing)
+    - [Re-renders Too Frequent](#re-renders-too-frequent)
+    - [TypeScript Errors](#typescript-errors)
+  - [License](#license)
+  - [Contributing](#contributing)
+  - [Support](#support)
 
 ---
 
@@ -312,7 +337,9 @@ import { useState } from "react";
 import { PageGenerator } from "@gaddario98/react-pages";
 
 export function TabbedDashboard() {
-  const [activeTab, setActiveTab] = useState<"overview" | "analytics">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "analytics">(
+    "overview",
+  );
 
   return (
     <div>
@@ -355,6 +382,7 @@ export function TabbedDashboard() {
 `PageGenerator` tags all managed DOM elements with `data-react-pages="meta"` and `data-page-id`.
 
 When transitioning between pages (or toggling `isActive`), the library performs a **differential cleanup**:
+
 - Tags defined by the new page are updated or added.
 - Any managed tags present in the previous page that are not specified by the new page (such as page-specific `og:image`, `twitter:*`, `keywords`, `canonical`, `robots`, or `structuredData`) are **automatically removed** from `<head>`, preventing obsolete tags from leaking into subsequent pages.
 - When the page is unmounted, all of its managed tags are cleaned up.
@@ -613,18 +641,18 @@ The library tracks which data keys each component reads via the `get()` function
 
 ### PageGenerator Props
 
-| Prop                | Type                                  | Default | Description                                                     |
-| ------------------- | ------------------------------------- | ------- | --------------------------------------------------------------- |
-| `id`                | `string`                              | —       | Unique page identifier **(required)**                           |
-| `contents`          | `ContentItemsType<F, Q, V>`           | `[]`    | Page content items or a function returning them                 |
-| `queries`           | `QueryPageConfigArray<F, Q, V>`       | `[]`    | Query and mutation definitions                                  |
-| `form`              | `FormPageProps<F, Q, V>`              | —       | Form configuration and fields                                   |
-| `variables`         | `V`                                   | —       | Page-scoped state variables, accessible via `get("state", ...)` |
-| `viewSettings`      | `ViewSettings \| MappedItemsFunction` | `{}`    | Layout and behavior settings                                    |
-| `meta`              | `MetadataConfig<F, Q, V>`             | —       | SEO and metadata configuration                                  |
+| Prop                | Type                                  | Default | Description                                                                                                   |
+| ------------------- | ------------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------- |
+| `id`                | `string`                              | —       | Unique page identifier **(required)**                                                                         |
+| `contents`          | `ContentItemsType<F, Q, V>`           | `[]`    | Page content items or a function returning them                                                               |
+| `queries`           | `QueryPageConfigArray<F, Q, V>`       | `[]`    | Query and mutation definitions                                                                                |
+| `form`              | `FormPageProps<F, Q, V>`              | —       | Form configuration and fields                                                                                 |
+| `variables`         | `V`                                   | —       | Page-scoped state variables, accessible via `get("state", ...)`                                               |
+| `viewSettings`      | `ViewSettings \| MappedItemsFunction` | `{}`    | Layout and behavior settings                                                                                  |
+| `meta`              | `MetadataConfig<F, Q, V>`             | —       | SEO and metadata configuration                                                                                |
 | `isActive`          | `boolean`                             | `true`  | Controls whether the page is active and syncs metadata to `<head>`. Set to `false` for background/cached tabs |
-| `ns`                | `string`                              | —       | i18n namespace                                                  |
-| `enableAuthControl` | `boolean`                             | `true`  | Whether to check authentication before rendering                |
+| `ns`                | `string`                              | —       | i18n namespace                                                                                                |
+| `enableAuthControl` | `boolean`                             | `true`  | Whether to check authentication before rendering                                                              |
 
 ### Content Item Types
 
@@ -766,17 +794,16 @@ import { useMetadata, cleanupMetadata } from "@gaddario98/react-pages";
 // Hook invoked internally by PageGenerator
 useMetadata({
   meta: myMetadataConfig,
-  isActive: true,        // controls whether to apply metadata (default: true)
-  ns: "my-namespace",    // optional i18n namespace
-  pageId: "my-page-id",  // optional page identifier (used in data-page-id)
-  autoApply: true,       // whether to write directly to DOM (default: true)
+  isActive: true, // controls whether to apply metadata (default: true)
+  ns: "my-namespace", // optional i18n namespace
+  pageId: "my-page-id", // optional page identifier (used in data-page-id)
+  autoApply: true, // whether to write directly to DOM (default: true)
 });
 
 // Imperatively remove tags managed by react-pages
-cleanupMetadata();            // removes all managed tags
+cleanupMetadata(); // removes all managed tags
 cleanupMetadata("my-page-id"); // removes tags for a specific pageId
 ```
-
 
 ### Form Configuration
 
