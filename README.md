@@ -2,7 +2,7 @@
 
 A performance-optimized React component library for building dynamic pages that work across web (React DOM) and React Native. It integrates form management, query handling, SEO metadata, and content rendering behind a single unified `PageProps` interface.
 
-**Version**: v3.0.3
+**Version**: v3.0.4
 
 ---
 

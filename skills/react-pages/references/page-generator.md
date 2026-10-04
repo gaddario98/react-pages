@@ -1,6 +1,6 @@
 # PageGenerator: API e runtime
 
-Questa nota descrive i sorgenti di `@gaddario98/react-pages` v3.0.3. Verifica comunque il checkout o la versione installata quando il consumer usa un fork o importa `PageGenerator` attraverso un package aggregatore.
+Questa nota descrive i sorgenti di `@gaddario98/react-pages` v3.0.4. Verifica comunque il checkout o la versione installata quando il consumer usa un fork o importa `PageGenerator` attraverso un package aggregatore.
 
 ## Contratto pubblico
 
@@ -71,7 +71,7 @@ Tutte le query e mutation devono essere dichiarate nella prop `queries` di `Page
 
 `set('form')` restituisce il setter del form. `set('state')` restituisce un setter top-level che fa `{ ...prev, [key]: value }`. `refreshAllQueries()` invoca il refetch di tutte le query della pagina.
 
-Nel runtime v3.0.2 descritto qui, `usePageValues` scrive `initialValues` soltanto
+Nel runtime v3.0.4 descritto qui, `usePageValues` scrive `initialValues` soltanto
 alla prima inizializzazione: modificare `variables` dopo il mount non resetta
 automaticamente lo state. Wrapper e versioni successive possono riconciliare
 dinamicamente `variables`, `queries` o `defaultValues`; verifica sempre i
