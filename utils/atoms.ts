@@ -94,10 +94,10 @@ export const usePageVariablesSettings = <V extends Record<string, unknown> = Rec
         ...val,
       },
     }
-  }), [set])
+  }), [pageId, set])
 
   const pageValues = useMemo(() => values[pageId] ??
-    pageVariablesSettingsDefaultValues, [values])
+    pageVariablesSettingsDefaultValues, [pageId, values])
 
   return [pageValues, setPageValues] as [PageVariablesSettings<V>, (val: Partial<PageVariablesSettings<V>>) => void]
 }

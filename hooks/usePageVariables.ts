@@ -19,7 +19,6 @@ export const usePageVariables = <V extends Record<string, unknown> = Record<stri
     const [trigger, setTrigger] = useState(0);
 
     const setVariableState = useSetVariablesState<V>(scopeId);
-    const setVariablesRef = useRef(setVariableState)
 
     useEffect(() => {
         let shouldTrigger = false;
@@ -55,9 +54,9 @@ export const usePageVariables = <V extends Record<string, unknown> = Record<stri
             field: keyof V,
             value: V[keyof V],
         ) => {
-            setVariablesRef.current({ [field]: value } as Partial<V>);
+            setVariableState({ [field]: value } as Partial<V>);
         },
-        [],
+        [setVariableState],
     );
 
     return { get, set };
@@ -65,11 +64,10 @@ export const usePageVariables = <V extends Record<string, unknown> = Record<stri
 
 export const useSetInitialVariables = <V extends Record<string, unknown> = Record<string, unknown>>({ variables, scopeId = '' }: UseSetInitialVariables<V>) => {
     const setVariableState = useSetVariablesState<V>(scopeId);
-    const setVariablesRef = useRef(setVariableState)
     const [{ initialized, prevInitialValues }, setSettings] = usePageVariablesSettings(scopeId)
     useEffect(() => {
         if (!initialized && !!Object.values(variables)?.length) {
-            setVariablesRef.current(variables);
+            setVariableState(variables);
             setSettings({ initialized: true, prevInitialValues: variables });
         } else if (initialized && !!Object.values(variables)?.length) {
             const { changes, hasChanges } = getNestedChanges(
@@ -77,9 +75,9 @@ export const useSetInitialVariables = <V extends Record<string, unknown> = Recor
                 prevInitialValues,
             );
             if (hasChanges) {
-                setVariablesRef.current(changes as V);
+                setVariableState(changes as V);
                 setSettings({ prevInitialValues: variables });
             }
         }
-    }, [variables]);
+    }, [variables, scopeId, initialized, prevInitialValues, setVariableState, setSettings]);
 }
